@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Global element resets and defaults can go here if needed */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
