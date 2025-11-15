@@ -1,10 +1,24 @@
+/**
+ * index.css - Global Stylesheet
+ * 
+ * This file contains global CSS styles and Tailwind CSS imports.
+ * It's imported in main.tsx and applies to the entire application.
+ * 
+ * Contents:
+ * - Tailwind CSS v4 import (provides utility classes)
+ * - Global element resets and base styles
+ * - Full-height layout setup for proper page rendering
+ */
+
 @import "tailwindcss";
 
-/* Global element resets and defaults can go here if needed */
+/* Global element resets and defaults */
+/* Ensure html, body, and root take full height for proper layout */
 html, body, #root {
   height: 100%;
 }
 
+/* Remove default browser margins */
 body {
   margin: 0;
 }

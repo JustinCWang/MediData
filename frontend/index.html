@@ -1,3 +1,14 @@
+<!--
+  index.html - HTML Entry Point
+  
+  This is the single HTML file that serves as the entry point for the React application.
+  Vite injects the bundled JavaScript and CSS into this file during the build process.
+  
+  Key elements:
+  - #root div: Where React renders the entire application
+  - main.tsx script: Entry point that bootstraps the React app
+  - Meta tags: SEO and viewport configuration
+-->
 <!doctype html>
 <html lang="en">
   <head>
@@ -7,7 +18,9 @@
     <title>MediData</title>
   </head>
   <body>
+    <!-- Root element where React renders the entire application -->
     <div id="root"></div>
+    <!-- Entry point script that bootstraps the React app -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
