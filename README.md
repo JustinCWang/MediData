@@ -46,6 +46,8 @@ pip install fastapi uvicorn[standard] python-dotenv pydantic-settings
 Start the API (default port 8000):
 
 ```powershell
+python -m venv .venv
+ .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 ```
 

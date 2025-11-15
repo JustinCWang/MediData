@@ -5,15 +5,23 @@
  * - Client-side routing using React Router (landing, login, registration pages)
  * - Shared layout components (header and footer)
  * - Page components for each route
+ * - Chatbot component that appears on all pages
  * 
  * Routes:
  *   - "/" - Landing page with hero, features, and how-it-works sections
  *   - "/login" - User authentication/login page
  *   - "/register" - New user registration page
+ *   - "/search" - Provider search page
+ *   - "/requests" - Requests page to view all requests
+ *   - "/request-provider" - Page to request a provider
  */
 
 import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import Chatbot from './components/Chatbot'
+import SearchPage from './pages/SearchPage'
+import RequestsPage from './pages/RequestsPage'
+import RequestProviderPage from './pages/RequestProviderPage'
 
 /**
  * App - Root component that sets up routing and shared layout
@@ -30,9 +38,13 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/request-provider" element={<RequestProviderPage />} />
         </Routes>
       </main>
       <AppFooter />
+      <Chatbot />
     </div>
   )
 }
@@ -59,6 +71,30 @@ function AppHeader() {
             }
           >
             Home
+          </NavLink>
+          <NavLink
+            to="/search"
+            className={({ isActive }) =>
+              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+            }
+          >
+            Search
+          </NavLink>
+          <NavLink
+            to="/requests"
+            className={({ isActive }) =>
+              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+            }
+          >
+            Requests
+          </NavLink>
+          <NavLink
+            to="/request-provider"
+            className={({ isActive }) =>
+              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+            }
+          >
+            Request Provider
           </NavLink>
           <NavLink
             to="/login"
