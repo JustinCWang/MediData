@@ -1,2 +1,7 @@
 # Environment variables
-.env*
+.env
+.env.local
+.env.*.local
+
+# Allow .env.example to be committed (for teammates to know what variables are needed)
+!.env.example

@@ -14,18 +14,14 @@ import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(), // Tailwind CSS v4 plugin for Vite
-  ],
-  // TODO: Add server.proxy configuration when connecting to FastAPI backend
-  // Example:
-  // server: {
-  //   port: 5173,
-  //   proxy: {
-  //     '/api': {
-  //       target: 'http://127.0.0.1:8000',
-  //       changeOrigin: true,
-  //     },
-  //   },
-  // },
+  plugins: [tailwindcss()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

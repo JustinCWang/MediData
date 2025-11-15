@@ -12,7 +12,8 @@
  *   - "/register" - New user registration page
  */
 
-import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 /**
  * App - Root component that sets up routing and shared layout
@@ -161,7 +162,7 @@ function LandingPage() {
               </div>
             </div>
             <div className="md:pl-6">
-              <div className="aspect-[4/3] w-full rounded-xl border border-slate-200 bg-gradient-to-br from-blue-50 to-sky-50 p-6">
+              <div className="aspect-4/3 w-full rounded-xl border border-slate-200 bg-linear-to-br from-blue-50 to-sky-50 p-6">
                 <div className="h-full w-full rounded-lg border border-dashed border-slate-300 grid place-items-center text-slate-500 text-center text-sm">
                   Future: search, match results, and booking UI\n
                   <br />
@@ -220,23 +221,63 @@ function LandingPage() {
 /**
  * LoginPage - User authentication/login page
  * 
- * Displays a login form with email and password fields. Currently handles
- * form submission client-side only (logs to console). Will be connected to
- * FastAPI authentication endpoint when backend is implemented.
+ * Displays a login form with email and password fields. Handles form submission
+ * by sending credentials to FastAPI backend (/api/auth/login), which authenticates
+ * with Supabase. On success, stores the access token in localStorage and redirects
+ * to the home page. Displays error messages if authentication fails.
  * 
  * Uses AuthBackground component for consistent styling with registration page.
  */
 function LoginPage() {
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   /**
    * handleSubmit - Handles login form submission
    * 
-   * Prevents default form submission and logs to console.
-   * TODO: Replace with actual API call to FastAPI /api/auth/login endpoint
+   * Sends login credentials to FastAPI backend, which authenticates with Supabase.
+   * On success, stores the access token and redirects to home page.
+   * On error, displays error message to user.
    */
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // TODO: hook up to FastAPI auth endpoint when backend is ready
-    console.log('Login submitted')
+    setIsLoading(true)
+    setError(null)
+
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Handle error response from backend
+        throw new Error(data.detail || 'Login failed. Please try again.')
+      }
+
+      // Store access token in localStorage (you may want to use httpOnly cookies in production)
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+
+      // Redirect to home page on success
+      navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -247,6 +288,11 @@ function LoginPage() {
           Log in to continue finding your best-fit providers with MediData.
         </p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {error && (
+            <div className="rounded-md bg-red-50 border border-red-200 p-3">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-700">
               Email
@@ -256,7 +302,8 @@ function LoginPage() {
               name="email"
               type="email"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               placeholder="you@example.com"
             />
           </div>
@@ -269,15 +316,17 @@ function LoginPage() {
               name="password"
               type="password"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               placeholder="••••••••"
             />
           </div>
           <button
             type="submit"
-            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={isLoading}
+            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
           >
-            Log in
+            {isLoading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-slate-600">
@@ -299,23 +348,80 @@ function LoginPage() {
  * - Email address
  * - Password and password confirmation
  * 
- * Currently handles form submission client-side only (logs to console).
- * Will be connected to FastAPI registration endpoint when backend is implemented.
+ * Validates password match and length client-side, then sends registration data
+ * to FastAPI backend (/api/auth/register), which creates the user account in Supabase.
+ * On success, stores the access token in localStorage and redirects to the home page.
+ * Displays error messages if registration fails (e.g., email already exists).
  * 
  * Uses AuthBackground component for consistent styling with login page.
  */
 function RegisterPage() {
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   /**
    * handleSubmit - Handles registration form submission
    * 
-   * Prevents default form submission and logs to console.
-   * TODO: Replace with actual API call to FastAPI /api/auth/register endpoint
-   * TODO: Add client-side validation (password match, email format, etc.)
+   * Validates password match, then sends registration data to FastAPI backend,
+   * which creates the user account in Supabase. On success, stores the access
+   * token and redirects to home page. On error, displays error message to user.
    */
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // TODO: hook up to FastAPI registration endpoint when backend is ready
-    console.log('Registration submitted')
+    setIsLoading(true)
+    setError(null)
+
+    const formData = new FormData(event.currentTarget)
+    const firstName = formData.get('firstName') as string
+    const lastName = formData.get('lastName') as string
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const confirmPassword = formData.get('confirmPassword') as string
+
+    // Client-side validation: check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please try again.')
+      setIsLoading(false)
+      return
+    }
+
+    // Client-side validation: check password length
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.')
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, firstName, lastName }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Handle error response from backend
+        throw new Error(data.detail || 'Registration failed. Please try again.')
+      }
+
+      // Store access token in localStorage (you may want to use httpOnly cookies in production)
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+
+      // Redirect to home page on success
+      navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -326,6 +432,11 @@ function RegisterPage() {
           Tell us a bit about yourself to get more personalized provider matches.
         </p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {error && (
+            <div className="rounded-md bg-red-50 border border-red-200 p-3">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
@@ -336,7 +447,8 @@ function RegisterPage() {
                 name="firstName"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -348,7 +460,8 @@ function RegisterPage() {
                 name="lastName"
                 type="text"
                 required
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -361,7 +474,8 @@ function RegisterPage() {
               name="email"
               type="email"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              disabled={isLoading}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               placeholder="you@example.com"
             />
           </div>
@@ -374,8 +488,10 @@ function RegisterPage() {
               name="password"
               type="password"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Create a strong password"
+              disabled={isLoading}
+              minLength={6}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+              placeholder="Create a strong password (min. 6 characters)"
             />
           </div>
           <div>
@@ -387,15 +503,18 @@ function RegisterPage() {
               name="confirmPassword"
               type="password"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              disabled={isLoading}
+              minLength={6}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               placeholder="Repeat your password"
             />
           </div>
           <button
             type="submit"
-            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={isLoading}
+            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
           >
-            Create account
+            {isLoading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-slate-600">

@@ -31,6 +31,18 @@ python -m pip install --upgrade pip
 pip install fastapi uvicorn[standard] python-dotenv pydantic-settings
 ```
 
+**Configure Environment Variables:**
+
+1. Copy the example environment file:
+   ```powershell
+   copy .env.example .env
+   ```
+
+2. Edit `.env` and add your Supabase credentials:
+   - `SUPABASE_URL`: Your Supabase project URL
+   - `SUPABASE_ANON_KEY`: Your Supabase anonymous/public key
+   - Get these from: https://app.supabase.com/project/YOUR_PROJECT/settings/api
+
 Start the API (default port 8000):
 
 ```powershell
@@ -42,6 +54,7 @@ Expected health check (if implemented): `GET http://127.0.0.1:8000/api/health`
 Notes:
 - Put your FastAPI app in `backend/app/main.py` (module path: `app.main:app`).
 - If you add dependencies, freeze them (optional): `pip freeze > requirements.txt`.
+- Never commit your `.env` file (it's in `.gitignore`). Use `.env.example` as a template.
 
 ---
 
