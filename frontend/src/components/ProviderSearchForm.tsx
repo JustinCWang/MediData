@@ -1,35 +1,57 @@
 /**
  * ProviderSearchForm.tsx - Provider Search Form Component
  * 
- * A form component for searching healthcare providers with filters:
- * - Provider name
- * - Specialty
- * - Location
- * - Insurance
+ * A form component for searching healthcare providers using NPI Registry API fields:
+ * - NPI Number
+ * - Provider Type (Individual/Organization)
+ * - First Name, Last Name (for individuals)
+ * - Organization Name (for organizations)
+ * - Specialty/Taxonomy
+ * - Location (City, State, Postal Code)
  */
 
 interface ProviderSearchFormProps {
-  searchQuery: string
-  specialty: string
-  location: string
-  insurance: string
-  onSearchQueryChange: (value: string) => void
-  onSpecialtyChange: (value: string) => void
-  onLocationChange: (value: string) => void
-  onInsuranceChange: (value: string) => void
+  enumerationType: string
+  firstName: string
+  lastName: string
+  organizationName: string
+  taxonomyDescription: string
+  city: string
+  state: string
+  postalCode: string
+  limit: number
+  onEnumerationTypeChange: (value: string) => void
+  onFirstNameChange: (value: string) => void
+  onLastNameChange: (value: string) => void
+  onOrganizationNameChange: (value: string) => void
+  onTaxonomyDescriptionChange: (value: string) => void
+  onCityChange: (value: string) => void
+  onStateChange: (value: string) => void
+  onPostalCodeChange: (value: string) => void
+  onLimitChange: (value: number) => void
   onSubmit: (e: React.FormEvent) => void
   isSearching: boolean
 }
 
 export default function ProviderSearchForm({
-  searchQuery,
-  specialty,
-  location,
-  insurance,
-  onSearchQueryChange,
-  onSpecialtyChange,
-  onLocationChange,
-  onInsuranceChange,
+  enumerationType,
+  firstName,
+  lastName,
+  organizationName,
+  taxonomyDescription,
+  city,
+  state,
+  postalCode,
+  limit,
+  onEnumerationTypeChange,
+  onFirstNameChange,
+  onLastNameChange,
+  onOrganizationNameChange,
+  onTaxonomyDescriptionChange,
+  onCityChange,
+  onStateChange,
+  onPostalCodeChange,
+  onLimitChange,
   onSubmit,
   isSearching,
 }: ProviderSearchFormProps) {
@@ -37,54 +59,130 @@ export default function ProviderSearchForm({
     <form onSubmit={onSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="searchQuery" className="block text-sm font-medium text-slate-700 mb-1">
-            Provider Name
+          <label htmlFor="enumerationType" className="block text-sm font-medium text-slate-700 mb-1">
+            Provider Type
+          </label>
+          <select
+            id="enumerationType"
+            value={enumerationType}
+            onChange={(e) => onEnumerationTypeChange(e.target.value)}
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">All Types</option>
+            <option value="NPI-1">Individual (NPI-1)</option>
+            <option value="NPI-2">Organization (NPI-2)</option>
+          </select>
+        </div>
+        {enumerationType !== 'NPI-2' && (
+          <>
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
+                First Name
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                value={firstName}
+                onChange={(e) => onFirstNameChange(e.target.value)}
+                placeholder="Provider first name"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-1">
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                value={lastName}
+                onChange={(e) => onLastNameChange(e.target.value)}
+                placeholder="Provider last name"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </>
+        )}
+        {enumerationType === 'NPI-2' && (
+          <div className="md:col-span-2">
+            <label htmlFor="organizationName" className="block text-sm font-medium text-slate-700 mb-1">
+              Organization Name
+            </label>
+            <input
+              id="organizationName"
+              type="text"
+              value={organizationName}
+              onChange={(e) => onOrganizationNameChange(e.target.value)}
+              placeholder="Organization name"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        )}
+        <div>
+          <label htmlFor="taxonomyDescription" className="block text-sm font-medium text-slate-700 mb-1">
+            Specialty / Taxonomy
           </label>
           <input
-            id="searchQuery"
+            id="taxonomyDescription"
             type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchQueryChange(e.target.value)}
-            placeholder="Search by name..."
+            value={taxonomyDescription}
+            onChange={(e) => onTaxonomyDescriptionChange(e.target.value)}
+            placeholder="e.g., Internal Medicine, Cardiology..."
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label htmlFor="specialty" className="block text-sm font-medium text-slate-700 mb-1">
-            Specialty
+          <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-1">
+            City
           </label>
           <input
-            id="specialty"
+            id="city"
             type="text"
-            value={specialty}
-            onChange={(e) => onSpecialtyChange(e.target.value)}
-            placeholder="e.g., Cardiology, Dermatology..."
+            value={city}
+            onChange={(e) => onCityChange(e.target.value)}
+            placeholder="City"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-slate-700 mb-1">
-            Location
+          <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-1">
+            State
           </label>
           <input
-            id="location"
+            id="state"
             type="text"
-            value={location}
-            onChange={(e) => onLocationChange(e.target.value)}
-            placeholder="City, State or ZIP"
+            value={state}
+            onChange={(e) => onStateChange(e.target.value.toUpperCase())}
+            placeholder="State (2-letter code)"
+            maxLength={2}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label htmlFor="insurance" className="block text-sm font-medium text-slate-700 mb-1">
-            Insurance
+          <label htmlFor="postalCode" className="block text-sm font-medium text-slate-700 mb-1">
+            Postal Code
           </label>
           <input
-            id="insurance"
+            id="postalCode"
             type="text"
-            value={insurance}
-            onChange={(e) => onInsuranceChange(e.target.value)}
-            placeholder="Insurance provider"
+            value={postalCode}
+            onChange={(e) => onPostalCodeChange(e.target.value)}
+            placeholder="ZIP code"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="limit" className="block text-sm font-medium text-slate-700 mb-1">
+            Results Limit
+          </label>
+          <input
+            id="limit"
+            type="number"
+            min="1"
+            max="200"
+            value={limit}
+            onChange={(e) => onLimitChange(parseInt(e.target.value) || 10)}
+            placeholder="Number of results"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
