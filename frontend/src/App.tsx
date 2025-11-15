@@ -19,6 +19,8 @@
 import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import Chatbot from './components/Chatbot'
+import AuthBackground from './components/AuthBackground'
+import FeatureCard from './components/FeatureCard'
 import SearchPage from './pages/SearchPage'
 import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
@@ -564,53 +566,3 @@ function RegisterPage() {
   )
 }
 
-/**
- * AuthBackground - Reusable background wrapper for authentication pages
- * 
- * Provides a consistent full-screen background using the MediData background image
- * with overlay effects for better text readability. Used by both LoginPage and
- * RegisterPage components.
- * 
- * Features:
- * - Full-screen background image from public folder
- * - Dark overlay (60% opacity) for contrast
- * - Gradient overlay for visual depth
- * - Centered content area for form cards
- * 
- * @param children - React nodes to render in the centered content area (typically form cards)
- */
-function AuthBackground({ children }: { children: React.ReactNode }) {
-  return (
-    <section
-      className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10"
-      style={{ backgroundImage: "url('/MediData Background.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
-    >
-      {/* Dark overlay for better text contrast */}
-      <div className="absolute inset-0 bg-slate-900/60" />
-      {/* Gradient overlay for visual depth */}
-      <div className="absolute inset-0 bg-linear-to-br from-blue-500/30 via-sky-500/10 to-emerald-400/20" />
-      {/* Content container - centered and above overlays */}
-      <div className="relative z-10 w-full flex flex-col items-center">
-        {children}
-      </div>
-    </section>
-  )
-}
-
-/**
- * FeatureCard - Reusable card component for displaying feature highlights
- * 
- * Used in the Features section of the landing page to display key platform benefits.
- * Each card shows a title and description in a clean, consistent layout.
- * 
- * @param title - The feature title/heading
- * @param description - The feature description text
- */
-function FeatureCard({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="mt-2 text-slate-600">{description}</p>
-    </div>
-  )
-}

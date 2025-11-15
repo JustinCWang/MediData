@@ -13,36 +13,26 @@
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ProviderSearchInput from '../components/ProviderSearchInput'
+import type { ProviderSuggestion } from '../components/ProviderSearchInput'
 
 export default function RequestProviderPage() {
   const navigate = useNavigate()
   const [providerSearch, setProviderSearch] = useState('')
-  const [selectedProvider, setSelectedProvider] = useState<{
-    id: string
-    name: string
-    specialty: string
-  } | null>(null)
+  const [selectedProvider, setSelectedProvider] = useState<ProviderSuggestion | null>(null)
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
 
   // Mock provider suggestions (TODO: Replace with actual API call)
-  const providerSuggestions = [
+  const providerSuggestions: ProviderSuggestion[] = [
     { id: '1', name: 'Dr. John Smith', specialty: 'Cardiology' },
     { id: '2', name: 'Dr. Sarah Johnson', specialty: 'Dermatology' },
     { id: '3', name: 'Dr. Michael Brown', specialty: 'Orthopedics' },
   ]
 
-  const filteredSuggestions = providerSearch
-    ? providerSuggestions.filter(
-        (p) =>
-          p.name.toLowerCase().includes(providerSearch.toLowerCase()) ||
-          p.specialty.toLowerCase().includes(providerSearch.toLowerCase())
-      )
-    : []
-
-  const handleSelectProvider = (provider: typeof providerSuggestions[0]) => {
+  const handleSelectProvider = (provider: ProviderSuggestion) => {
     setSelectedProvider(provider)
     setProviderSearch(provider.name)
   }
@@ -106,64 +96,17 @@ export default function RequestProviderPage() {
               </div>
             )}
 
-            {/* Provider Search */}
-            <div className="mb-6">
-              <label htmlFor="providerSearch" className="block text-sm font-medium text-slate-700 mb-2">
-                Search for Provider
-              </label>
-              <div className="relative">
-                <input
-                  id="providerSearch"
-                  type="text"
-                  value={providerSearch}
-                  onChange={(e) => {
-                    setProviderSearch(e.target.value)
-                    if (selectedProvider && e.target.value !== selectedProvider.name) {
-                      setSelectedProvider(null)
-                    }
-                  }}
-                  placeholder="Type provider name or specialty..."
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                {providerSearch && !selectedProvider && filteredSuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {filteredSuggestions.map((provider) => (
-                      <button
-                        key={provider.id}
-                        type="button"
-                        onClick={() => handleSelectProvider(provider)}
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
-                      >
-                        <div className="font-medium text-slate-900">{provider.name}</div>
-                        <div className="text-sm text-slate-600">{provider.specialty}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {selectedProvider && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-slate-900">{selectedProvider.name}</p>
-                      <p className="text-sm text-slate-600">{selectedProvider.specialty}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedProvider(null)
-                        setProviderSearch('')
-                      }}
-                      className="text-slate-500 hover:text-slate-700"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <ProviderSearchInput
+              value={providerSearch}
+              suggestions={providerSuggestions}
+              selectedProvider={selectedProvider}
+              onValueChange={setProviderSearch}
+              onSelectProvider={handleSelectProvider}
+              onClearSelection={() => {
+                setSelectedProvider(null)
+                setProviderSearch('')
+              }}
+            />
 
             {/* Message Field */}
             <div className="mb-6">
