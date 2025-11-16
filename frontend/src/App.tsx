@@ -16,7 +16,7 @@
  *   - "/request-provider" - Page to request a provider
  */
 
-import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Chatbot from './components/Chatbot'
 import AuthBackground from './components/AuthBackground'
@@ -24,6 +24,71 @@ import FeatureCard from './components/FeatureCard'
 import SearchPage from './pages/SearchPage'
 import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
+import DashboardPage from './pages/DashboardPage'
+
+/**
+ * ProtectedRoute - Route wrapper that requires authentication
+ * 
+ * Redirects to login page if user is not authenticated.
+ */
+function ProtectedRoute({ children }: { children: React.ReactElement }) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token')
+      setIsAuthenticated(!!token)
+    }
+
+    checkAuth()
+    window.addEventListener('auth-change', checkAuth)
+    window.addEventListener('storage', checkAuth)
+
+    return () => {
+      window.removeEventListener('auth-change', checkAuth)
+      window.removeEventListener('storage', checkAuth)
+    }
+  }, [])
+
+  if (isAuthenticated === null) {
+    // Still checking auth status
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />
+}
+
+/**
+ * GuestRoute - Route wrapper for guest-only pages (landing, login, register)
+ * 
+ * Redirects to dashboard if user is already authenticated.
+ */
+function GuestRoute({ children }: { children: React.ReactElement }) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token')
+      setIsAuthenticated(!!token)
+    }
+
+    checkAuth()
+    window.addEventListener('auth-change', checkAuth)
+    window.addEventListener('storage', checkAuth)
+
+    return () => {
+      window.removeEventListener('auth-change', checkAuth)
+      window.removeEventListener('storage', checkAuth)
+    }
+  }, [])
+
+  if (isAuthenticated === null) {
+    // Still checking auth status
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  }
+
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children
+}
 
 /**
  * App - Root component that sets up routing and shared layout
@@ -37,12 +102,13 @@ export default function App() {
       <AppHeader />
       <main>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/requests" element={<RequestsPage />} />
-          <Route path="/request-provider" element={<RequestProviderPage />} />
+          <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
+          <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+          <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+          <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
+          <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
         </Routes>
       </main>
       <AppFooter />
@@ -122,43 +188,58 @@ function AppHeader() {
   return (
     <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="inline-flex items-center gap-2">
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight">MediData</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-            }
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/search"
-            className={({ isActive }) =>
-              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-            }
-          >
-            Search
-          </NavLink>
-          <NavLink
-            to="/requests"
-            className={({ isActive }) =>
-              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-            }
-          >
-            Requests
-          </NavLink>
-          <NavLink
-            to="/request-provider"
-            className={({ isActive }) =>
-              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-            }
-          >
-            Request Provider
-          </NavLink>
+          {isAuthenticated ? (
+            <>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+                }
+              >
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/search"
+                className={({ isActive }) =>
+                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+                }
+              >
+                Search
+              </NavLink>
+              <NavLink
+                to="/requests"
+                className={({ isActive }) =>
+                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+                }
+              >
+                Requests
+              </NavLink>
+              <NavLink
+                to="/request-provider"
+                className={({ isActive }) =>
+                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+                }
+              >
+                Request Provider
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+                }
+              >
+                Home
+              </NavLink>
+            </>
+          )}
         </nav>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
@@ -231,24 +312,6 @@ function AppFooter() {
  * - How it works section: Step-by-step explanation of the service
  */
 function LandingPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('access_token')
-      setIsAuthenticated(!!token)
-    }
-
-    checkAuth()
-    window.addEventListener('auth-change', checkAuth)
-    window.addEventListener('storage', checkAuth)
-    
-    return () => {
-      window.removeEventListener('auth-change', checkAuth)
-      window.removeEventListener('storage', checkAuth)
-    }
-  }, [])
-
   return (
     <>
       {/* Hero Section - Main headline and primary CTAs */}
@@ -263,38 +326,20 @@ function LandingPage() {
                 MediData connects patients with the most suitable healthcare provider based on
                 needs, availability, insurance, and outcomes—within minutes.
               </p>
-              {!isAuthenticated && (
-                <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    to="/register"
-                    className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    Get started
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    I already have an account
-                  </Link>
-                </div>
-              )}
-              {isAuthenticated && (
-                <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    to="/search"
-                    className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    Search Providers
-                  </Link>
-                  <Link
-                    to="/request-provider"
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Request a Provider
-                  </Link>
-                </div>
-              )}
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Get started
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  I already have an account
+                </Link>
+              </div>
             </div>
             <div className="md:pl-6">
               <div className="aspect-4/3 w-full rounded-xl border border-slate-200 bg-linear-to-br from-blue-50 to-sky-50 p-6">
@@ -408,8 +453,8 @@ function LoginPage() {
         window.dispatchEvent(new Event('auth-change'))
       }
 
-      // Redirect to home page on success
-      navigate('/')
+      // Redirect to dashboard on success
+      navigate('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
     } finally {
@@ -554,8 +599,8 @@ function RegisterPage() {
         window.dispatchEvent(new Event('auth-change'))
       }
 
-      // Redirect to home page on success
-      navigate('/')
+      // Redirect to dashboard on success
+      navigate('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
     } finally {
