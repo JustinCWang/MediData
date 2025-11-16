@@ -28,12 +28,15 @@ interface ApiProviderResult {
   location?: string
   rating?: number
   insurance?: string[]
+  is_affiliated?: boolean
 }
 
 interface ApiSearchResponse {
   result_count: number
   results: ApiProviderResult[]
   api_result_count?: number
+  affiliated_count?: number
+  npi_count?: number
   debug_info?: {
     api_returned_count: number
     transformed_count: number
@@ -54,11 +57,15 @@ export default function SearchPage() {
   const [results, setResults] = useState<Provider[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [searchStats, setSearchStats] = useState<{ affiliated_count?: number; npi_count?: number } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const resultsPerPage = 6
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSearching(true)
     setError(null)
+    setSearchStats(null)
 
     try {
       // Build query parameters
@@ -106,9 +113,15 @@ export default function SearchPage() {
         location: result.location || 'Location not available',
         rating: result.rating || 0,
         insurance: result.insurance || [],
+        is_affiliated: result.is_affiliated || false,
       }))
 
       setResults(transformedResults)
+      setSearchStats({
+        affiliated_count: data.affiliated_count,
+        npi_count: data.npi_count,
+      })
+      setCurrentPage(1) // Reset to first page when new search is performed
       
       // If API returned results but we got none, log for debugging
       if (data.api_result_count && data.api_result_count > 0 && transformedResults.length === 0) {
@@ -140,6 +153,12 @@ export default function SearchPage() {
     if (postalCode.trim()) count++
     return count
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(results.length / resultsPerPage)
+  const startIndex = (currentPage - 1) * resultsPerPage
+  const endIndex = startIndex + resultsPerPage
+  const currentResults = results.slice(startIndex, endIndex)
 
   // Get smart empty state message based on filter count
   const getEmptyStateMessage = () => {
@@ -207,11 +226,20 @@ export default function SearchPage() {
         {/* Search Results */}
         {results.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900">
-              Search Results ({results.length})
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">
+                Search Results ({results.length})
+              </h2>
+              {searchStats && (searchStats.affiliated_count !== undefined || searchStats.npi_count !== undefined) && (
+                <p className="text-sm text-slate-600">
+                  {searchStats.affiliated_count !== undefined && searchStats.affiliated_count > 0 && `${searchStats.affiliated_count} affiliated`}
+                  {searchStats.affiliated_count !== undefined && searchStats.affiliated_count > 0 && searchStats.npi_count !== undefined && searchStats.npi_count > 0 && ' • '}
+                  {searchStats.npi_count !== undefined && searchStats.npi_count > 0 && `${searchStats.npi_count} from NPI Registry`}
+                </p>
+              )}
+            </div>
             <div className="grid md:grid-cols-2 gap-4">
-              {results.map((provider) => (
+              {currentResults.map((provider) => (
                 <ProviderCard
                   key={provider.id}
                   provider={provider}
@@ -219,6 +247,69 @@ export default function SearchPage() {
                 />
               ))}
             </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Previous
+                </button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white'
+                              : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return (
+                        <span key={page} className="px-2 text-slate-500">
+                          ...
+                        </span>
+                      )
+                    }
+                    return null
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+            
+            {/* Page Info */}
+            {totalPages > 1 && (
+              <p className="text-center text-sm text-slate-600 mt-2">
+                Showing {startIndex + 1}-{Math.min(endIndex, results.length)} of {results.length} results
+              </p>
+            )}
           </div>
         )}
 

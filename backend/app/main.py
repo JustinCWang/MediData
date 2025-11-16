@@ -346,6 +346,72 @@ async def login(credentials: LoginRequest):
             )
 
 
+def search_affiliated_providers(
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    taxonomy_description: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None
+) -> list:
+    """
+    Search for providers in the Providers table (affiliated providers)
+    
+    Returns:
+        list: List of provider dictionaries matching Provider interface
+    """
+    try:
+        query = supabase.table("Providers").select("*")
+        
+        # Apply filters
+        if first_name:
+            query = query.ilike("first_name", f"%{first_name}%")
+        if last_name:
+            query = query.ilike("last_name", f"%{last_name}%")
+        if taxonomy_description:
+            query = query.ilike("taxonomy", f"%{taxonomy_description}%")
+        if city:
+            query = query.ilike("city", f"%{city}%")
+        if state:
+            query = query.ilike("state", f"%{state}%")
+        
+        result = query.execute()
+        
+        # Transform Providers table results to match Provider interface
+        affiliated_results = []
+        if result.data:
+            for provider in result.data:
+                # Build name
+                first = provider.get("first_name", "")
+                last = provider.get("last_name", "")
+                name = f"{first} {last}".strip() if first or last else "Unknown Provider"
+                
+                # Build location
+                provider_city = provider.get("city", "")
+                provider_state = provider.get("state", "")
+                location_parts = [provider_city, provider_state]
+                location = ", ".join([part for part in location_parts if part]).strip()
+                
+                affiliated_results.append({
+                    "id": provider.get("provider_id", ""),
+                    "name": name,
+                    "specialty": provider.get("taxonomy", "") or "Not specified",
+                    "location": location or "Location not available",
+                    "rating": 0,  # Providers table doesn't have ratings
+                    "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
+                    "npi_number": "",  # Providers table doesn't store NPI
+                    "enumeration_type": "",
+                    "is_affiliated": True,  # Mark as affiliated provider
+                    "email": provider.get("email", ""),
+                })
+        
+        return affiliated_results
+    except Exception as e:
+        # Log error but don't fail the entire search
+        import logging
+        logging.error(f"Error searching affiliated providers: {str(e)}")
+        return []
+
+
 @app.get("/api/providers/search")
 async def search_providers(
     number: Optional[str] = Query(None, description="10-digit NPI number"),
@@ -361,15 +427,15 @@ async def search_providers(
     limit: Optional[int] = Query(10, ge=1, le=200, description="Number of results to return")
 ):
     """
-    Search for healthcare providers using the NPI Registry API
+    Search for healthcare providers from both NPI Registry API and affiliated Providers table
     
-    Queries the CMS NPI Registry API and returns provider information.
+    Queries both the CMS NPI Registry API and the local Providers table, then combines results.
     All parameters are optional - at least one should be provided for meaningful results.
     
     Returns:
-        dict: Contains results array with provider information
+        dict: Contains results array with provider information from both sources
     """
-    # Build query parameters, excluding None values
+    # Build query parameters for NPI API, excluding None values
     params = {}
     if number:
         params["number"] = number
@@ -401,51 +467,84 @@ async def search_providers(
             "results": []
         }
     
+    all_results = []
+    npi_results = []
+    affiliated_results = []
+    
     try:
+        # Search affiliated providers from Providers table
+        affiliated_results = search_affiliated_providers(
+            first_name=first_name,
+            last_name=last_name,
+            taxonomy_description=taxonomy_description,
+            city=city,
+            state=state
+        )
+        
         # Query the NPI Registry API
         # Note: NPI API requires version parameter (2.1 is the current version)
-        params["version"] = "2.1"
+        npi_params = params.copy()
+        npi_params["version"] = "2.1"
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
                 "https://npiregistry.cms.hhs.gov/api/",
-                params=params
+                params=npi_params
             )
             response.raise_for_status()
             data = response.json()
             
             # Transform NPI API response to match our Provider interface
-            transformed_results = []
-            
-            # Check if we have results in the response
-            # NPI API returns: {"result_count": N, "results": [...]}
             api_result_count = data.get("result_count", 0)
             
             if "results" in data and isinstance(data["results"], list):
                 for result in data["results"]:
                     provider = transform_npi_result(result)
                     if provider:
-                        transformed_results.append(provider)
-            
-            # If API returned results but we transformed none, there might be an issue
-            # Return the API result count for debugging
-            return {
-                "result_count": len(transformed_results),
-                "results": transformed_results,
-                "api_result_count": api_result_count,  # Include original API count for debugging
-                "debug_info": {
-                    "api_returned_count": api_result_count,
-                    "transformed_count": len(transformed_results),
-                    "params_sent": {k: v for k, v in params.items() if k != "version"}
-                } if api_result_count > 0 and len(transformed_results) == 0 else None
-            }
+                        provider["is_affiliated"] = False  # Mark as external provider
+                        npi_results.append(provider)
+        
+        # Combine results - affiliated providers first, then NPI results
+        all_results = affiliated_results + npi_results
+        
+        # Apply limit to combined results
+        if limit and len(all_results) > limit:
+            all_results = all_results[:limit]
+        
+        return {
+            "result_count": len(all_results),
+            "results": all_results,
+            "affiliated_count": len(affiliated_results),
+            "npi_count": len(npi_results),
+            "api_result_count": api_result_count,  # Original NPI API count
+        }
     
     except httpx.HTTPStatusError as e:
+        # If NPI API fails, still return affiliated providers if available
+        if affiliated_results:
+            return {
+                "result_count": len(affiliated_results),
+                "results": affiliated_results[:limit] if limit else affiliated_results,
+                "affiliated_count": len(affiliated_results),
+                "npi_count": 0,
+                "api_result_count": 0,
+                "error": f"NPI Registry API error: {e.response.status_code}"
+            }
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"NPI Registry API error: {e.response.status_code}"
         )
     except httpx.RequestError as e:
+        # If NPI API fails, still return affiliated providers if available
+        if affiliated_results:
+            return {
+                "result_count": len(affiliated_results),
+                "results": affiliated_results[:limit] if limit else affiliated_results,
+                "affiliated_count": len(affiliated_results),
+                "npi_count": 0,
+                "api_result_count": 0,
+                "error": f"Failed to connect to NPI Registry API: {str(e)}"
+            }
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Failed to connect to NPI Registry API: {str(e)}"

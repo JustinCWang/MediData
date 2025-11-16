@@ -12,6 +12,7 @@ export interface Provider {
   location: string
   rating: number
   insurance: string[]
+  is_affiliated?: boolean
 }
 
 interface ProviderCardProps {
@@ -23,8 +24,15 @@ export default function ProviderCard({ provider, onViewDetails }: ProviderCardPr
   return (
     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900">{provider.name}</h3>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-slate-900">{provider.name}</h3>
+            {provider.is_affiliated && (
+              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md">
+                Affiliated
+              </span>
+            )}
+          </div>
           <p className="text-sm text-slate-600">{provider.specialty}</p>
         </div>
         <div className="flex items-center gap-1">
