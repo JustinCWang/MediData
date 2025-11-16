@@ -31,21 +31,56 @@ export default function Chatbot() {
 
     const userMessage = inputValue.trim()
     setInputValue('')
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    
+    // Add user message to the conversation
+    const updatedMessages = [...messages, { role: 'user' as const, content: userMessage }]
+    setMessages(updatedMessages)
     setIsLoading(true)
 
-    // Replace with actual API call to backend chatbot endpoint
-    // For now, simulate a response
-    setTimeout(() => {
+    try {
+      const API_BASE_URL = 'http://localhost:8000'
+      
+      // Send conversation history to backend
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: updatedMessages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Failed to get response' }))
+        throw new Error(errorData.detail || 'Failed to get response from chatbot')
+      }
+
+      const data = await response.json()
+      
+      // Add assistant response to messages
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Thank you for your question! The chatbot functionality will be connected to the backend API once it\'s set up.',
+          content: data.message || 'I apologize, but I couldn\'t generate a response.',
         },
       ])
+    } catch (err) {
+      // Show error message to user
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: err instanceof Error ? err.message : 'Sorry, there was an error processing your message. Please try again.',
+        },
+      ])
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (

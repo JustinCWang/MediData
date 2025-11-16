@@ -13,7 +13,7 @@ API documentation will be available at http://127.0.0.1:8000/docs
 """
 
 import os
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, HTTPException, status, Query, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 import httpx
 from uuid import UUID
+import google.generativeai as genai
 
 # Load environment variables from .env file
 load_dotenv()
@@ -38,6 +39,13 @@ if not supabase_service_key:
     raise ValueError("SUPABASE_SERVICE_ROLE_KEY must be set in .env file")
 if not supabase_anon_key:
     raise ValueError("SUPABASE_ANON_KEY must be set in .env file")
+
+# Initialize Gemini AI
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
+else:
+    print("Warning: GEMINI_API_KEY not found in .env file. Chatbot functionality will be disabled.")
 
 # Service role client for admin operations (bypasses RLS)
 supabase: Client = create_client(supabase_url, supabase_service_key)
@@ -116,6 +124,15 @@ class UpdateRequestRequest(BaseModel):
     # Provider can update
     status: Optional[str] = None  # pending, approved, rejected
     response: Optional[str] = None
+
+
+class ChatMessage(BaseModel):
+    role: str  # 'user' or 'assistant'
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
 
 
 class AuthResponse(BaseModel):
@@ -1271,4 +1288,92 @@ async def cancel_request(request_id: str, current_user = Depends(get_current_use
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error cancelling request: {str(e)}"
+        )
+
+
+@app.post("/api/chat")
+async def chat(chat_request: ChatRequest):
+    """
+    Chat endpoint using Google Gemini API
+    
+    Accepts a conversation history and returns the AI assistant's response.
+    """
+    try:
+        if not gemini_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Chatbot service is not configured. Please set GEMINI_API_KEY in .env file."
+            )
+        
+        # Initialize the model
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        if not chat_request.messages:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No messages provided"
+            )
+        
+        # Get the last user message
+        last_message = chat_request.messages[-1]
+        if last_message.role != "user":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Last message must be from user"
+            )
+        
+        # Build conversation history for context
+        # Include previous messages to maintain context
+        conversation_context = ""
+        if len(chat_request.messages) > 1:
+            context_parts = []
+            for msg in chat_request.messages[:-1]:
+                role_label = "User" if msg.role == "user" else "Assistant"
+                context_parts.append(f"{role_label}: {msg.content}")
+            conversation_context = "\n".join(context_parts) + "\n\n"
+        
+        # Add system context about MediData
+        system_prompt = """You are a helpful assistant for MediData, a healthcare provider matching platform. 
+You help users with questions about:
+- Finding healthcare providers
+- Understanding how to use the platform
+- Provider requests and appointments
+- General healthcare-related questions
+
+Be friendly, professional, and helpful. If you don't know something specific about the platform, 
+suggest that the user check the relevant page or contact support."""
+        
+        # Combine system prompt, conversation context, and user message
+        if conversation_context:
+            full_prompt = f"{system_prompt}\n\nPrevious conversation:\n{conversation_context}User: {last_message.content}\nAssistant:"
+        else:
+            full_prompt = f"{system_prompt}\n\nUser: {last_message.content}\nAssistant:"
+        
+        # Generate response
+        response = model.generate_content(full_prompt)
+        
+        if not response or not response.text:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to generate response from AI"
+            )
+        
+        return {
+            "message": response.text,
+            "role": "assistant"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_message = str(e)
+        # Handle specific Gemini API errors
+        if "API key" in error_message.lower() or "authentication" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Gemini API key. Please check your GEMINI_API_KEY in .env file."
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating chat response: {error_message}"
         )
