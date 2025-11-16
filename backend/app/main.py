@@ -100,6 +100,24 @@ class ProfileUpdateRequest(BaseModel):
     taxonomy: Optional[str] = None
 
 
+class CreateRequestRequest(BaseModel):
+    provider_id: str
+    message: str
+    date: Optional[str] = None  # ISO date string (YYYY-MM-DD)
+    time: Optional[str] = None  # Time string (HH:MM:SS)
+    npi_num: Optional[int] = None
+
+
+class UpdateRequestRequest(BaseModel):
+    # Patient can update
+    date: Optional[str] = None  # ISO date string (YYYY-MM-DD)
+    time: Optional[str] = None  # Time string (HH:MM:SS)
+    message: Optional[str] = None
+    # Provider can update
+    status: Optional[str] = None  # pending, approved, rejected
+    response: Optional[str] = None
+
+
 class AuthResponse(BaseModel):
     user: dict
     access_token: str
@@ -788,4 +806,469 @@ async def update_profile(profile_data: ProfileUpdateRequest, current_user = Depe
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating profile: {str(e)}"
+        )
+
+
+@app.post("/api/favorites/{provider_id}")
+async def add_favorite(provider_id: str, current_user = Depends(get_current_user)):
+    """
+    Add a provider to favorites
+    
+    Adds the specified provider to the current patient's favorites list.
+    Only patients can favorite providers.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Only patients can favorite providers
+        if user_role != "patient":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can favorite providers"
+            )
+        
+        # Check if favorite already exists
+        existing = supabase.table("FavProviders").select("*").eq("patient_id", user_id).eq("provider_id", provider_id).execute()
+        if existing.data and len(existing.data) > 0:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Provider is already in favorites"
+            )
+        
+        # Insert favorite
+        result = supabase.table("FavProviders").insert({
+            "patient_id": user_id,
+            "provider_id": provider_id
+        }).execute()
+        
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to add favorite"
+            )
+        
+        return {"message": "Provider added to favorites", "provider_id": provider_id}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error adding favorite: {str(e)}"
+        )
+
+
+@app.delete("/api/favorites/{provider_id}")
+async def remove_favorite(provider_id: str, current_user = Depends(get_current_user)):
+    """
+    Remove a provider from favorites
+    
+    Removes the specified provider from the current patient's favorites list.
+    """
+    try:
+        user_id = current_user.id
+        
+        # Delete favorite
+        result = supabase.table("FavProviders").delete().eq("patient_id", user_id).eq("provider_id", provider_id).execute()
+        
+        return {"message": "Provider removed from favorites", "provider_id": provider_id}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing favorite: {str(e)}"
+        )
+
+
+@app.get("/api/favorites")
+async def get_favorites(current_user = Depends(get_current_user)):
+    """
+    Get all favorited providers for the current patient
+    
+    Returns a list of provider IDs that the current patient has favorited.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Only patients can have favorites
+        if user_role != "patient":
+            return {"favorites": []}
+        
+        # Get favorites
+        result = supabase.table("FavProviders").select("provider_id").eq("patient_id", user_id).execute()
+        
+        favorite_ids = [fav["provider_id"] for fav in result.data] if result.data else []
+        
+        return {"favorites": favorite_ids}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching favorites: {str(e)}"
+        )
+
+
+@app.get("/api/favorites/providers")
+async def get_favorite_providers(current_user = Depends(get_current_user)):
+    """
+    Get full provider details for all favorited providers
+    
+    Returns complete provider information for all providers the current patient has favorited.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Only patients can have favorites
+        if user_role != "patient":
+            return {"providers": []}
+        
+        # Get favorite provider IDs
+        fav_result = supabase.table("FavProviders").select("provider_id").eq("patient_id", user_id).execute()
+        
+        if not fav_result.data or len(fav_result.data) == 0:
+            return {"providers": []}
+        
+        provider_ids = [fav["provider_id"] for fav in fav_result.data]
+        
+        # Get provider details from Providers table
+        providers_result = supabase.table("Providers").select("*").in_("provider_id", provider_ids).execute()
+        
+        # Transform to match Provider interface
+        providers = []
+        if providers_result.data:
+            for provider in providers_result.data:
+                first = provider.get("first_name", "")
+                last = provider.get("last_name", "")
+                name = f"{first} {last}".strip() if first or last else "Unknown Provider"
+                
+                provider_city = provider.get("city", "")
+                provider_state = provider.get("state", "")
+                location_parts = [provider_city, provider_state]
+                location = ", ".join([part for part in location_parts if part]).strip()
+                
+                providers.append({
+                    "id": provider.get("provider_id", ""),
+                    "name": name,
+                    "specialty": provider.get("taxonomy", "") or "Not specified",
+                    "location": location or "Location not available",
+                    "rating": 0,
+                    "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
+                    "is_affiliated": True,
+                })
+        
+        return {"providers": providers}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching favorite providers: {str(e)}"
+        )
+
+
+@app.post("/api/requests")
+async def create_request(request_data: CreateRequestRequest, current_user = Depends(get_current_user)):
+    """
+    Create a new appointment request
+    
+    Creates a new request in the Requests table for the current patient.
+    Only patients can create requests.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Only patients can create requests
+        if user_role != "patient":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can create requests"
+            )
+        
+        # Validate provider_id exists
+        provider_check = supabase.table("Providers").select("provider_id").eq("provider_id", request_data.provider_id).execute()
+        if not provider_check.data or len(provider_check.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider not found"
+            )
+        
+        # Prepare request data
+        request_insert = {
+            "patient_id": user_id,
+            "provider_id": request_data.provider_id,
+            "message": request_data.message,
+            "status": "pending",  # Default status
+        }
+        
+        # Add optional fields if provided
+        if request_data.date:
+            request_insert["date"] = request_data.date
+        if request_data.time:
+            request_insert["time"] = request_data.time
+        if request_data.npi_num is not None:
+            request_insert["npi_num"] = request_data.npi_num
+        
+        # Insert request
+        result = supabase.table("Requests").insert(request_insert).execute()
+        
+        if not result.data or len(result.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create request"
+            )
+        
+        return {
+            "message": "Request created successfully",
+            "request": result.data[0]
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating request: {str(e)}"
+        )
+
+
+@app.get("/api/requests")
+async def get_requests(current_user = Depends(get_current_user)):
+    """
+    Get all requests for the current user
+    
+    Patients: Returns requests they created
+    Providers: Returns requests made to them
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Fetch requests based on role
+        if user_role == "patient":
+            requests_result = supabase.table("Requests").select("*").eq("patient_id", user_id).execute()
+        elif user_role == "provider":
+            requests_result = supabase.table("Requests").select("*").eq("provider_id", user_id).execute()
+        else:
+            return {"requests": []}
+        
+        if not requests_result.data or len(requests_result.data) == 0:
+            return {"requests": []}
+        
+        # Get unique provider IDs and patient IDs
+        provider_ids = list(set([req.get("provider_id") for req in requests_result.data if req.get("provider_id")]))
+        patient_ids = list(set([req.get("patient_id") for req in requests_result.data if req.get("patient_id")]))
+        
+        # Fetch provider details
+        providers_map = {}
+        if provider_ids:
+            providers_result = supabase.table("Providers").select("*").in_("provider_id", provider_ids).execute()
+            if providers_result.data:
+                for provider in providers_result.data:
+                    first = provider.get("first_name", "")
+                    last = provider.get("last_name", "")
+                    name = f"{first} {last}".strip() if first or last else "Unknown Provider"
+                    providers_map[provider.get("provider_id")] = {
+                        "name": name,
+                        "specialty": provider.get("taxonomy", "") or "Not specified",
+                    }
+        
+        # Fetch patient details (for providers viewing requests)
+        patients_map = {}
+        if user_role == "provider" and patient_ids:
+            patients_result = supabase.table("Patients").select("*").in_("patient_id", patient_ids).execute()
+            if patients_result.data:
+                for patient in patients_result.data:
+                    first = patient.get("first_name", "")
+                    last = patient.get("last_name", "")
+                    name = f"{first} {last}".strip() if first or last else "Unknown Patient"
+                    patients_map[patient.get("patient_id")] = {
+                        "name": name,
+                    }
+        
+        # Transform requests to match frontend Request interface
+        requests = []
+        for req in requests_result.data:
+            provider_id = req.get("provider_id")
+            provider_info = providers_map.get(provider_id, {"name": "Unknown Provider", "specialty": "Not specified"})
+            
+            # For providers, show patient name instead of provider name
+            if user_role == "provider":
+                patient_id = req.get("patient_id")
+                patient_info = patients_map.get(patient_id, {"name": "Unknown Patient"})
+                display_name = patient_info["name"]
+            else:
+                display_name = provider_info["name"]
+            
+            # Get requested date/time (for appointment scheduling)
+            request_date = req.get("date") or ""
+            request_time = req.get("time") or ""
+            
+            # Get created_at for "requested on" timestamp
+            created_at = req.get("created_at") or ""
+            
+            requests.append({
+                "id": str(req.get("appointment_id", "")),
+                "providerName": display_name,  # Provider name for patients, patient name for providers
+                "specialty": provider_info["specialty"],
+                "requestedDate": request_date,  # Appointment date
+                "requestedTime": request_time,  # Appointment time
+                "createdAt": created_at,  # When the request was created
+                "status": req.get("status", "pending"),
+                "message": req.get("message", ""),
+                "response": req.get("response", ""),  # Provider response
+                "provider_id": str(provider_id) if provider_id else "",
+                "patient_id": str(req.get("patient_id", "")),
+            })
+        
+        return {"requests": requests}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching requests: {str(e)}"
+        )
+
+
+@app.put("/api/requests/{request_id}")
+async def update_request(request_id: str, request_data: UpdateRequestRequest, current_user = Depends(get_current_user)):
+    """
+    Update a request
+    
+    Patients can update: date, time, message (NOT status)
+    Providers can update: status, response
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Fetch the request to check ownership
+        request_result = supabase.table("Requests").select("*").eq("appointment_id", request_id).execute()
+        
+        if not request_result.data or len(request_result.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Request not found"
+            )
+        
+        request = request_result.data[0]
+        is_patient = user_role == "patient" and request.get("patient_id") == user_id
+        is_provider = user_role == "provider" and request.get("provider_id") == user_id
+        
+        if not is_patient and not is_provider:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to update this request"
+            )
+        
+        # Build update data based on role
+        update_data = {}
+        
+        if is_patient:
+            # Patients can update date, time, and message (NOT status)
+            if request_data.date is not None:
+                update_data["date"] = request_data.date
+            if request_data.time is not None:
+                # Format time as HH:MM:SS
+                time_value = request_data.time
+                if time_value and ':' in time_value:
+                    time_parts = time_value.split(':')
+                    if len(time_parts) == 2:
+                        update_data["time"] = f"{time_value}:00"
+                    else:
+                        update_data["time"] = time_value
+                else:
+                    update_data["time"] = time_value
+            if request_data.message is not None:
+                update_data["message"] = request_data.message
+            # Explicitly prevent patients from updating status
+            if request_data.status is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Only providers can update request status"
+                )
+        
+        if is_provider:
+            # Providers can update status and response
+            if request_data.status is not None:
+                if request_data.status not in ["pending", "approved", "rejected"]:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Invalid status. Must be pending, approved, or rejected"
+                    )
+                update_data["status"] = request_data.status
+            if request_data.response is not None:
+                update_data["response"] = request_data.response
+        
+        if not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No valid fields to update"
+            )
+        
+        # Update request
+        result = supabase.table("Requests").update(update_data).eq("appointment_id", request_id).execute()
+        
+        if not result.data or len(result.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update request"
+            )
+        
+        return {
+            "message": "Request updated successfully",
+            "request": result.data[0]
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating request: {str(e)}"
+        )
+
+
+@app.delete("/api/requests/{request_id}")
+async def cancel_request(request_id: str, current_user = Depends(get_current_user)):
+    """
+    Cancel a request (patients only)
+    
+    Deletes the request entirely from the table.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Only patients can cancel requests
+        if user_role != "patient":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only patients can cancel requests"
+            )
+        
+        # Fetch the request to verify ownership
+        request_result = supabase.table("Requests").select("*").eq("appointment_id", request_id).eq("patient_id", user_id).execute()
+        
+        if not request_result.data or len(request_result.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Request not found or you don't have permission to cancel it"
+            )
+        
+        # Delete the request entirely
+        result = supabase.table("Requests").delete().eq("appointment_id", request_id).execute()
+        
+        return {
+            "message": "Request cancelled successfully"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error cancelling request: {str(e)}"
         )

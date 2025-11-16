@@ -11,7 +11,7 @@
  * Displays search results in a card layout with provider information.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ProviderSearchForm from '../components/ProviderSearchForm'
 import ProviderCard from '../components/ProviderCard'
 import type { Provider } from '../components/ProviderCard'
@@ -60,6 +60,34 @@ export default function SearchPage() {
   const [searchStats, setSearchStats] = useState<{ affiliated_count?: number; npi_count?: number } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const resultsPerPage = 6
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
+
+  // Fetch favorites on mount
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          return
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/favorites`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setFavoriteIds(new Set(data.favorites || []))
+        }
+      } catch (err) {
+        console.error('Error fetching favorites:', err)
+      }
+    }
+
+    fetchFavorites()
+  }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,6 +166,18 @@ export default function SearchPage() {
   const handleViewDetails = (providerId: string) => {
     // TODO: Navigate to provider details page
     console.log('View details for provider:', providerId)
+  }
+
+  const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {
+    setFavoriteIds(prev => {
+      const newSet = new Set(prev)
+      if (isFavorited) {
+        newSet.add(providerId)
+      } else {
+        newSet.delete(providerId)
+      }
+      return newSet
+    })
   }
 
   // Count active filters (excluding limit)
@@ -244,6 +284,8 @@ export default function SearchPage() {
                   key={provider.id}
                   provider={provider}
                   onViewDetails={handleViewDetails}
+                  isFavorited={favoriteIds.has(provider.id)}
+                  onFavoriteChange={handleFavoriteChange}
                 />
               ))}
             </div>

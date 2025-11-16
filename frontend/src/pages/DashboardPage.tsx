@@ -11,7 +11,11 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import RequestCard from '../components/RequestCard'
 import type { Request } from '../components/RequestCard'
+import ProviderCard from '../components/ProviderCard'
+import type { Provider } from '../components/ProviderCard'
 import EmptyState from '../components/EmptyState'
+
+const API_BASE_URL = 'http://localhost:8000'
 
 interface User {
   id: string
@@ -25,30 +29,87 @@ interface User {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
-  const [recentRequests] = useState<Request[]>([
-    {
-      id: '1',
-      providerName: 'Dr. John Smith',
-      specialty: 'Cardiology',
-      requestedDate: '2025-01-15',
-      status: 'pending',
-      message: 'Requesting consultation for heart health checkup',
-    },
-    {
-      id: '2',
-      providerName: 'Dr. Sarah Johnson',
-      specialty: 'Dermatology',
-      requestedDate: '2025-01-10',
-      status: 'approved',
-      message: 'Follow-up appointment requested',
-    },
-  ])
+  const [recentRequests, setRecentRequests] = useState<Request[]>([])
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false)
+  const [favoriteProviders, setFavoriteProviders] = useState<Provider[]>([])
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(false)
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
+  const [userRole, setUserRole] = useState<'patient' | 'provider'>('patient')
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (userData) {
-      setUser(JSON.parse(userData))
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+      const role = parsedUser.user_metadata?.role || 'patient'
+      setUserRole(role as 'patient' | 'provider')
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchFavoriteProviders = async () => {
+      setIsLoadingFavorites(true)
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          return
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/favorites/providers`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setFavoriteProviders(data.providers || [])
+          setFavoriteIds(new Set((data.providers || []).map((p: Provider) => p.id)))
+        }
+      } catch (err) {
+        console.error('Error fetching favorite providers:', err)
+      } finally {
+        setIsLoadingFavorites(false)
+      }
+    }
+
+    fetchFavoriteProviders()
+  }, [])
+
+  useEffect(() => {
+    const fetchRecentRequests = async () => {
+      setIsLoadingRequests(true)
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          return
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/requests`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          // Sort by requestedDate descending and take first 3
+          // Handle empty dates by putting them at the end
+          const sortedRequests = (data.requests || []).sort((a: Request, b: Request) => {
+            const dateA = a.requestedDate ? new Date(a.requestedDate).getTime() : 0
+            const dateB = b.requestedDate ? new Date(b.requestedDate).getTime() : 0
+            return dateB - dateA
+          })
+          setRecentRequests(sortedRequests.slice(0, 3))
+        }
+      } catch (err) {
+        console.error('Error fetching recent requests:', err)
+      } finally {
+        setIsLoadingRequests(false)
+      }
+    }
+
+    fetchRecentRequests()
   }, [])
 
   const getUserDisplayName = () => {
@@ -77,6 +138,60 @@ export default function DashboardPage() {
   const handleViewDetails = (requestId: string) => {
     // TODO: Navigate to request details page
     console.log('View details for request:', requestId)
+  }
+
+  const handleProviderViewDetails = (providerId: string) => {
+    // TODO: Navigate to provider details page
+    console.log('View details for provider:', providerId)
+  }
+
+  const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {
+    setFavoriteIds(prev => {
+      const newSet = new Set(prev)
+      if (isFavorited) {
+        newSet.add(providerId)
+      } else {
+        newSet.delete(providerId)
+      }
+      return newSet
+    })
+
+    // Remove from favorites list if unfavorited
+    if (!isFavorited) {
+      setFavoriteProviders(prev => prev.filter(p => p.id !== providerId))
+    }
+  }
+
+  const handleRequestUpdate = () => {
+    // Refresh recent requests after update
+    const fetchRecentRequests = async () => {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          return
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/requests`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const sortedRequests = (data.requests || []).sort((a: Request, b: Request) => {
+            const dateA = a.requestedDate ? new Date(a.requestedDate).getTime() : 0
+            const dateB = b.requestedDate ? new Date(b.requestedDate).getTime() : 0
+            return dateB - dateA
+          })
+          setRecentRequests(sortedRequests.slice(0, 3))
+        }
+      } catch (err) {
+        console.error('Error fetching recent requests:', err)
+      }
+    }
+
+    fetchRecentRequests()
   }
 
   return (
@@ -127,6 +242,40 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {/* Favorite Providers */}
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-900">Favorite Providers</h2>
+            <Link
+              to="/search"
+              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+              Search more
+            </Link>
+          </div>
+
+          {isLoadingFavorites ? (
+            <div className="text-center py-8 text-slate-600">Loading favorites...</div>
+          ) : favoriteProviders.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {favoriteProviders.map((provider) => (
+                <ProviderCard
+                  key={provider.id}
+                  provider={provider}
+                  onViewDetails={handleProviderViewDetails}
+                  isFavorited={favoriteIds.has(provider.id)}
+                  onFavoriteChange={handleFavoriteChange}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="No favorite providers"
+              description="Like providers from the search page to see them here."
+            />
+          )}
+        </div>
+
         {/* Recent Requests */}
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -139,15 +288,19 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {recentRequests.length > 0 ? (
+          {isLoadingRequests ? (
+            <div className="text-center py-8 text-slate-600">Loading requests...</div>
+          ) : recentRequests.length > 0 ? (
             <div className="space-y-4">
-              {recentRequests.slice(0, 3).map((request) => (
+              {recentRequests.map((request) => (
                 <RequestCard
                   key={request.id}
                   request={request}
                   onCancel={handleCancel}
                   onSchedule={handleSchedule}
                   onViewDetails={handleViewDetails}
+                  onUpdate={handleRequestUpdate}
+                  userRole={userRole}
                 />
               ))}
             </div>

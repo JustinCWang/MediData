@@ -10,56 +10,85 @@
  * - Request details and actions
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import RequestFilterTabs from '../components/RequestFilterTabs'
 import type { RequestStatus } from '../components/RequestFilterTabs'
 import RequestCard from '../components/RequestCard'
 import type { Request } from '../components/RequestCard'
 import EmptyState from '../components/EmptyState'
 
+const API_BASE_URL = 'http://localhost:8000'
+
 export default function RequestsPage() {
   const [filter, setFilter] = useState<RequestStatus | 'all'>('all')
-  const [requests] = useState<Request[]>([
-    {
-      id: '1',
-      providerName: 'Dr. John Smith',
-      specialty: 'Cardiology',
-      requestedDate: '2025-01-15',
-      status: 'pending',
-      message: 'Requesting consultation for heart health checkup',
-    },
-    {
-      id: '2',
-      providerName: 'Dr. Sarah Johnson',
-      specialty: 'Dermatology',
-      requestedDate: '2025-01-10',
-      status: 'approved',
-      message: 'Follow-up appointment requested',
-    },
-    {
-      id: '3',
-      providerName: 'Dr. Michael Brown',
-      specialty: 'Orthopedics',
-      requestedDate: '2025-01-05',
-      status: 'rejected',
-      message: 'Provider not accepting new patients',
-    },
-  ])
+  const [requests, setRequests] = useState<Request[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<'patient' | 'provider'>('patient')
 
-  // Replace with actual API call to fetch requests
-  // useEffect(() => {
-  //   fetch('/api/requests')
-  //     .then(res => res.json())
-  //     .then(data => setRequests(data))
-  // }, [])
+  useEffect(() => {
+    // Get user role from localStorage
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      try {
+        const user = JSON.parse(userData)
+        const role = user.user_metadata?.role || 'patient'
+        setUserRole(role as 'patient' | 'provider')
+      } catch (e) {
+        console.error('Error parsing user data:', e)
+      }
+    }
+  }, [])
+
+  const fetchRequests = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        setError('Please log in to view requests')
+        setIsLoading(false)
+        return
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/requests`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Sort by requestedDate descending (most recent first)
+        // Handle empty dates by putting them at the end
+        const sortedRequests = (data.requests || []).sort((a: Request, b: Request) => {
+          const dateA = a.requestedDate ? new Date(a.requestedDate).getTime() : 0
+          const dateB = b.requestedDate ? new Date(b.requestedDate).getTime() : 0
+          return dateB - dateA
+        })
+        setRequests(sortedRequests)
+      } else {
+        setError('Failed to load requests')
+      }
+    } catch (err) {
+      console.error('Error fetching requests:', err)
+      setError('Failed to load requests')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRequests()
+  }, [])
 
   const filteredRequests = filter === 'all' 
     ? requests 
     : requests.filter(req => req.status === filter)
 
   const handleCancel = (requestId: string) => {
-    // TODO: Implement cancel request API call
-    console.log('Cancel request:', requestId)
+    // RequestCard handles cancellation internally
+    fetchRequests()
   }
 
   const handleSchedule = (requestId: string) => {
@@ -70,6 +99,11 @@ export default function RequestsPage() {
   const handleViewDetails = (requestId: string) => {
     // TODO: Navigate to request details page
     console.log('View details for request:', requestId)
+  }
+
+  const handleUpdate = () => {
+    // Refresh requests after update
+    fetchRequests()
   }
 
   return (
@@ -84,8 +118,17 @@ export default function RequestsPage() {
 
         <RequestFilterTabs currentFilter={filter} onFilterChange={setFilter} />
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
         {/* Requests List */}
-        {filteredRequests.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-slate-600">Loading requests...</div>
+        ) : filteredRequests.length > 0 ? (
           <div className="space-y-4">
             {filteredRequests.map((request) => (
               <RequestCard
@@ -94,6 +137,8 @@ export default function RequestsPage() {
                 onCancel={handleCancel}
                 onSchedule={handleSchedule}
                 onViewDetails={handleViewDetails}
+                onUpdate={handleUpdate}
+                userRole={userRole}
               />
             ))}
           </div>
