@@ -17,7 +17,7 @@
  */
 
 import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Chatbot from './components/Chatbot'
 import AuthBackground from './components/AuthBackground'
 import FeatureCard from './components/FeatureCard'
@@ -54,10 +54,71 @@ export default function App() {
 /**
  * AppHeader - Shared navigation header component
  * 
- * Displays the MediData logo, navigation links, and action buttons (Login/Get started).
+ * Displays the MediData logo, navigation links, and action buttons.
+ * Shows Login/Get Started when logged out, Logout when logged in.
  * Sticky header that stays visible when scrolling. Uses NavLink for active state styling.
  */
+interface User {
+  id: string
+  email: string
+  user_metadata?: {
+    first_name?: string
+    last_name?: string
+    full_name?: string
+  }
+}
+
 function AppHeader() {
+  const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+
+  // Check authentication status on mount and when localStorage changes
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token')
+      const userData = localStorage.getItem('user')
+      setIsAuthenticated(!!token)
+      setUser(userData ? JSON.parse(userData) : null)
+    }
+
+    checkAuth()
+    
+    // Listen for storage changes (e.g., login/logout in another tab)
+    window.addEventListener('storage', checkAuth)
+    
+    // Custom event for same-tab auth changes
+    window.addEventListener('auth-change', checkAuth)
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth)
+      window.removeEventListener('auth-change', checkAuth)
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+    setIsAuthenticated(false)
+    setUser(null)
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('auth-change'))
+    navigate('/')
+  }
+
+  const getUserDisplayName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+    }
+    if (user?.user_metadata?.first_name) {
+      return user.user_metadata.first_name
+    }
+    if (user?.email) {
+      return user.email.split('@')[0]
+    }
+    return 'User'
+  }
+
   return (
     <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
       <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
@@ -98,36 +159,36 @@ function AppHeader() {
           >
             Request Provider
           </NavLink>
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-            }
-          >
-            Login
-          </NavLink>
-          <NavLink
-            to="/register"
-            className={({ isActive }) =>
-              `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-            }
-          >
-            Sign up
-          </NavLink>
         </nav>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/login"
-            className="hidden sm:inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Log in
-          </Link>
-          <Link
-            to="/register"
-            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white text-sm font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Get started
-          </Link>
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <>
+              <span className="hidden sm:inline text-sm text-slate-600">
+                {getUserDisplayName()}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="hidden sm:inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/register"
+                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white text-sm font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Get started
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -170,6 +231,24 @@ function AppFooter() {
  * - How it works section: Step-by-step explanation of the service
  */
 function LandingPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token')
+      setIsAuthenticated(!!token)
+    }
+
+    checkAuth()
+    window.addEventListener('auth-change', checkAuth)
+    window.addEventListener('storage', checkAuth)
+    
+    return () => {
+      window.removeEventListener('auth-change', checkAuth)
+      window.removeEventListener('storage', checkAuth)
+    }
+  }, [])
+
   return (
     <>
       {/* Hero Section - Main headline and primary CTAs */}
@@ -184,20 +263,38 @@ function LandingPage() {
                 MediData connects patients with the most suitable healthcare provider based on
                 needs, availability, insurance, and outcomes—within minutes.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Get started
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  I already have an account
-                </Link>
-              </div>
+              {!isAuthenticated && (
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Get started
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    I already have an account
+                  </Link>
+                </div>
+              )}
+              {isAuthenticated && (
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    to="/search"
+                    className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Search Providers
+                  </Link>
+                  <Link
+                    to="/request-provider"
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Request a Provider
+                  </Link>
+                </div>
+              )}
             </div>
             <div className="md:pl-6">
               <div className="aspect-4/3 w-full rounded-xl border border-slate-200 bg-linear-to-br from-blue-50 to-sky-50 p-6">
@@ -307,6 +404,8 @@ function LoginPage() {
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
+        // Dispatch custom event to notify header of auth change
+        window.dispatchEvent(new Event('auth-change'))
       }
 
       // Redirect to home page on success
@@ -451,6 +550,8 @@ function RegisterPage() {
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
+        // Dispatch custom event to notify header of auth change
+        window.dispatchEvent(new Event('auth-change'))
       }
 
       // Redirect to home page on success
