@@ -25,6 +25,7 @@ import SearchPage from './pages/SearchPage'
 import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
+import ProfilePage from './pages/ProfilePage'
 
 /**
  * ProtectedRoute - Route wrapper that requires authentication
@@ -106,6 +107,7 @@ export default function App() {
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
@@ -225,6 +227,14 @@ function AppHeader() {
                 }
               >
                 Request Provider
+              </NavLink>
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
+                }
+              >
+                Profile
               </NavLink>
             </>
           ) : (
@@ -523,40 +533,32 @@ function LoginPage() {
 }
 
 /**
- * RegisterPage - New user registration page
+ * RegisterPage - New user registration page with role selection
  * 
- * Displays a registration form with fields for:
- * - First name and last name
- * - Email address
- * - Password and password confirmation
+ * Multi-step registration process:
+ * 1. Role selection (Patient or Provider)
+ * 2. Basic account info (email, password)
+ * 3. Role-specific profile information
  * 
- * Validates password match and length client-side, then sends registration data
- * to FastAPI backend (/api/auth/register), which creates the user account in Supabase.
- * On success, stores the access token in localStorage and redirects to the home page.
- * Displays error messages if registration fails (e.g., email already exists).
- * 
- * Uses AuthBackground component for consistent styling with login page.
+ * Creates user account in Supabase Auth and corresponding entry in Patients/Providers table.
  */
 function RegisterPage() {
   const navigate = useNavigate()
+  const [step, setStep] = useState<'role' | 'account' | 'profile'>('role')
+  const [role, setRole] = useState<'patient' | 'provider' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  /**
-   * handleSubmit - Handles registration form submission
-   * 
-   * Validates password match, then sends registration data to FastAPI backend,
-   * which creates the user account in Supabase. On success, stores the access
-   * token and redirects to home page. On error, displays error message to user.
-   */
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleRoleSelect = (selectedRole: 'patient' | 'provider') => {
+    setRole(selectedRole)
+    setStep('account')
+  }
+
+  const handleAccountSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setIsLoading(true)
     setError(null)
 
     const formData = new FormData(event.currentTarget)
-    const firstName = formData.get('firstName') as string
-    const lastName = formData.get('lastName') as string
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirmPassword') as string
@@ -564,38 +566,87 @@ function RegisterPage() {
     // Client-side validation: check if passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match. Please try again.')
-      setIsLoading(false)
       return
     }
 
     // Client-side validation: check password length
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.')
+      return
+    }
+
+    // Store account info temporarily and move to profile step
+    sessionStorage.setItem('register_email', email)
+    sessionStorage.setItem('register_password', password)
+    setStep('profile')
+  }
+
+  const handleProfileSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    const email = sessionStorage.getItem('register_email')
+    const password = sessionStorage.getItem('register_password')
+
+    if (!email || !password || !role) {
+      setError('Missing registration information. Please start over.')
       setIsLoading(false)
       return
     }
 
+    const formData = new FormData(event.currentTarget)
+    const firstName = formData.get('firstName') as string
+    const lastName = formData.get('lastName') as string
+    const phoneNum = formData.get('phoneNum') as string
+    const gender = formData.get('gender') as string
+    const state = formData.get('state') as string
+    const city = formData.get('city') as string
+    const insurance = formData.get('insurance') as string
+
+    const registrationData: Record<string, string> = {
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      phoneNum,
+      gender,
+      state,
+      city,
+      insurance,
+    }
+
+    // Add provider-specific fields
+    if (role === 'provider') {
+      registrationData.location = formData.get('location') as string
+      registrationData.taxonomy = formData.get('taxonomy') as string
+      registrationData.providerEmail = formData.get('providerEmail') as string
+    }
+
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('http://localhost:8000/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, firstName, lastName }),
+        body: JSON.stringify(registrationData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        // Handle error response from backend
         throw new Error(data.detail || 'Registration failed. Please try again.')
       }
 
-      // Store access token in localStorage (you may want to use httpOnly cookies in production)
+      // Clear temporary storage
+      sessionStorage.removeItem('register_email')
+      sessionStorage.removeItem('register_password')
+
+      // Store access token in localStorage
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('user', JSON.stringify(data.user))
-        // Dispatch custom event to notify header of auth change
         window.dispatchEvent(new Event('auth-change'))
       }
 
@@ -611,102 +662,290 @@ function RegisterPage() {
   return (
     <AuthBackground>
       <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
-        <h1 className="text-2xl font-semibold text-slate-900">Create your MediData account</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Tell us a bit about yourself to get more personalized provider matches.
-        </p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3">
-              <p className="text-sm text-red-800">{error}</p>
+        {/* Step 1: Role Selection */}
+        {step === 'role' && (
+          <>
+            <h1 className="text-2xl font-semibold text-slate-900">Get Started</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Are you a patient looking for care, or a provider offering services?
+            </p>
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => handleRoleSelect('patient')}
+                className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold text-slate-900">I'm a Patient</div>
+                <div className="text-sm text-slate-600 mt-1">Looking for healthcare providers</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleSelect('provider')}
+                className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold text-slate-900">I'm a Provider</div>
+                <div className="text-sm text-slate-600 mt-1">Offering healthcare services</div>
+              </button>
             </div>
-          )}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
-                First name
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                required
+          </>
+        )}
+
+        {/* Step 2: Account Information */}
+        {step === 'account' && (
+          <>
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setStep('role')}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ← Back
+              </button>
+              <span className="text-sm text-slate-500">Step 1 of 2</span>
+            </div>
+            <h1 className="text-2xl font-semibold text-slate-900">Create Account</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Create your {role === 'patient' ? 'patient' : 'provider'} account
+            </p>
+            <form onSubmit={handleAccountSubmit} className="mt-6 space-y-4">
+              {error && (
+                <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="Create a strong password (min. 6 characters)"
+                />
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  minLength={6}
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="Repeat your password"
+                />
+              </div>
+              <button
+                type="submit"
+                className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Continue
+              </button>
+            </form>
+          </>
+        )}
+
+        {/* Step 3: Profile Information */}
+        {step === 'profile' && (
+          <>
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setStep('account')}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ← Back
+              </button>
+              <span className="text-sm text-slate-500">Step 2 of 2</span>
+            </div>
+            <h1 className="text-2xl font-semibold text-slate-900">Profile Information</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Tell us a bit about yourself
+            </p>
+            <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
+              {error && (
+                <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
+                    First name
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    required
+                    disabled={isLoading}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
+                    Last name
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    required
+                    disabled={isLoading}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700">
+                  Phone Number
+                </label>
+                <input
+                  id="phoneNum"
+                  name="phoneNum"
+                  type="tel"
+                  disabled={isLoading}
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
+                  Gender
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  disabled={isLoading}
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select...</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="state" className="block text-sm font-medium text-slate-700">
+                    State
+                  </label>
+                  <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    maxLength={2}
+                    disabled={isLoading}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    placeholder="CA"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="city" className="block text-sm font-medium text-slate-700">
+                    City
+                  </label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    disabled={isLoading}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    placeholder="Los Angeles"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="insurance" className="block text-sm font-medium text-slate-700">
+                  Insurance
+                </label>
+                <input
+                  id="insurance"
+                  name="insurance"
+                  type="text"
+                  disabled={isLoading}
+                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  placeholder="e.g., Blue Cross, Aetna"
+                />
+              </div>
+              {role === 'provider' && (
+                <>
+                  <div>
+                    <label htmlFor="providerEmail" className="block text-sm font-medium text-slate-700">
+                      Provider Email
+                    </label>
+                    <input
+                      id="providerEmail"
+                      name="providerEmail"
+                      type="email"
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      placeholder="provider@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="location" className="block text-sm font-medium text-slate-700">
+                      Location
+                    </label>
+                    <input
+                      id="location"
+                      name="location"
+                      type="text"
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      placeholder="Full address or location"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700">
+                      Taxonomy / Specialty
+                    </label>
+                    <input
+                      id="taxonomy"
+                      name="taxonomy"
+                      type="text"
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      placeholder="e.g., Internal Medicine, Cardiology"
+                    />
+                  </div>
+                </>
+              )}
+              <button
+                type="submit"
                 disabled={isLoading}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
-                Last name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                disabled={isLoading}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              disabled={isLoading}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              disabled={isLoading}
-              minLength={6}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="Create a strong password (min. 6 characters)"
-            />
-          </div>
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
-              Confirm password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              disabled={isLoading}
-              minLength={6}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="Repeat your password"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
-            Log in
-          </Link>
-        </p>
+                className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Creating account...' : 'Create account'}
+              </button>
+            </form>
+            <p className="mt-4 text-center text-sm text-slate-600">
+              Already have an account?{' '}
+              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
+                Log in
+              </Link>
+            </p>
+          </>
+        )}
       </div>
     </AuthBackground>
   )

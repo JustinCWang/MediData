@@ -14,25 +14,35 @@ API documentation will be available at http://127.0.0.1:8000/docs
 
 import os
 from typing import Optional
-from fastapi import FastAPI, HTTPException, status, Query
+from fastapi import FastAPI, HTTPException, status, Query, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import httpx
+from uuid import UUID
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize Supabase client
-# These keys are kept secure on the backend and never exposed to the frontend
+# Initialize Supabase clients
+# Service role key bypasses RLS and should only be used on the backend
+# Anon key is used for auth operations that need to respect user context
 supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_ANON_KEY")
+supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase_anon_key = os.getenv("SUPABASE_ANON_KEY")
 
-if not supabase_url or not supabase_key:
-    raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in .env file")
+if not supabase_url:
+    raise ValueError("SUPABASE_URL must be set in .env file")
+if not supabase_service_key:
+    raise ValueError("SUPABASE_SERVICE_ROLE_KEY must be set in .env file")
+if not supabase_anon_key:
+    raise ValueError("SUPABASE_ANON_KEY must be set in .env file")
 
-supabase: Client = create_client(supabase_url, supabase_key)
+# Service role client for admin operations (bypasses RLS)
+supabase: Client = create_client(supabase_url, supabase_service_key)
+# Anon client for auth operations (respects user context)
+supabase_auth: Client = create_client(supabase_url, supabase_anon_key)
 
 # Create the FastAPI application instance
 app = FastAPI(
@@ -65,6 +75,29 @@ class RegisterRequest(BaseModel):
     password: str
     firstName: str
     lastName: str
+    role: str  # 'patient' or 'provider'
+    phoneNum: Optional[str] = None
+    gender: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    insurance: Optional[str] = None
+    # Provider-specific fields
+    location: Optional[str] = None
+    taxonomy: Optional[str] = None
+    providerEmail: Optional[EmailStr] = None
+
+
+class ProfileUpdateRequest(BaseModel):
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    phoneNum: Optional[str] = None
+    gender: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    insurance: Optional[str] = None
+    # Provider-specific fields
+    location: Optional[str] = None
+    taxonomy: Optional[str] = None
 
 
 class AuthResponse(BaseModel):
@@ -101,16 +134,44 @@ def health():
     return {"status": "ok"}
 
 
+def get_current_user(authorization: Optional[str] = Header(None)):
+    """
+    Extract and verify user from Authorization header
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header"
+        )
+    
+    token = authorization.split("Bearer ")[1]
+    
+    try:
+        # Verify token and get user (use anon key for auth operations)
+        user_response = supabase_auth.auth.get_user(token)
+        if not user_response.user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
+        return user_response.user
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Authentication failed: {str(e)}"
+        )
+
+
 @app.post("/api/auth/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register(credentials: RegisterRequest):
     """
     User registration endpoint
     
     Creates a new user account in Supabase with email and password authentication.
-    Also stores the user's first and last name in the user metadata.
+    Creates corresponding entry in Patients or Providers table based on role.
     
     Args:
-        credentials: RegisterRequest containing email, password, firstName, lastName
+        credentials: RegisterRequest containing email, password, role, and profile information
     
     Returns:
         AuthResponse: User data and access token
@@ -119,16 +180,23 @@ async def register(credentials: RegisterRequest):
         HTTPException: If registration fails (email already exists, weak password, etc.)
     """
     try:
-        # Register user with Supabase Auth
-        # The user metadata will store firstName and lastName
-        response = supabase.auth.sign_up({
+        # Validate role
+        if credentials.role not in ['patient', 'provider']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Role must be either 'patient' or 'provider'"
+            )
+        
+        # Register user with Supabase Auth (use anon key for auth operations)
+        response = supabase_auth.auth.sign_up({
             "email": credentials.email,
             "password": credentials.password,
             "options": {
                 "data": {
                     "first_name": credentials.firstName,
                     "last_name": credentials.lastName,
-                    "full_name": f"{credentials.firstName} {credentials.lastName}"
+                    "full_name": f"{credentials.firstName} {credentials.lastName}",
+                    "role": credentials.role
                 }
             }
         })
@@ -138,6 +206,50 @@ async def register(credentials: RegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Registration failed. Please check your information and try again."
             )
+        
+        user_id = response.user.id
+        
+        # Create entry in Patients or Providers table
+        if credentials.role == 'patient':
+            patient_data = {
+                "patient_id": user_id,
+                "first_name": credentials.firstName,
+                "last_name": credentials.lastName,
+                "phone_num": credentials.phoneNum,
+                "gender": credentials.gender,
+                "state": credentials.state,
+                "city": credentials.city,
+                "insurance": credentials.insurance,
+            }
+            # Remove None values
+            patient_data = {k: v for k, v in patient_data.items() if v is not None}
+            
+            result = supabase.table("Patients").insert(patient_data).execute()
+            if not result.data:
+                # If insert fails, we should ideally rollback the auth user creation
+                # For now, we'll just log the error
+                print(f"Warning: Failed to create patient record for user {user_id}")
+        
+        elif credentials.role == 'provider':
+            provider_data = {
+                "provider_id": user_id,
+                "first_name": credentials.firstName,
+                "last_name": credentials.lastName,
+                "phone_num": credentials.phoneNum,
+                "gender": credentials.gender,
+                "state": credentials.state,
+                "city": credentials.city,
+                "insurance": credentials.insurance,
+                "location": credentials.location,
+                "taxonomy": credentials.taxonomy,
+                "email": credentials.providerEmail or credentials.email,
+            }
+            # Remove None values
+            provider_data = {k: v for k, v in provider_data.items() if v is not None}
+            
+            result = supabase.table("Providers").insert(provider_data).execute()
+            if not result.data:
+                print(f"Warning: Failed to create provider record for user {user_id}")
         
         # Return user data and session token
         return {
@@ -150,6 +262,8 @@ async def register(credentials: RegisterRequest):
             "message": "Account created successfully"
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         error_message = str(e)
         
@@ -188,8 +302,8 @@ async def login(credentials: LoginRequest):
         HTTPException: If login fails (invalid credentials, user not found, etc.)
     """
     try:
-        # Authenticate user with Supabase
-        response = supabase.auth.sign_in_with_password({
+        # Authenticate user with Supabase (use anon key for auth operations)
+        response = supabase_auth.auth.sign_in_with_password({
             "email": credentials.email,
             "password": credentials.password
         })
@@ -432,3 +546,147 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         import logging
         logging.error(f"Error transforming NPI result: {str(e)}")
         return None
+
+
+@app.get("/api/profile")
+async def get_profile(current_user = Depends(get_current_user)):
+    """
+    Get user profile information
+    
+    Returns profile data from Patients or Providers table based on user role.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        if user_role == "provider":
+            result = supabase.table("Providers").select("*").eq("provider_id", user_id).execute()
+            if result.data and len(result.data) > 0:
+                provider = result.data[0]
+                return {
+                    "role": "provider",
+                    "firstName": provider.get("first_name", ""),
+                    "lastName": provider.get("last_name", ""),
+                    "phoneNum": provider.get("phone_num", ""),
+                    "gender": provider.get("gender", ""),
+                    "state": provider.get("state", ""),
+                    "city": provider.get("city", ""),
+                    "insurance": provider.get("insurance", ""),
+                    "location": provider.get("location", ""),
+                    "taxonomy": provider.get("taxonomy", ""),
+                    "email": provider.get("email") or current_user.email,
+                }
+        else:
+            result = supabase.table("Patients").select("*").eq("patient_id", user_id).execute()
+            if result.data and len(result.data) > 0:
+                patient = result.data[0]
+                return {
+                    "role": "patient",
+                    "firstName": patient.get("first_name", ""),
+                    "lastName": patient.get("last_name", ""),
+                    "phoneNum": patient.get("phone_num", ""),
+                    "gender": patient.get("gender", ""),
+                    "state": patient.get("state", ""),
+                    "city": patient.get("city", ""),
+                    "insurance": patient.get("insurance", ""),
+                    "email": current_user.email,
+                }
+        
+        # If no profile found, return basic info
+        return {
+            "role": user_role,
+            "firstName": current_user.user_metadata.get("first_name", ""),
+            "lastName": current_user.user_metadata.get("last_name", ""),
+            "phoneNum": "",
+            "gender": "",
+            "state": "",
+            "city": "",
+            "insurance": "",
+            "email": current_user.email,
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching profile: {str(e)}"
+        )
+
+
+@app.put("/api/profile")
+async def update_profile(profile_data: ProfileUpdateRequest, current_user = Depends(get_current_user)):
+    """
+    Update user profile information
+    
+    Updates profile data in Patients or Providers table based on user role.
+    """
+    try:
+        user_id = current_user.id
+        user_role = current_user.user_metadata.get("role", "patient")
+        
+        # Build update data, excluding None values
+        update_data = {}
+        if profile_data.firstName is not None:
+            update_data["first_name"] = profile_data.firstName
+        if profile_data.lastName is not None:
+            update_data["last_name"] = profile_data.lastName
+        if profile_data.phoneNum is not None:
+            update_data["phone_num"] = profile_data.phoneNum
+        if profile_data.gender is not None:
+            update_data["gender"] = profile_data.gender
+        if profile_data.state is not None:
+            update_data["state"] = profile_data.state
+        if profile_data.city is not None:
+            update_data["city"] = profile_data.city
+        if profile_data.insurance is not None:
+            update_data["insurance"] = profile_data.insurance
+        
+        if user_role == "provider":
+            if profile_data.location is not None:
+                update_data["location"] = profile_data.location
+            if profile_data.taxonomy is not None:
+                update_data["taxonomy"] = profile_data.taxonomy
+            
+            result = supabase.table("Providers").update(update_data).eq("provider_id", user_id).execute()
+            if result.data and len(result.data) > 0:
+                provider = result.data[0]
+                return {
+                    "role": "provider",
+                    "firstName": provider.get("first_name", ""),
+                    "lastName": provider.get("last_name", ""),
+                    "phoneNum": provider.get("phone_num", ""),
+                    "gender": provider.get("gender", ""),
+                    "state": provider.get("state", ""),
+                    "city": provider.get("city", ""),
+                    "insurance": provider.get("insurance", ""),
+                    "location": provider.get("location", ""),
+                    "taxonomy": provider.get("taxonomy", ""),
+                    "email": provider.get("email") or current_user.email,
+                }
+        else:
+            result = supabase.table("Patients").update(update_data).eq("patient_id", user_id).execute()
+            if result.data and len(result.data) > 0:
+                patient = result.data[0]
+                return {
+                    "role": "patient",
+                    "firstName": patient.get("first_name", ""),
+                    "lastName": patient.get("last_name", ""),
+                    "phoneNum": patient.get("phone_num", ""),
+                    "gender": patient.get("gender", ""),
+                    "state": patient.get("state", ""),
+                    "city": patient.get("city", ""),
+                    "insurance": patient.get("insurance", ""),
+                    "email": current_user.email,
+                }
+        
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found"
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating profile: {str(e)}"
+        )
