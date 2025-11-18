@@ -20,7 +20,6 @@ from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import httpx
-from uuid import UUID
 import google.generativeai as genai
 
 # Load environment variables from .env file
@@ -837,27 +836,65 @@ async def add_favorite(provider_id: str, current_user = Depends(get_current_user
     try:
         user_id = current_user.id
         user_role = current_user.user_metadata.get("role", "patient")
-        
+
         # Only patients can favorite providers
         if user_role != "patient":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only patients can favorite providers"
             )
-        
-        # Check if favorite already exists
-        existing = supabase.table("FavProviders").select("*").eq("patient_id", user_id).eq("provider_id", provider_id).execute()
-        if existing.data and len(existing.data) > 0:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Provider is already in favorites"
+
+        # Determine if this is an affiliated provider (UUID) or an external NPI provider (10-digit number)
+        is_npi_favorite = provider_id.isdigit() and len(provider_id) == 10
+
+        if is_npi_favorite:
+            provider_npi = int(provider_id)
+
+            # Check if favorite already exists for this NPI
+            existing = (
+                supabase
+                .table("FavProviders")
+                .select("favorite_id")
+                .eq("patient_id", user_id)
+                .eq("provider_npi", provider_npi)
+                .execute()
             )
-        
+
+            if existing.data and len(existing.data) > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Provider is already in favorites"
+                )
+
+            # For NPI favorites we only store provider_npi and leave provider_id null
+            insert_data = {
+                "patient_id": user_id,
+                "provider_npi": provider_npi,
+            }
+        else:
+            # Affiliated provider favorite (stored by provider_id UUID)
+            existing = (
+                supabase
+                .table("FavProviders")
+                .select("favorite_id")
+                .eq("patient_id", user_id)
+                .eq("provider_id", provider_id)
+                .execute()
+            )
+
+            if existing.data and len(existing.data) > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Provider is already in favorites"
+                )
+
+            insert_data = {
+                "patient_id": user_id,
+                "provider_id": provider_id,
+            }
+
         # Insert favorite
-        result = supabase.table("FavProviders").insert({
-            "patient_id": user_id,
-            "provider_id": provider_id
-        }).execute()
+        result = supabase.table("FavProviders").insert(insert_data).execute()
         
         if not result.data:
             raise HTTPException(
@@ -885,10 +922,16 @@ async def remove_favorite(provider_id: str, current_user = Depends(get_current_u
     """
     try:
         user_id = current_user.id
-        
-        # Delete favorite
-        result = supabase.table("FavProviders").delete().eq("patient_id", user_id).eq("provider_id", provider_id).execute()
-        
+
+        # Determine if this is an affiliated provider (UUID) or an external NPI provider (10-digit number)
+        is_npi_favorite = provider_id.isdigit() and len(provider_id) == 10
+
+        if is_npi_favorite:
+            provider_npi = int(provider_id)
+            supabase.table("FavProviders").delete().eq("patient_id", user_id).eq("provider_npi", provider_npi).execute()
+        else:
+            supabase.table("FavProviders").delete().eq("patient_id", user_id).eq("provider_id", provider_id).execute()
+
         return {"message": "Provider removed from favorites", "provider_id": provider_id}
     
     except Exception as e:
@@ -908,16 +951,30 @@ async def get_favorites(current_user = Depends(get_current_user)):
     try:
         user_id = current_user.id
         user_role = current_user.user_metadata.get("role", "patient")
-        
+
         # Only patients can have favorites
         if user_role != "patient":
             return {"favorites": []}
-        
-        # Get favorites
-        result = supabase.table("FavProviders").select("provider_id").eq("patient_id", user_id).execute()
-        
-        favorite_ids = [fav["provider_id"] for fav in result.data] if result.data else []
-        
+
+        # Get favorites; include provider_npi so we can return IDs that match the search results
+        result = (
+            supabase
+            .table("FavProviders")
+            .select("provider_id, provider_npi")
+            .eq("patient_id", user_id)
+            .execute()
+        )
+
+        favorite_ids: list[str] = []
+        if result.data:
+            for fav in result.data:
+                # For NPI-based favorites, return the NPI as a string so it matches the id used in search results
+                provider_npi = fav.get("provider_npi")
+                if provider_npi is not None:
+                    favorite_ids.append(str(provider_npi))
+                else:
+                    favorite_ids.append(fav.get("provider_id"))
+
         return {"favorites": favorite_ids}
     
     except Exception as e:
@@ -942,39 +999,79 @@ async def get_favorite_providers(current_user = Depends(get_current_user)):
         if user_role != "patient":
             return {"providers": []}
         
-        # Get favorite provider IDs
-        fav_result = supabase.table("FavProviders").select("provider_id").eq("patient_id", user_id).execute()
+        # Get favorite provider IDs and NPIs
+        fav_result = (
+            supabase
+            .table("FavProviders")
+            .select("provider_id, provider_npi")
+            .eq("patient_id", user_id)
+            .execute()
+        )
         
         if not fav_result.data or len(fav_result.data) == 0:
             return {"providers": []}
+
+        provider_ids = [fav["provider_id"] for fav in fav_result.data if fav.get("provider_id")]
+        npi_numbers = [str(fav["provider_npi"]) for fav in fav_result.data if fav.get("provider_npi") is not None]
         
-        provider_ids = [fav["provider_id"] for fav in fav_result.data]
-        
-        # Get provider details from Providers table
-        providers_result = supabase.table("Providers").select("*").in_("provider_id", provider_ids).execute()
-        
-        # Transform to match Provider interface
-        providers = []
-        if providers_result.data:
-            for provider in providers_result.data:
-                first = provider.get("first_name", "")
-                last = provider.get("last_name", "")
-                name = f"{first} {last}".strip() if first or last else "Unknown Provider"
-                
-                provider_city = provider.get("city", "")
-                provider_state = provider.get("state", "")
-                location_parts = [provider_city, provider_state]
-                location = ", ".join([part for part in location_parts if part]).strip()
-                
-                providers.append({
-                    "id": provider.get("provider_id", ""),
-                    "name": name,
-                    "specialty": provider.get("taxonomy", "") or "Not specified",
-                    "location": location or "Location not available",
-                    "rating": 0,
-                    "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
-                    "is_affiliated": True,
-                })
+        providers: list[dict] = []
+
+        # Get affiliated provider details from Providers table
+        if provider_ids:
+            providers_result = (
+                supabase
+                .table("Providers")
+                .select("*")
+                .in_("provider_id", provider_ids)
+                .execute()
+            )
+
+            if providers_result.data:
+                for provider in providers_result.data:
+                    first = provider.get("first_name", "")
+                    last = provider.get("last_name", "")
+                    name = f"{first} {last}".strip() if first or last else "Unknown Provider"
+                    
+                    provider_city = provider.get("city", "")
+                    provider_state = provider.get("state", "")
+                    location_parts = [provider_city, provider_state]
+                    location = ", ".join([part for part in location_parts if part]).strip()
+                    
+                    providers.append({
+                        "id": provider.get("provider_id", ""),
+                        "name": name,
+                        "specialty": provider.get("taxonomy", "") or "Not specified",
+                        "location": location or "Location not available",
+                        "rating": 0,
+                        "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
+                        "is_affiliated": True,
+                    })
+
+        # Get NPI-based favorite providers from NPI Registry API
+        if npi_numbers:
+            try:
+                npi_params = {
+                    "version": "2.1",
+                    "number": ",".join(npi_numbers),
+                }
+
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.get(
+                        "https://npiregistry.cms.hhs.gov/api/",
+                        params=npi_params,
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+
+                    if "results" in data and isinstance(data["results"], list):
+                        for result in data["results"]:
+                            provider = transform_npi_result(result)
+                            if provider:
+                                provider["is_affiliated"] = False
+                                providers.append(provider)
+            except Exception:
+                # If NPI API fails, we still return affiliated providers
+                pass
         
         return {"providers": providers}
     

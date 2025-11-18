@@ -26,7 +26,6 @@ interface ApiProviderResult {
   name?: string
   specialty?: string
   location?: string
-  rating?: number
   insurance?: string[]
   is_affiliated?: boolean
 }
@@ -139,7 +138,6 @@ export default function SearchPage() {
         name: result.name || 'Unknown Provider',
         specialty: result.specialty || 'Not specified',
         location: result.location || 'Location not available',
-        rating: result.rating || 0,
         insurance: result.insurance || [],
         is_affiliated: result.is_affiliated || false,
       }))

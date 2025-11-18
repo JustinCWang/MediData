@@ -374,7 +374,7 @@ function LandingPage() {
             />
             <FeatureCard
               title="Verified providers"
-              description="Profiles include credentials, ratings, availability, and accepted insurance."
+              description="Profiles include verified credentials, availability, and accepted insurance."
             />
             <FeatureCard
               title="Fast and secure"
