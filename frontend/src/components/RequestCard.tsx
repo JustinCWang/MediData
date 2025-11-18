@@ -363,9 +363,19 @@ export default function RequestCard({
               Cancel Request
             </button>
           )}
-          {(userRole === 'patient' || (userRole === 'provider' && request.status === 'pending')) && (
+          {(userRole === 'patient' || userRole === 'provider') && (
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                if (userRole === 'patient' && request.status !== 'pending') {
+                  const confirmed = window.confirm(
+                    'Editing this request will reset its status to Pending and the provider will need to review it again. Continue?'
+                  )
+                  if (!confirmed) {
+                    return
+                  }
+                }
+                setIsEditing(true)
+              }}
               className="px-4 py-2 bg-blue-50 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               {userRole === 'patient' ? 'Edit Request' : 'Respond'}

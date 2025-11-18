@@ -13,15 +13,14 @@
 
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import type { ProviderSuggestion } from '../components/ProviderSearchInput'
 import type { Provider } from '../components/ProviderCard'
 
 const API_BASE_URL = 'http://localhost:8000'
 
 export default function RequestProviderPage() {
   const navigate = useNavigate()
-  const [selectedProvider, setSelectedProvider] = useState<ProviderSuggestion | null>(null)
-  const [favoriteProviders, setFavoriteProviders] = useState<ProviderSuggestion[]>([])
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const [favoriteProviders, setFavoriteProviders] = useState<Provider[]>([])
   const [isLoadingProviders, setIsLoadingProviders] = useState(true)
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -50,9 +49,8 @@ export default function RequestProviderPage() {
 
         if (response.ok) {
           const data = await response.json()
-          const providers: ProviderSuggestion[] = (data.providers || []).map((p: Provider) => ({
-            id: p.id,
-            name: p.name,
+          const providers: Provider[] = (data.providers || []).map((p: Provider) => ({
+            ...p,
             specialty: p.specialty || 'Not specified',
           }))
           setFavoriteProviders(providers)
@@ -73,7 +71,7 @@ export default function RequestProviderPage() {
   const handleSelectProvider = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const providerId = e.target.value
     if (providerId) {
-      const provider = favoriteProviders.find(p => p.id === providerId)
+      const provider = favoriteProviders.find(p => p.id === providerId && p.is_affiliated)
       setSelectedProvider(provider || null)
     } else {
       setSelectedProvider(null)
@@ -84,13 +82,19 @@ export default function RequestProviderPage() {
     e.preventDefault()
     setError(null)
 
-    if (favoriteProviders.length === 0) {
-      setError('Please add favorite providers before submitting a request')
+    const hasAffiliatedFavorites = favoriteProviders.some(p => p.is_affiliated)
+    if (!hasAffiliatedFavorites) {
+      setError('Please add affiliated providers to favorites before submitting a request')
       return
     }
 
     if (!selectedProvider) {
       setError('Please select a provider')
+      return
+    }
+
+    if (!selectedProvider.is_affiliated) {
+      setError('You can only submit requests to affiliated providers.')
       return
     }
 
@@ -190,7 +194,7 @@ export default function RequestProviderPage() {
               </div>
             )}
 
-            {/* Provider Selection Dropdown */}
+            {/* Provider Selection Dropdown - only affiliated providers can be requested via the app */}
             <div className="mb-6">
               <label htmlFor="providerSelect" className="block text-sm font-medium text-slate-700 mb-2">
                 Select Provider
@@ -214,6 +218,12 @@ export default function RequestProviderPage() {
                 </div>
               ) : (
                 <>
+                  {favoriteProviders.filter(p => p.is_affiliated).length === 0 && (
+                    <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                      You don't have any affiliated favorite providers yet. Only affiliated providers can be requested
+                      through MediData. You can still view contact information for other providers below.
+                    </div>
+                  )}
                   <select
                     id="providerSelect"
                     value={selectedProvider?.id || ''}
@@ -222,11 +232,13 @@ export default function RequestProviderPage() {
                     required
                   >
                     <option value="">-- Select a provider --</option>
-                    {favoriteProviders.map((provider) => (
-                      <option key={provider.id} value={provider.id}>
-                        {provider.name} - {provider.specialty}
-                      </option>
-                    ))}
+                    {favoriteProviders
+                      .filter((provider) => provider.is_affiliated)
+                      .map((provider) => (
+                        <option key={provider.id} value={provider.id}>
+                          {provider.name} - {provider.specialty}
+                        </option>
+                      ))}
                   </select>
                   {selectedProvider && (
                     <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -234,6 +246,9 @@ export default function RequestProviderPage() {
                         <div>
                           <p className="font-medium text-slate-900">{selectedProvider.name}</p>
                           <p className="text-sm text-slate-600">{selectedProvider.specialty}</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Affiliated provider – your request will be handled directly in MediData.
+                          </p>
                         </div>
                         <button
                           type="button"
@@ -303,7 +318,11 @@ export default function RequestProviderPage() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                disabled={isSubmitting || favoriteProviders.length === 0 || !selectedProvider}
+                disabled={
+                  isSubmitting ||
+                  favoriteProviders.filter(p => p.is_affiliated).length === 0 ||
+                  !selectedProvider
+                }
                 className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Request'}
@@ -317,6 +336,51 @@ export default function RequestProviderPage() {
               </button>
             </div>
           </form>
+        )}
+
+        {/* Non-affiliated favorite providers - info only */}
+        {favoriteProviders.filter(p => !p.is_affiliated).length > 0 && (
+          <div className="mt-10 bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">Other saved providers</h2>
+            <p className="text-sm text-slate-600 mb-4">
+              These providers are not yet affiliated with MediData. You can contact them directly using the information
+              below, but requests cannot be managed through the app.
+            </p>
+            <div className="space-y-3">
+              {favoriteProviders
+                .filter((p) => !p.is_affiliated)
+                .map((provider) => (
+                  <div
+                    key={provider.id}
+                    className="border border-slate-200 rounded-md p-4 flex flex-col gap-1 bg-slate-50"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-slate-900">{provider.name}</p>
+                        <p className="text-sm text-slate-600">{provider.specialty}</p>
+                      </div>
+                      <span className="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700">
+                        External provider
+                      </span>
+                    </div>
+                    {provider.location && (
+                      <p className="text-sm text-slate-600">
+                        <span className="font-medium">Location:</span> {provider.location}
+                      </p>
+                    )}
+                    {provider.phone && (
+                      <p className="text-sm text-slate-600">
+                        <span className="font-medium">Phone:</span> {provider.phone}
+                      </p>
+                    )}
+                    <p className="text-xs text-slate-500">
+                      NPI / External ID: {provider.id}. Use this identifier and location details when contacting this
+                      provider directly.
+                    </p>
+                  </div>
+                ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

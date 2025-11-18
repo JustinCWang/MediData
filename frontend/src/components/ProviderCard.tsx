@@ -16,6 +16,8 @@ export interface Provider {
   location: string
   insurance: string[]
   is_affiliated?: boolean
+  phone?: string
+  email?: string
 }
 
 interface ProviderCardProps {

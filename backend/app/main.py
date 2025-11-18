@@ -649,9 +649,10 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
             else:
                 specialty = taxonomies[0].get("desc", "")
         
-        # Extract location from addresses array
+        # Extract location and phone from addresses array
         addresses = npi_result.get("addresses", [])
         location = ""
+        phone = ""
         if addresses and len(addresses) > 0:
             # Find primary address or use first one
             primary_address = next((a for a in addresses if a.get("address_purpose", "") == "LOCATION"), addresses[0])
@@ -660,6 +661,23 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
             postal_code = primary_address.get("postal_code", "")
             location_parts = [city, state, postal_code]
             location = ", ".join([part for part in location_parts if part]).strip()
+            phone = primary_address.get("telephone_number", "") or ""
+
+        # Attempt to extract an email from endpoints (if present)
+        email = ""
+        endpoints = npi_result.get("endpoints", [])
+        if isinstance(endpoints, list) and endpoints:
+            email_endpoint = next(
+                (
+                    e
+                    for e in endpoints
+                    if "email" in str(e.get("endpoint_type", "")).lower()
+                    or "email" in str(e.get("endpoint_description", "")).lower()
+                ),
+                None,
+            )
+            if email_endpoint:
+                email = email_endpoint.get("endpoint", "") or ""
         
         # NPI API doesn't provide rating or insurance, so we'll use defaults
         # In a real app, you'd fetch this from another source
@@ -669,6 +687,8 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
             "name": name,
             "specialty": specialty or "Not specified",
             "location": location or "Location not available",
+            "phone": phone,
+            "email": email,
             "rating": 0,  # NPI API doesn't provide ratings
             "insurance": [],  # NPI API doesn't provide insurance info
             "npi_number": npi_number,
@@ -1042,6 +1062,8 @@ async def get_favorite_providers(current_user = Depends(get_current_user)):
                         "name": name,
                         "specialty": provider.get("taxonomy", "") or "Not specified",
                         "location": location or "Location not available",
+                        "phone": provider.get("phone_num", ""),
+                        "email": provider.get("email", ""),
                         "rating": 0,
                         "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
                         "is_affiliated": True,
@@ -1050,27 +1072,32 @@ async def get_favorite_providers(current_user = Depends(get_current_user)):
         # Get NPI-based favorite providers from NPI Registry API
         if npi_numbers:
             try:
-                npi_params = {
-                    "version": "2.1",
-                    "number": ",".join(npi_numbers),
-                }
-
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    response = await client.get(
-                        "https://npiregistry.cms.hhs.gov/api/",
-                        params=npi_params,
-                    )
-                    response.raise_for_status()
-                    data = response.json()
+                    # Fetch each NPI individually so a failure for one doesn't hide all others
+                    for npi in npi_numbers:
+                        try:
+                            npi_params = {
+                                "version": "2.1",
+                                "number": npi,
+                            }
+                            response = await client.get(
+                                "https://npiregistry.cms.hhs.gov/api/",
+                                params=npi_params,
+                            )
+                            response.raise_for_status()
+                            data = response.json()
 
-                    if "results" in data and isinstance(data["results"], list):
-                        for result in data["results"]:
-                            provider = transform_npi_result(result)
-                            if provider:
-                                provider["is_affiliated"] = False
-                                providers.append(provider)
+                            if "results" in data and isinstance(data["results"], list):
+                                for result in data["results"]:
+                                    provider = transform_npi_result(result)
+                                    if provider:
+                                        provider["is_affiliated"] = False
+                                        providers.append(provider)
+                        except Exception:
+                            # Skip individual NPI failures but continue with others
+                            continue
             except Exception:
-                # If NPI API fails, we still return affiliated providers
+                # If NPI API client setup fails, we still return affiliated providers
                 pass
         
         return {"providers": providers}
@@ -1303,6 +1330,11 @@ async def update_request(request_id: str, request_data: UpdateRequestRequest, cu
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only providers can update request status"
                 )
+            # If the patient changes any of the request details, reset status so provider must re-approve
+            if any(field in update_data for field in ["date", "time", "message"]):
+                update_data["status"] = "pending"
+                # Clear any previous provider response when request is effectively resubmitted
+                update_data["response"] = None
         
         if is_provider:
             # Providers can update status and response
