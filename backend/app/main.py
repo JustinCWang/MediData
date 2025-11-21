@@ -434,8 +434,20 @@ async def forgot_password(request: EmailRequest):
             reset_fn = getattr(supabase_auth.auth, "reset_password_for_email", None)
             if reset_fn is None:
                 reset_fn = getattr(supabase_auth.auth, "reset_password_email", None)
+
             if reset_fn is not None:
-                reset_fn(request.email)
+                # Prefer redirecting password reset links specifically to the frontend
+                # reset-password route, while keeping the global Site URL for email confirmations.
+                redirect_url = os.getenv(
+                    "FRONTEND_RESET_PASSWORD_URL",
+                    "http://localhost:5173/reset-password",
+                )
+                try:
+                    # Most GoTrue clients accept (email, options)
+                    reset_fn(request.email, {"redirect_to": redirect_url})
+                except TypeError:
+                    # Fallback for older signatures that only take the email
+                    reset_fn(request.email)
         except AttributeError:
             # Older/newer client versions might expose different helpers; ignore if absent
             pass

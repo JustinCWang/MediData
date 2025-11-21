@@ -661,6 +661,7 @@ function RegisterPage() {
   const [role, setRole] = useState<'patient' | 'provider' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false)
 
   const handleRoleSelect = (selectedRole: 'patient' | 'provider') => {
     setRole(selectedRole)
@@ -755,16 +756,8 @@ function RegisterPage() {
       // Clear temporary storage
       sessionStorage.removeItem('register_email')
       sessionStorage.removeItem('register_password')
-
-      // Store access token in localStorage
-      if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-        window.dispatchEvent(new Event('auth-change'))
-      }
-
-      // Redirect to dashboard on success
-      navigate('/dashboard')
+      // Instead of auto-logging in, prompt the user to confirm their email
+      setShowVerifyDialog(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
     } finally {
@@ -1060,6 +1053,40 @@ function RegisterPage() {
           </>
         )}
       </div>
+
+      {/* Post-registration email verification dialog */}
+      {showVerifyDialog && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
+            <h2 className="text-xl font-semibold text-slate-900">Confirm your email</h2>
+            <p className="mt-3 text-sm text-slate-600">
+              We&apos;ve sent a verification link to your email address. Please click the link in that
+              email to activate your MediData account. Once verified, you can log in with your email and
+              password.
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              If you don&apos;t see the email, check your spam folder or try resending from the login
+              page.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowVerifyDialog(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Go to login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthBackground>
   )
 }

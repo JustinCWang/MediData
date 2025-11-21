@@ -356,8 +356,9 @@ def test_forgot_password_success(client, monkeypatch, mock_supabase):
 
     called = {}
 
-    def fake_reset(email):
+    def fake_reset(email, options=None):
         called["email"] = email
+        called["options"] = options or {}
 
     monkeypatch.setattr(
         app_main.supabase_auth.auth, "reset_password_for_email", fake_reset, raising=False
@@ -371,6 +372,8 @@ def test_forgot_password_success(client, monkeypatch, mock_supabase):
     assert response.status_code == HTTPStatus.OK
     assert "password reset email has been sent" in response.json()["message"]
     assert called["email"] == "user@example.com"
+    # Ensure we passed a redirect_to URL so reset links land on /reset-password
+    assert "redirect_to" in called["options"]
 
 
 def test_forgot_password_handles_missing_methods(client, monkeypatch, mock_supabase):
