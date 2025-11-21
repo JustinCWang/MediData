@@ -26,7 +26,9 @@ import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
-
+import verified_providers from './images/doctor.png'
+import secure from './images/fast_secure.png'
+import personalized_match from './images/personalized_matching .png'
 /**
  * ProtectedRoute - Route wrapper that requires authentication
  * 
@@ -370,14 +372,17 @@ function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
           <div className="grid md:grid-cols-3 gap-6">
             <FeatureCard
+              image= {personalized_match}
               title="Personalized matching"
               description="We match by condition, specialty, location, insurance, and provider outcomes."
             />
             <FeatureCard
+              image = {verified_providers}
               title="Verified providers"
               description="Profiles include verified credentials, availability, and accepted insurance."
             />
             <FeatureCard
+              image = {secure}
               title="Fast and secure"
               description="HIPAA-conscious design with fast response times and secure data handling."
             />
