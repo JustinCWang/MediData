@@ -322,3 +322,162 @@ def test_search_providers_large_result_set_respects_limit(client, monkeypatch):
     assert len(data["results"]) == 3
 
 
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_http_status_error_returns_affiliated_results(client, monkeypatch):
+    """HTTPStatusError from NPI API still returns affiliated results plus an error message when available."""
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        return [{"id": "prov-1", "is_affiliated": True}]
+
+    class StatusErrorClient:
+        def __init__(self, *args, **kwargs):
+            request = httpx.Request("GET", "https://npiregistry.cms.hhs.gov/api/")
+            self.response = httpx.Response(status_code=500, request=request)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            request = httpx.Request("GET", url)
+            response = httpx.Response(status_code=502, request=request)
+            raise httpx.HTTPStatusError("bad", request=request, response=response)
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", StatusErrorClient)
+
+    response = client.get("/api/providers/search", params={"first_name": "Test"})
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    assert data["result_count"] == 1
+    assert data["npi_count"] == 0
+    assert "error" in data
+
+
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_http_status_error_without_affiliated_returns_502(client, monkeypatch):
+    """If NPI API fails and there are no affiliated providers, we propagate a 502 Bad Gateway error."""
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        return []
+
+    class StatusErrorClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            request = httpx.Request("GET", url)
+            response = httpx.Response(status_code=500, request=request)
+            raise httpx.HTTPStatusError("bad", request=request, response=response)
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", StatusErrorClient)
+
+    response = client.get("/api/providers/search", params={"first_name": "Test"})
+
+    assert response.status_code == HTTPStatus.BAD_GATEWAY
+
+
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_request_error_without_affiliated_returns_503(client, monkeypatch):
+    """Network-level RequestError with no affiliated providers yields a 503 Service Unavailable."""
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        return []
+
+    class FailingClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            request = httpx.Request("GET", url)
+            raise httpx.RequestError("boom", request=request)
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", FailingClient)
+
+    response = client.get("/api/providers/search", params={"first_name": "Test"})
+
+    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
+
+
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_accepts_all_filters(client, monkeypatch):
+    """Smoke test that all documented query parameters are accepted and forwarded without raising errors."""
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        return []
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self._payload
+
+    class DummyAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            return DummyResponse({"result_count": 0, "results": []})
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+
+    query = {
+        "number": "1234567890",
+        "enumeration_type": "NPI-1",
+        "taxonomy_description": "Cardiology",
+        "first_name": "Alex",
+        "last_name": "Smith",
+        "organization_name": "Clinic",
+        "city": "Chicago",
+        "state": "IL",
+        "postal_code": "60601",
+        "country_code": "US",
+        "limit": 5,
+    }
+
+    response = client.get("/api/providers/search", params=query)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()["result_count"] == 0
+
+

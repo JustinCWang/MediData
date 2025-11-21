@@ -152,3 +152,58 @@ Visit `http://localhost:5173`.
   ```powershell
   npm run dev
   ```
+
+## Testing Scripts
+
+All backend tests live in `backend/tests` and use `pytest` + `coverage`.
+
+- **Run full backend test suite**
+
+  ```powershell
+  cd backend
+  pytest
+  ```
+
+- **Run individual test modules (by feature)**
+
+  ```powershell
+  cd backend
+  # Auth (register/login)
+  pytest tests/test_auth.py
+
+  # AI Chatbot
+  pytest tests/test_chat.py
+
+  # Favorites (add/remove/list)
+  pytest tests/test_favorites.py
+
+  # Misc helpers (health, get_current_user, provider search helpers)
+  pytest tests/test_misc.py
+
+  # Profiles (get/update)
+  pytest tests/test_profile.py
+
+  # Requests (create/view/update/cancel)
+  pytest tests/test_requests.py
+
+  # Provider search (NPI + affiliated search)
+  pytest tests/test_search.py
+  ```
+
+- **Run tests with coverage for `app/main.py`**
+
+  ```powershell
+  cd backend
+  coverage erase
+  coverage run -m pytest -q
+  coverage report -m app/main.py
+  ```
+
+- **Generate HTML coverage report**
+
+  ```powershell
+  cd backend
+  coverage html app/main.py
+  ```
+
+  Then open `backend/htmlcov/index.html` in your browser to inspect line-by-line coverage.

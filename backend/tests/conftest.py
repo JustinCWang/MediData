@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Generator
 
 import pytest
@@ -41,9 +42,6 @@ def mock_supabase(monkeypatch):
     """
     Replace Supabase clients with lightweight fakes for unit tests.
     """
-    from types import SimpleNamespace
-
-
     class DummyAuthResponse:
         def __init__(self, email: str = "test@example.com", role: str = "patient"):
             self.user = SimpleNamespace(
@@ -125,5 +123,55 @@ def mock_supabase(monkeypatch):
     monkeypatch.setattr(app_main, "supabase_auth", dummy_supabase)
 
     return dummy_supabase
+
+
+def _build_user(*, user_id: str, email: str, role: str, first_name: str = "Test", last_name: str = "User"):
+    return SimpleNamespace(
+        id=user_id,
+        email=email,
+        user_metadata={
+            "role": role,
+            "first_name": first_name,
+            "last_name": last_name,
+        },
+    )
+
+
+@pytest.fixture()
+def patient_user():
+    return _build_user(
+        user_id="patient-123",
+        email="patient@example.com",
+        role="patient",
+        first_name="Pat",
+        last_name="Smith",
+    )
+
+
+@pytest.fixture()
+def provider_user():
+    return _build_user(
+        user_id="provider-456",
+        email="provider@example.com",
+        role="provider",
+        first_name="Dr.",
+        last_name="Jones",
+    )
+
+
+@pytest.fixture()
+def set_current_user(app):
+    """
+    Helper for overriding get_current_user dependency inside tests.
+    """
+
+    def _set(user):
+        def _dependency():
+            return user
+
+        app.dependency_overrides[app_main.get_current_user] = _dependency
+
+    yield _set
+    app.dependency_overrides.pop(app_main.get_current_user, None)
 
 
