@@ -16,7 +16,7 @@
  *   - "/request-provider" - Page to request a provider
  */
 
-import { Link, NavLink, Route, Routes, useNavigate, Navigate } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Chatbot from './components/Chatbot'
 import AuthBackground from './components/AuthBackground'
@@ -106,6 +106,7 @@ export default function App() {
           <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+          <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
@@ -422,6 +423,9 @@ function LoginPage() {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
+  const [email, setEmail] = useState<string>('')
+  const [showResendVerification, setShowResendVerification] = useState(false)
 
   /**
    * handleSubmit - Handles login form submission
@@ -434,10 +438,15 @@ function LoginPage() {
     event.preventDefault()
     setIsLoading(true)
     setError(null)
+    setInfo(null)
+    setShowResendVerification(false)
 
     const formData = new FormData(event.currentTarget)
-    const email = formData.get('email') as string
+    const submittedEmail = formData.get('email') as string
     const password = formData.get('password') as string
+
+    // Keep local email state in sync so auxiliary actions (resend/forgot) can reuse it
+    setEmail(submittedEmail)
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -445,13 +454,16 @@ function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: submittedEmail, password }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        // Handle error response from backend
+        // If backend indicates unverified email, show a tailored message and resend option
+        if (response.status === 403 && typeof data.detail === 'string' && data.detail.toLowerCase().includes('email not verified')) {
+          setShowResendVerification(true)
+        }
         throw new Error(data.detail || 'Login failed. Please try again.')
       }
 
@@ -472,6 +484,80 @@ function LoginPage() {
     }
   }
 
+  /**
+   * handleResendVerification - Requests a new email verification link for the current email.
+   */
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError('Enter your email above before requesting a new verification link.')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+    setInfo(null)
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to resend verification email. Please try again.')
+      }
+
+      setInfo(
+        data.message ||
+          'If an account with this email exists and is unverified, a new verification email has been sent.'
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred while resending verification.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  /**
+   * handleForgotPassword - Initiates a password reset email for the current email.
+   */
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Enter your email above before requesting a password reset.')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+    setInfo(null)
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to start password reset. Please try again.')
+      }
+
+      setInfo(
+        data.message ||
+          'If an account with this email exists, a password reset email has been sent.'
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred while resetting password.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <AuthBackground>
       <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
@@ -485,6 +571,11 @@ function LoginPage() {
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
+          {info && (
+            <div className="rounded-md bg-green-50 border border-green-200 p-3">
+              <p className="text-sm text-green-800">{info}</p>
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-700">
               Email
@@ -494,6 +585,8 @@ function LoginPage() {
               name="email"
               type="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               placeholder="you@example.com"
@@ -512,6 +605,26 @@ function LoginPage() {
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
               placeholder="••••••••"
             />
+          </div>
+          <div className="flex items-center justify-between text-xs text-slate-600">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={isLoading}
+              className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
+            >
+              Forgot your password?
+            </button>
+            {showResendVerification && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={isLoading}
+                className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
+              >
+                Resend verification email
+              </button>
+            )}
           </div>
           <button
             type="submit"
@@ -946,6 +1059,169 @@ function RegisterPage() {
             </p>
           </>
         )}
+      </div>
+    </AuthBackground>
+  )
+}
+
+/**
+ * ResetPasswordPage - Handles completing the Supabase password reset flow
+ * 
+ * Supabase sends users here via a link like:
+ *   http://localhost:5173/reset-password#access_token=...&type=recovery&...
+ * 
+ * This page:
+ * - Extracts the `access_token` and ensures `type=recovery`
+ * - Prompts the user for a new password and confirmation
+ * - Calls the FastAPI backend (/api/auth/reset-password) to update the password
+ * - Redirects the user back to the login page on success
+ */
+function ResetPasswordPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  // Parse recovery token from URL hash when the page loads
+  useEffect(() => {
+    const hash = window.location.hash || ''
+    const params = new URLSearchParams(hash.replace(/^#/, ''))
+    const type = params.get('type')
+    const token = params.get('access_token')
+
+    if (type === 'recovery' && token) {
+      setAccessToken(token)
+    } else {
+      setError('Invalid or missing password reset token. Please request a new reset link.')
+    }
+  }, [location])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+
+    if (!accessToken) {
+      setError('Password reset token is missing or invalid. Please request a new reset link.')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match. Please try again.')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          new_password: newPassword,
+        }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to reset password. Please request a new link and try again.')
+      }
+
+      setSuccess('Your password has been reset successfully. You can now log in with your new password.')
+      // Optionally clear token from hash so it can't be reused from UI perspective
+      window.history.replaceState(null, '', window.location.pathname)
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 2500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred while resetting your password.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <AuthBackground>
+      <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
+        <h1 className="text-2xl font-semibold text-slate-900">Reset your password</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Choose a new password for your MediData account.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {error && (
+            <div className="rounded-md bg-red-50 border border-red-200 p-3">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+          {success && (
+            <div className="rounded-md bg-green-50 border border-green-200 p-3">
+              <p className="text-sm text-green-800">{success}</p>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="new-password" className="block text-sm font-medium text-slate-700">
+              New password
+            </label>
+            <input
+              id="new-password"
+              name="new-password"
+              type="password"
+              required
+              minLength={6}
+              disabled={isSubmitting || !accessToken}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+              placeholder="Enter a new password"
+            />
+          </div>
+          <div>
+            <label htmlFor="confirm-new-password" className="block text-sm font-medium text-slate-700">
+              Confirm new password
+            </label>
+            <input
+              id="confirm-new-password"
+              name="confirm-new-password"
+              type="password"
+              required
+              minLength={6}
+              disabled={isSubmitting || !accessToken}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+              placeholder="Re-enter your new password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !accessToken}
+            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Resetting password...' : 'Reset password'}
+          </button>
+        </form>
+
+        <p className="mt-4 text-center text-sm text-slate-600">
+          Remembered your password?{' '}
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
+            Back to login
+          </Link>
+        </p>
       </div>
     </AuthBackground>
   )

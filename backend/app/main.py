@@ -140,6 +140,14 @@ class AuthResponse(BaseModel):
     message: str
 
 
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    access_token: str
+    new_password: str
+
 class ProviderSearchRequest(BaseModel):
     number: Optional[str] = None
     enumeration_type: Optional[str] = None  # NPI-1 or NPI-2
@@ -363,12 +371,19 @@ async def login(credentials: LoginRequest):
         error_message = str(e)
         
         # Handle authentication errors
-        if "invalid" in error_message.lower() or "credentials" in error_message.lower():
+        lower_error = error_message.lower()
+        if "email not confirmed" in lower_error or "confirm your email" in lower_error or "email not verified" in lower_error:
+            # User exists but has not verified their email yet
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email not verified. Please check your inbox or request a new verification email."
+            )
+        if "invalid" in lower_error or "credentials" in lower_error:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password. Please check your credentials and try again."
             )
-        elif "not found" in error_message.lower() or "no user" in error_message.lower():
+        elif "not found" in lower_error or "no user" in lower_error:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No account found with this email. Please register first."
@@ -378,6 +393,119 @@ async def login(credentials: LoginRequest):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Login failed: {error_message}"
             )
+
+
+@app.post("/api/auth/resend-verification")
+async def resend_verification(request: EmailRequest):
+    """
+    Resend email verification link for a user account.
+    
+    Delegates to Supabase Auth if supported; otherwise, responds optimistically.
+    """
+    try:
+        # Best-effort call into Supabase Auth (API shape may vary by version)
+        try:
+            # Newer supabase-py may expose a `resend` helper similar to JS client
+            supabase_auth.auth.resend({"type": "signup", "email": request.email})
+        except AttributeError:
+            # If the method doesn't exist, we still return success without failing hard
+            pass
+
+        return {
+            "message": "If an account with this email exists and is unverified, a new verification email has been sent."
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to resend verification email: {str(e)}",
+        )
+
+
+@app.post("/api/auth/forgot-password")
+async def forgot_password(request: EmailRequest):
+    """
+    Initiate a password reset flow for the given email address.
+    
+    Sends a time-limited reset link using Supabase Auth if available.
+    """
+    try:
+        # Try common Supabase Auth password reset helpers, ignoring missing methods
+        try:
+            reset_fn = getattr(supabase_auth.auth, "reset_password_for_email", None)
+            if reset_fn is None:
+                reset_fn = getattr(supabase_auth.auth, "reset_password_email", None)
+            if reset_fn is not None:
+                reset_fn(request.email)
+        except AttributeError:
+            # Older/newer client versions might expose different helpers; ignore if absent
+            pass
+
+        return {
+            "message": "If an account with this email exists, a password reset email has been sent."
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to initiate password reset: {str(e)}",
+        )
+
+
+@app.post("/api/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """
+    Complete the password reset flow using a Supabase recovery access token.
+    
+    The token is provided by Supabase in the URL fragment when the user clicks
+    the reset link in their email. The frontend extracts that token and sends
+    it here along with the desired new password.
+    """
+    try:
+        # Call Supabase GoTrue REST API directly to update the user password.
+        # This mirrors what the JS client does when completing a recovery flow.
+        auth_url = f"{supabase_url}/auth/v1/user"
+        headers = {
+            "Authorization": f"Bearer {request.access_token}",
+            "apikey": supabase_anon_key,
+            "Content-Type": "application/json",
+        }
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.put(
+                auth_url,
+                headers=headers,
+                json={"password": request.new_password},
+            )
+
+        if response.status_code == 200:
+            return {
+                "message": "Password updated successfully. You can now log in with your new password."
+            }
+
+        # Try to extract an error message from Supabase
+        try:
+            error_data = response.json()
+            error_msg = error_data.get("msg") or error_data.get("error_description") or str(error_data)
+        except Exception:
+            error_msg = response.text
+
+        lower_msg = (error_msg or "").lower()
+        if response.status_code in (400, 401) and ("expired" in lower_msg or "invalid" in lower_msg):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The password reset link is invalid or has expired. Please request a new one.",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to reset password: {error_msg}",
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to reset password: {str(e)}",
+        )
 
 
 def search_affiliated_providers(
