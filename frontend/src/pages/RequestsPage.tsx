@@ -86,7 +86,7 @@ export default function RequestsPage() {
     ? requests 
     : requests.filter(req => req.status === filter)
 
-  const handleCancel = (requestId: string) => {
+  const handleCancel = () => {
     // RequestCard handles cancellation internally
     fetchRequests()
   }

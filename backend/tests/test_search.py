@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 import pytest
+import httpx
 
 
 def test_search_providers_without_params_returns_empty_list(client):
@@ -110,5 +111,214 @@ def test_search_providers_with_first_name_uses_limit_and_returns_structure(clien
     assert "npi_count" in data
     assert isinstance(data["results"], list)
     assert len(data["results"]) == data["result_count"]
+
+
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_with_filters_but_no_results_returns_empty(client, monkeypatch):
+    """
+    When filters are provided but both NPI and affiliated sources return no
+    matches, we should still get an empty result set.
+    """
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        return []
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self._payload
+
+    class DummyAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            # Simulate NPI returning no matches
+            return DummyResponse({"result_count": 0, "results": []})
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+
+    response = client.get(
+        "/api/providers/search",
+        params={"first_name": "Nonexistent", "city": "Nowhere", "limit": 10},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    assert data["result_count"] == 0
+    assert data["results"] == []
+
+
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_network_error_falls_back_to_affiliated_only(client, monkeypatch):
+    """
+    If the NPI API call fails with a network error, but we have affiliated
+    providers, the endpoint should still return the affiliated results and
+    include an error message.
+    """
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        return [
+            {
+                "id": "provider-1",
+                "name": "Affiliated Provider",
+                "specialty": "Family Medicine",
+                "location": "Champaign, IL",
+                "rating": 0,
+                "insurance": [],
+                "npi_number": "",
+                "enumeration_type": "",
+                "is_affiliated": True,
+                "email": "provider@example.com",
+            }
+        ]
+
+    class FailingAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            request = httpx.Request("GET", url)
+            raise httpx.RequestError("Network error", request=request)
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", FailingAsyncClient)
+
+    response = client.get(
+        "/api/providers/search",
+        params={"first_name": "Alex", "limit": 10},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    # We should still see the affiliated result
+    assert data["result_count"] == 1
+    assert data["affiliated_count"] == 1
+    assert data["npi_count"] == 0
+    assert len(data["results"]) == 1
+    assert data["results"][0]["is_affiliated"] is True
+    assert "error" in data
+    assert "Failed to connect to NPI Registry API" in data["error"]
+
+
+@pytest.mark.usefixtures("mock_supabase")
+def test_search_providers_large_result_set_respects_limit(client, monkeypatch):
+    """
+    When the combined NPI + affiliated results exceed the requested limit,
+    the endpoint should truncate the list to the limit value.
+    """
+    import app.main as app_main
+
+    def fake_search_affiliated_providers(**kwargs):
+        # 3 affiliated providers
+        return [
+            {
+                "id": f"provider-{i}",
+                "name": f"Affiliated {i}",
+                "specialty": "Family Medicine",
+                "location": "Champaign, IL",
+                "rating": 0,
+                "insurance": [],
+                "npi_number": "",
+                "enumeration_type": "",
+                "is_affiliated": True,
+                "email": f"provider{i}@example.com",
+            }
+            for i in range(3)
+        ]
+
+    class DummyResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self._payload
+
+    class DummyAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, params=None):
+            # 5 external providers from NPI
+            results = []
+            for i in range(5):
+                results.append(
+                    {
+                        "number": f"12345678{i:02d}",
+                        "basic": {
+                            "enumeration_type": "NPI-1",
+                            "first_name": f"Alex{i}",
+                            "last_name": "Johnson",
+                        },
+                        "taxonomies": [
+                            {"desc": "Internal Medicine", "primary": True}
+                        ],
+                        "addresses": [
+                            {
+                                "address_purpose": "LOCATION",
+                                "city": "Champaign",
+                                "state": "IL",
+                                "postal_code": "61820",
+                                "telephone_number": "5551234567",
+                            }
+                        ],
+                    }
+                )
+
+            return DummyResponse(
+                {
+                    "result_count": len(results),
+                    "results": results,
+                }
+            )
+
+    monkeypatch.setattr(
+        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+    )
+    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+
+    # Combined results would be 8, but limit them to 3
+    response = client.get(
+        "/api/providers/search",
+        params={"first_name": "Alex", "limit": 3},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    assert data["result_count"] == 3
+    assert len(data["results"]) == 3
 
 
