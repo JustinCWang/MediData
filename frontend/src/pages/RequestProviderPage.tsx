@@ -189,8 +189,13 @@ export default function RequestProviderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-3xl px-6 py-8">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-50 via-white to-cyan-50">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
+        <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
+      </div>
+      <div className="relative mx-auto max-w-3xl px-6 py-8 z-10">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Request a Provider</h1>
         <p className="text-slate-600 mb-8">
           Submit a request to connect with a healthcare provider
