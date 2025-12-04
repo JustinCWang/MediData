@@ -31,6 +31,14 @@ python -m pip install --upgrade pip
 pip install fastapi uvicorn[standard] python-dotenv pydantic-settings
 ```
 
+For Mac Users: 
+```powershell
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate or . .venv/bin/activate
+pip install fastapi " uvicorn[standard]"  python-dotenv pydantic-settings
+```
+
 **Configure Environment Variables:**
 
 1. Copy the example environment file:
