@@ -60,6 +60,10 @@ Start the API (default port 8000):
 python -m venv .venv
  .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
+
+python3 -m venv .venv
+source .venv/bin/activate or . .venv/bin/activate
+uvicorn app.main:app --reload --port 8000
 ```
 
 Expected health check (if implemented): `GET http://127.0.0.1:8000/api/health`
