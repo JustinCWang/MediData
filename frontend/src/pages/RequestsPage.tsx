@@ -113,50 +113,82 @@ export default function RequestsPage() {
         <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
         <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
       </div>
-      <div className="relative mx-auto max-w-6xl px-6 py-8 z-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">My Requests</h1>
-            <p className="text-slate-600">View and manage your provider requests</p>
+      <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-6 z-10">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2">
+          <h1 className="text-3xl font-semibold text-slate-900 leading-tight">My Requests</h1>
+          <p className="text-slate-600 text-sm md:text-base">View, filter, and follow up on every provider request.</p>
+          <div className="text-sm text-slate-600 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              Quick filters
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              Status-aware timeline
+            </span>
           </div>
         </div>
 
-        <RequestFilterTabs currentFilter={filter} onFilterChange={setFilter} />
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Requests List */}
-        {isLoading ? (
-          <div className="text-center py-12 text-slate-600">Loading requests...</div>
-        ) : filteredRequests.length > 0 ? (
+        <div className="grid lg:grid-cols-[1fr_1.5fr] gap-6">
           <div className="space-y-4">
-            {filteredRequests.map((request) => (
-              <RequestCard
-                key={request.id}
-                request={request}
-                onCancel={handleCancel}
-                onSchedule={handleSchedule}
-                onViewDetails={handleViewDetails}
-                onUpdate={handleUpdate}
-                userRole={userRole}
-              />
-            ))}
+            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
+              <h3 className="text-lg font-semibold text-slate-900 mb-3">Filters</h3>
+              <RequestFilterTabs currentFilter={filter} onFilterChange={setFilter} />
+            </div>
+            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
+              <h3 className="text-lg font-semibold text-slate-900 mb-3">Tips</h3>
+              <ul className="text-sm text-slate-700 space-y-2">
+                <li>• Use filters to find pending items that need your response.</li>
+                <li>• Check confirmed requests for location/time details.</li>
+                <li>• If a request is delayed, follow up via the provider’s preferred contact.</li>
+              </ul>
+            </div>
           </div>
-        ) : (
-          <EmptyState
-            title="No requests found"
-            description={
-              filter === 'all'
-                ? "You haven't made any requests yet."
-                : `No ${filter} requests found.`
-            }
-          />
-        )}
+
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Requests</h2>
+                <p className="text-sm text-slate-600">
+                  {filteredRequests.length > 0 ? `${filteredRequests.length} shown` : 'No requests yet'}
+                </p>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            {/* Requests List */}
+            {isLoading ? (
+              <div className="text-center py-12 text-slate-600">Loading requests...</div>
+            ) : filteredRequests.length > 0 ? (
+              <div className="space-y-4">
+                {filteredRequests.map((request) => (
+                  <RequestCard
+                    key={request.id}
+                    request={request}
+                    onCancel={handleCancel}
+                    onSchedule={handleSchedule}
+                    onViewDetails={handleViewDetails}
+                    onUpdate={handleUpdate}
+                    userRole={userRole}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="No requests found"
+                description={
+                  filter === 'all'
+                    ? "You haven't made any requests yet."
+                    : `No ${filter} requests found.`
+                }
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
