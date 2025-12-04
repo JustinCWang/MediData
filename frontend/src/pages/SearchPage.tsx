@@ -237,7 +237,6 @@ export default function SearchPage() {
       <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-6 z-10">
         <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-sky-500 to-emerald-400 opacity-90" />
             <div>
               <h1 className="text-3xl font-semibold text-slate-900 leading-tight">Search Providers</h1>
               <p className="text-slate-600 text-sm md:text-base">Find care using the NPI Registry with filters that matter.</p>
