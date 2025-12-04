@@ -709,8 +709,12 @@ function LoginPage() {
   }
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden bg-blue-100">
-      <CollisionCanvas />
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden bg-sky-50">
+      <div className="absolute inset-0">
+        <div className="absolute -left-10 -top-20 h-96 w-96 rounded-full bg-sky-200/60 blur-3xl animate-light-sweep-slow" />
+        <div className="absolute right-0 top-10 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl animate-light-sweep-fast" />
+        <div className="absolute left-1/3 bottom-0 h-96 w-96 rounded-full bg-cyan-200/45 blur-3xl animate-light-pulse" />
+      </div>
       <div className="relative z-10 w-full flex flex-col items-center">
         <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -786,127 +790,6 @@ function LoginPage() {
       </div>
     </section>
   )
-}
-
-function CollisionCanvas() {
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    let rafId = 0
-    const dpr = window.devicePixelRatio || 1
-    const colors = ['#38bdf8', '#0ea5e9', '#22d3ee', '#34d399', '#60a5fa']
-
-    type ShapeType = 'circle' | 'square' | 'triangle'
-    type Shape = {
-      x: number; y: number; r: number; vx: number; vy: number; color: string; type: ShapeType
-    }
-
-    const randSign = () => (Math.random() > 0.5 ? 1 : -1)
-    const makeShape = (i: number): Shape => ({
-      x: 200 + i * 36,
-      y: 200 + i * 24,
-      r: 18 + (i % 4) * 6,
-      vx: (Math.random() * 2.2 + 1.8) * randSign(),
-      vy: (Math.random() * 2.2 + 1.8) * randSign(),
-      color: colors[i % colors.length],
-      type: (['circle', 'square', 'triangle'] as ShapeType[])[i % 3],
-    })
-
-    const shapes: Shape[] = Array.from({ length: 12 }, (_, i) => makeShape(i))
-
-    const resize = () => {
-      const { innerWidth: w, innerHeight: h } = window
-      canvas.width = w * dpr
-      canvas.height = h * dpr
-      canvas.style.width = `${w}px`
-      canvas.style.height = `${h}px`
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    const step = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      for (const s of shapes) {
-        s.x += s.vx
-        s.y += s.vy
-
-        if (s.x - s.r < 0) { s.x = s.r; s.vx *= -1 }
-        if (s.x + s.r > window.innerWidth) { s.x = window.innerWidth - s.r; s.vx *= -1 }
-        if (s.y - s.r < 0) { s.y = s.r; s.vy *= -1 }
-        if (s.y + s.r > window.innerHeight) { s.y = window.innerHeight - s.r; s.vy *= -1 }
-      }
-
-      for (let i = 0; i < shapes.length; i++) {
-        for (let j = i + 1; j < shapes.length; j++) {
-          const a = shapes[i], b = shapes[j]
-          const dx = b.x - a.x
-          const dy = b.y - a.y
-          const dist = Math.hypot(dx, dy)
-          const minDist = a.r + b.r
-          if (dist < minDist && dist > 0) {
-            const nx = dx / dist, ny = dy / dist
-            const overlap = (minDist - dist) / 2
-            a.x -= nx * overlap; a.y -= ny * overlap
-            b.x += nx * overlap; b.y += ny * overlap
-
-            const kx = a.vx - b.vx
-            const ky = a.vy - b.vy
-            const p = 2 * (kx * nx + ky * ny) / 2
-            a.vx -= p * nx; a.vy -= p * ny
-            b.vx += p * nx; b.vy += p * ny
-          }
-        }
-      }
-
-      for (const s of shapes) {
-        ctx.save()
-        ctx.translate(s.x, s.y)
-        ctx.strokeStyle = `${s.color}CC`
-        ctx.lineWidth = 2.2
-        ctx.shadowBlur = 10
-        ctx.shadowColor = `${s.color}55`
-
-        if (s.type === 'circle') {
-          ctx.beginPath()
-          ctx.arc(0, 0, s.r, 0, Math.PI * 2)
-          ctx.stroke()
-        } else if (s.type === 'square') {
-          const size = s.r * 1.6
-          ctx.beginPath()
-          ctx.rect(-size / 2, -size / 2, size, size)
-          ctx.stroke()
-        } else if (s.type === 'triangle') {
-          const size = s.r * 2
-          ctx.beginPath()
-          ctx.moveTo(0, -size / 2)
-          ctx.lineTo(size / 2, size / 2)
-          ctx.lineTo(-size / 2, size / 2)
-          ctx.closePath()
-          ctx.stroke()
-        }
-
-        ctx.restore()
-      }
-
-      rafId = requestAnimationFrame(step)
-    }
-
-    rafId = requestAnimationFrame(step)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-      window.removeEventListener('resize', resize)
-    }
-  }, [])
-
-  return <canvas ref={canvasRef} className="absolute inset-0 z-0" />
 }
 
 /**
