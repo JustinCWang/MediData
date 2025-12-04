@@ -160,25 +160,37 @@ export default function ProfilePage() {
         <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
         <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
       </div>
-      <div className="relative mx-auto max-w-4xl px-6 py-8 z-10">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">My Profile</h1>
-        <p className="text-slate-600 mb-6">
-          {profile.role === 'patient' ? 'Patient' : 'Provider'} Profile Information
-        </p>
+      <div className="relative mx-auto max-w-4xl px-6 py-10 space-y-6 z-10">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2">
+          <h1 className="text-3xl font-semibold text-slate-900 leading-tight">My Profile</h1>
+          <p className="text-slate-600 text-sm md:text-base">
+            {profile.role === 'patient' ? 'Patient' : 'Provider'} profile information
+          </p>
+          <div className="text-sm text-slate-600 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              Keep contact & insurance current
+            </span>
+            {profile.role === 'provider' && (
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+                Location & taxonomy help matching
+              </span>
+            )}
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-800">Profile updated successfully!</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
@@ -190,7 +202,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 defaultValue={profile.firstName}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -203,7 +215,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 defaultValue={profile.lastName}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -215,7 +227,7 @@ export default function ProfilePage() {
                 type="email"
                 value={profile.email || ''}
                 disabled
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
+                className="w-full rounded-md border border-white/70 bg-white/60 px-3 py-2 text-sm text-slate-500 cursor-not-allowed backdrop-blur"
               />
               <p className="mt-1 text-xs text-slate-500">Email cannot be changed</p>
             </div>
@@ -228,7 +240,7 @@ export default function ProfilePage() {
                 name="phoneNum"
                 type="tel"
                 defaultValue={profile.phoneNum}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -239,7 +251,7 @@ export default function ProfilePage() {
                 id="gender"
                 name="gender"
                 defaultValue={profile.gender}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               >
                 <option value="">Select...</option>
                 <option value="Male">Male</option>
@@ -259,7 +271,7 @@ export default function ProfilePage() {
                 defaultValue={profile.state}
                 placeholder="e.g., CA, NY"
                 maxLength={2}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -271,7 +283,7 @@ export default function ProfilePage() {
                 name="city"
                 type="text"
                 defaultValue={profile.city}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -284,7 +296,7 @@ export default function ProfilePage() {
                 type="text"
                 defaultValue={profile.insurance}
                 placeholder="e.g., Blue Cross, Aetna"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             {profile.role === 'provider' && (
@@ -299,7 +311,7 @@ export default function ProfilePage() {
                     type="text"
                     defaultValue={profile.location}
                     placeholder="Full address or location"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
                   />
                 </div>
                 <div>
@@ -312,7 +324,7 @@ export default function ProfilePage() {
                     type="text"
                     defaultValue={profile.taxonomy}
                     placeholder="e.g., Internal Medicine, Cardiology"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
                   />
                 </div>
               </>
@@ -322,14 +334,14 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
+              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-full hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-60"
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
