@@ -26,6 +26,8 @@ import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
+import ProviderDetailsPage from './pages/ProviderDetailsPage'
+import React from 'react'
 
 /**
  * ProtectedRoute - Route wrapper that requires authentication
@@ -112,6 +114,7 @@ export default function App() {
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
+          <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
         </Routes>
       </main>
       <AppFooter />
@@ -323,9 +326,67 @@ function AppFooter() {
  * - How it works section: Step-by-step explanation of the service
  */
 function LandingPage() {
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
+  const heroSlides = [
+    {
+      src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Friendly clinician smiling during telehealth',
+      caption: 'Verified clinicians with up-to-date availability',
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Patient using a laptop to book care',
+      caption: 'Book in minutes with insurance-aware matching',
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80',
+      alt: 'Medical team collaborating on patient care',
+      caption: 'Coordinated care with secure messaging',
+    },
+  ]
+  const HERO_FALLBACK =
+    'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=1400&q=80'
+  const [heroIndex, setHeroIndex] = useState(0)
+
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal-id]'))
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setVisibleIds((prev) => {
+          const next = new Set(prev)
+          let changed = false
+          for (const entry of entries) {
+            const el = entry.target as HTMLElement
+            const id = el.dataset.revealId
+            if (!id) continue
+            if (entry.isIntersecting && !next.has(id)) {
+              next.add(id)
+              changed = true
+            }
+          }
+          return changed ? next : prev
+        })
+      },
+      { threshold: 0.2 }
+    )
+    sections.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % heroSlides.length)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [heroSlides.length])
+
   return (
     <>
-      {/* Hero Section - Main headline and primary CTAs */}
+      <div
+        data-reveal-id="hero"
+        className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
+      >
+        {/* Hero Section - Main headline and primary CTAs */}
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
           <div className="grid md:grid-cols-2 gap-10 items-center">
@@ -334,8 +395,10 @@ function LandingPage() {
                 Find the right provider, fast.
               </h1>
               <p className="mt-4 text-lg text-slate-600">
-                MediData connects patients with the most suitable healthcare provider based on
-                needs, availability, insurance, and outcomes—within minutes.
+                MediData matches you to verified clinicians based on your symptoms, insurance, location, and real outcomes—so you spend minutes, not weeks, getting care.
+              </p>
+              <p className="mt-3 text-sm text-slate-500">
+                HIPAA-conscious by design, with secure messaging and transparent provider profiles.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Link
@@ -351,21 +414,80 @@ function LandingPage() {
                   I already have an account
                 </Link>
               </div>
+              <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-slate-600">
+                <div>
+                  <p className="font-semibold text-slate-900">92% faster</p>
+                  <p>to schedule compared to phone calls and fragmented portals.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900">Insurance-aware</p>
+                  <p>Only shows providers who can accept your plan and network.</p>
+                </div>
+              </div>
             </div>
             <div className="md:pl-6">
-              <div className="aspect-4/3 w-full rounded-xl border border-slate-200 bg-linear-to-br from-blue-50 to-sky-50 p-6">
-                <div className="h-full w-full rounded-lg border border-dashed border-slate-300 grid place-items-center text-slate-500 text-center text-sm">
-                  Future: search, match results, and booking UI\n
-                  <br />
-                  For now, use the Login / Sign up buttons to access authentication screens.
+              <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                {heroSlides.map((slide, idx) => (
+                  <img
+                    key={slide.src}
+                    src={slide.src}
+                    alt={slide.alt}
+                    onError={(e) => {
+                      if (e.currentTarget.src !== HERO_FALLBACK) {
+                        e.currentTarget.src = HERO_FALLBACK
+                      }
+                    }}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${idx === heroIndex ? 'opacity-100' : 'opacity-0'}`}
+                    loading="lazy"
+                  />
+                ))}
+
+                <div className="absolute bottom-0 left-0 right-0 bg-slate-900/50 text-white text-sm px-4 py-3 backdrop-blur">
+                  {heroSlides[heroIndex]?.caption}
+                </div>
+
+                <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-2">
+                  <button
+                    type="button"
+                    onClick={() => setHeroIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length)}
+                    className="h-9 w-9 rounded-full bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Previous slide"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroIndex((i) => (i + 1) % heroSlides.length)}
+                    className="h-9 w-9 rounded-full bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Next slide"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                  {heroSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setHeroIndex(idx)}
+                      className={`h-2.5 w-2.5 rounded-full border border-white/70 ${idx === heroIndex ? 'bg-white' : 'bg-white/30'}`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+      </div>
 
-      {/* Features Section - Highlights three key platform benefits */}
+      <div
+        data-reveal-id="features"
+        className={`reveal ${visibleIds.has('features') ? 'visible' : ''}`}
+      >
+        {/* Features Section - Highlights three key platform benefits */}
       <section id="features" className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
           <div className="grid md:grid-cols-3 gap-6">
@@ -384,8 +506,13 @@ function LandingPage() {
           </div>
         </div>
       </section>
+      </div>  
 
-      {/* How It Works Section - Explains the 3-step process for using MediData */}
+      <div
+        data-reveal-id="how-it-works"
+        className={`reveal ${visibleIds.has('how-it-works') ? 'visible' : ''}`}
+      >
+        {/* How It Works Section - Explains the 3-step process for using MediData */}
       <section id="how-it-works">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
           <h2 className="text-2xl md:text-3xl font-semibold">How it works</h2>
@@ -405,6 +532,29 @@ function LandingPage() {
           </ol>
         </div>
       </section>
+
+      <div
+        data-reveal-id="why"
+        className={`reveal ${visibleIds.has('why') ? 'visible' : ''}`}
+      >
+      <section className="bg-white border-t border-b border-slate-200">
+        <div className="mx-auto max-w-6xl px-6 py-14 grid md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Outcomes-aware</h3>
+            <p className="mt-2 text-slate-600">We factor clinical focus and historical outcomes where available, so you see who excels with cases like yours.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Built for patients and providers</h3>
+            <p className="mt-2 text-slate-600">Patients get clarity and speed; providers get structured intake, fewer no-shows, and better prep.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Security-first</h3>
+            <p className="mt-2 text-slate-600">Encryption in transit, scoped tokens, and least-privilege data access keep your information safe.</p>
+          </div>
+        </div>
+      </section>
+      </div>
+      </div>
     </>
   )
 }
@@ -559,90 +709,204 @@ function LoginPage() {
   }
 
   return (
-    <AuthBackground>
-      <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
-        <h1 className="text-2xl font-semibold text-slate-900">Welcome back</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Log in to continue finding your best-fit providers with MediData.
-        </p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3">
-              <p className="text-sm text-red-800">{error}</p>
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden bg-blue-100">
+      <CollisionCanvas />
+      <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {error && (
+              <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+            {info && (
+              <div className="rounded-md bg-green-50 border border-green-200 p-3">
+                <p className="text-sm text-green-800">{info}</p>
+              </div>
+            )}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                placeholder="you@example.com"
+              />
             </div>
-          )}
-          {info && (
-            <div className="rounded-md bg-green-50 border border-green-200 p-3">
-              <p className="text-sm text-green-800">{info}</p>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                placeholder="••••••••"
+              />
             </div>
-          )}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              disabled={isLoading}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="••••••••"
-            />
-          </div>
-          <div className="flex items-center justify-between text-xs text-slate-600">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              disabled={isLoading}
-              className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
-            >
-              Forgot your password?
-            </button>
-            {showResendVerification && (
+            <div className="flex items-center justify-between text-xs text-slate-600">
               <button
                 type="button"
-                onClick={handleResendVerification}
+                onClick={handleForgotPassword}
                 disabled={isLoading}
                 className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
               >
-                Resend verification email
+                Forgot your password?
               </button>
-            )}
-          </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Logging in...' : 'Log in'}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
-          New to MediData?{' '}
-          <Link to="/register" className="font-medium text-blue-600 hover:text-blue-700">
-            Create an account
-          </Link>
-        </p>
+              {showResendVerification && (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isLoading}
+                  className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
+                >
+                  Resend verification email
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Logging in...' : 'Log in'}
+            </button>
+          </form>
+        </div>
       </div>
-    </AuthBackground>
+    </section>
   )
+}
+
+function CollisionCanvas() {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null)
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let rafId = 0
+    const dpr = window.devicePixelRatio || 1
+    const colors = ['#38bdf8', '#0ea5e9', '#22d3ee', '#34d399', '#60a5fa']
+
+    type ShapeType = 'circle' | 'square' | 'triangle'
+    type Shape = {
+      x: number; y: number; r: number; vx: number; vy: number; color: string; type: ShapeType
+    }
+
+    const randSign = () => (Math.random() > 0.5 ? 1 : -1)
+    const makeShape = (i: number): Shape => ({
+      x: 200 + i * 36,
+      y: 200 + i * 24,
+      r: 18 + (i % 4) * 6,
+      vx: (Math.random() * 2.2 + 1.8) * randSign(),
+      vy: (Math.random() * 2.2 + 1.8) * randSign(),
+      color: colors[i % colors.length],
+      type: (['circle', 'square', 'triangle'] as ShapeType[])[i % 3],
+    })
+
+    const shapes: Shape[] = Array.from({ length: 12 }, (_, i) => makeShape(i))
+
+    const resize = () => {
+      const { innerWidth: w, innerHeight: h } = window
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      canvas.style.width = `${w}px`
+      canvas.style.height = `${h}px`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    const step = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      for (const s of shapes) {
+        s.x += s.vx
+        s.y += s.vy
+
+        if (s.x - s.r < 0) { s.x = s.r; s.vx *= -1 }
+        if (s.x + s.r > window.innerWidth) { s.x = window.innerWidth - s.r; s.vx *= -1 }
+        if (s.y - s.r < 0) { s.y = s.r; s.vy *= -1 }
+        if (s.y + s.r > window.innerHeight) { s.y = window.innerHeight - s.r; s.vy *= -1 }
+      }
+
+      for (let i = 0; i < shapes.length; i++) {
+        for (let j = i + 1; j < shapes.length; j++) {
+          const a = shapes[i], b = shapes[j]
+          const dx = b.x - a.x
+          const dy = b.y - a.y
+          const dist = Math.hypot(dx, dy)
+          const minDist = a.r + b.r
+          if (dist < minDist && dist > 0) {
+            const nx = dx / dist, ny = dy / dist
+            const overlap = (minDist - dist) / 2
+            a.x -= nx * overlap; a.y -= ny * overlap
+            b.x += nx * overlap; b.y += ny * overlap
+
+            const kx = a.vx - b.vx
+            const ky = a.vy - b.vy
+            const p = 2 * (kx * nx + ky * ny) / 2
+            a.vx -= p * nx; a.vy -= p * ny
+            b.vx += p * nx; b.vy += p * ny
+          }
+        }
+      }
+
+      for (const s of shapes) {
+        ctx.save()
+        ctx.translate(s.x, s.y)
+        ctx.strokeStyle = `${s.color}CC`
+        ctx.lineWidth = 2.2
+        ctx.shadowBlur = 10
+        ctx.shadowColor = `${s.color}55`
+
+        if (s.type === 'circle') {
+          ctx.beginPath()
+          ctx.arc(0, 0, s.r, 0, Math.PI * 2)
+          ctx.stroke()
+        } else if (s.type === 'square') {
+          const size = s.r * 1.6
+          ctx.beginPath()
+          ctx.rect(-size / 2, -size / 2, size, size)
+          ctx.stroke()
+        } else if (s.type === 'triangle') {
+          const size = s.r * 2
+          ctx.beginPath()
+          ctx.moveTo(0, -size / 2)
+          ctx.lineTo(size / 2, size / 2)
+          ctx.lineTo(-size / 2, size / 2)
+          ctx.closePath()
+          ctx.stroke()
+        }
+
+        ctx.restore()
+      }
+
+      rafId = requestAnimationFrame(step)
+    }
+
+    rafId = requestAnimationFrame(step)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [])
+
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0" />
 }
 
 /**
@@ -1253,4 +1517,3 @@ function ResetPasswordPage() {
     </AuthBackground>
   )
 }
-

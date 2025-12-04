@@ -12,13 +12,15 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import type { Provider } from '../components/ProviderCard'
 
 const API_BASE_URL = 'http://localhost:8000'
 
 export default function RequestProviderPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const locationState = location.state as { provider?: Provider } | null
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
   const [favoriteProviders, setFavoriteProviders] = useState<Provider[]>([])
   const [isLoadingProviders, setIsLoadingProviders] = useState(true)
@@ -67,6 +69,25 @@ export default function RequestProviderPage() {
 
     fetchFavoriteProviders()
   }, [])
+
+  // Preselect provider passed from details page
+  useEffect(() => {
+    const stateProvider = locationState?.provider
+    if (!stateProvider) return
+
+    if (!stateProvider.is_affiliated) {
+      setError('This provider is not affiliated with MediData, so appointment requests must be made directly.')
+      setSelectedProvider(null)
+      return
+    }
+
+    const normalized = { ...stateProvider, specialty: stateProvider.specialty || 'Not specified' }
+    setFavoriteProviders((prev) => {
+      const exists = prev.some((p) => p.id === normalized.id)
+      return exists ? prev : [...prev, normalized]
+    })
+    setSelectedProvider(normalized)
+  }, [locationState])
 
   const handleSelectProvider = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const providerId = e.target.value
@@ -386,4 +407,3 @@ export default function RequestProviderPage() {
     </div>
   )
 }
-

@@ -16,6 +16,7 @@ import ProviderSearchForm from '../components/ProviderSearchForm'
 import ProviderCard from '../components/ProviderCard'
 import type { Provider } from '../components/ProviderCard'
 import EmptyState from '../components/EmptyState'
+import { useNavigate } from 'react-router-dom'
 
 const API_BASE_URL = 'http://localhost:8000'
 
@@ -60,6 +61,7 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const resultsPerPage = 6
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
+  const navigate = useNavigate()
 
   // Fetch favorites on mount
   useEffect(() => {
@@ -162,8 +164,8 @@ export default function SearchPage() {
   }
 
   const handleViewDetails = (providerId: string) => {
-    // TODO: Navigate to provider details page
-    console.log('View details for provider:', providerId)
+    const provider = results.find(p => p.id === providerId)
+    navigate(`/providers/${providerId}`, {state: { provider } })
   }
 
   const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {
