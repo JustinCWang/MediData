@@ -575,9 +575,14 @@ function LandingPage() {
         ref={nextSectionRef}
         className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-      <section className="relative bg-gradient-to-br from-[#eaf4ff] via-[#e3efff] to-[#eaf4ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
-          <div className="mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center w-full">
-            <div className="space-y-3">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
+            <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
+            <div className="absolute left-1/3 bottom-[-10rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
+          </div>
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div className="space-y-3 z-10">
               <h3 className="text-2xl font-semibold text-slate-900">
                 {storySlides[storyIndex].title}
               </h3>
@@ -590,7 +595,7 @@ function LandingPage() {
                 ))}
               </ul>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-lg backdrop-blur min-h-[280px]">
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-lg backdrop-blur min-h-[280px] z-10">
               {storySlides.map((slide, idx) => (
                 <img
                   key={slide.image}
@@ -635,9 +640,14 @@ function LandingPage() {
         data-reveal-id="guide"
         className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
-        <section className="bg-gradient-to-br from-[#eaf4ff] via-[#e3efff] to-[#eaf4ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
-          <div className="mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-10 items-center">
-            <div className="space-y-4">
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-16 top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-sky-300/30 blur-[120px]" />
+            <div className="absolute right-[-14rem] top-0 h-[22rem] w-[22rem] rounded-full bg-blue-300/25 blur-[130px]" />
+            <div className="absolute left-1/2 bottom-[-12rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
+          </div>
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-10 items-center">
+            <div className="space-y-4 z-10">
               <h3 className="text-3xl font-semibold text-slate-900">How to use MediData</h3>
               <p className="text-slate-600 leading-relaxed">
                 From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
@@ -651,7 +661,7 @@ function LandingPage() {
                 <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
               </ol>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px]">
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px] z-10">
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30" />
               <div className="relative p-6 space-y-4 text-slate-800">
                 <div className="flex items-center gap-2">
@@ -837,9 +847,12 @@ function LoginPage() {
   return (
     <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden bg-sky-50">
       <div className="absolute inset-0">
-        <div className="absolute -left-10 -top-20 h-96 w-96 rounded-full bg-sky-200/60 blur-3xl animate-light-sweep-slow" />
-        <div className="absolute right-0 top-10 h-80 w-80 rounded-full bg-blue-200/50 blur-3xl animate-light-sweep-fast" />
-        <div className="absolute left-1/3 bottom-0 h-96 w-96 rounded-full bg-cyan-200/45 blur-3xl animate-light-pulse" />
+        <div className="absolute left-[-8rem] top-[-6rem] h-[26rem] w-[26rem] rounded-full bg-sky-300/80 blur-[90px] animate-light-wander-a" />
+        <div className="absolute right-[-10rem] top-0 h-[20rem] w-[20rem] rounded-full bg-blue-300/75 blur-[80px] animate-light-wander-b" />
+        <div className="absolute left-[15%] bottom-[-6rem] h-[18rem] w-[18rem] rounded-full bg-cyan-300/70 blur-[70px] animate-light-wander-c" />
+        <div className="absolute right-[12%] bottom-[-4rem] h-[22rem] w-[22rem] rounded-full bg-emerald-300/75 blur-[90px] animate-light-wander-d" />
+        <div className="absolute left-[55%] top-[10%] h-[16rem] w-[16rem] rounded-full bg-teal-300/70 blur-[60px] animate-light-wander-e" />
+        <div className="absolute right-[40%] bottom-[8%] h-[14rem] w-[14rem] rounded-full bg-sky-200/80 blur-[55px] animate-light-wander-f" />
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
         <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
