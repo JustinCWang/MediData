@@ -98,10 +98,31 @@ function GuestRoute({ children }: { children: React.ReactElement }) {
  * Wraps all routes with a consistent header and footer. Uses React Router's
  * Routes component to handle client-side navigation between pages.
  */
+type Theme = 'light' | 'dark'
+
 export default function App() {
+  const [theme, setTheme] = useState<Theme>('light')
+
+  useEffect(() => {
+    const stored = localStorage.getItem('theme') as Theme | null
+    if (stored === 'light' || stored === 'dark') {
+      setTheme(stored)
+      return
+    }
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    setTheme(prefersDark ? 'dark' : 'light')
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <AppHeader />
+      <AppHeader theme={theme} onToggleTheme={toggleTheme} />
       <main>
         <Routes>
           <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
@@ -139,7 +160,7 @@ interface User {
   }
 }
 
-function AppHeader() {
+function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
   const navigate = useNavigate()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -269,6 +290,13 @@ function AppHeader() {
               </Link>
             </>
           )}
+          <button
+            onClick={onToggleTheme}
+            className={`ml-2 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
           <button
             onClick={() => setOpenDrop((v) => !v)}
             className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
