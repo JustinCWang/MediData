@@ -17,10 +17,9 @@
  */
 
 import { Link, NavLink, Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Chatbot from './components/Chatbot'
 import AuthBackground from './components/AuthBackground'
-import FeatureCard from './components/FeatureCard'
 import SearchPage from './pages/SearchPage'
 import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
@@ -327,6 +326,7 @@ function AppFooter() {
  */
 function LandingPage() {
   const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
+  const nextSectionRef = useRef<HTMLDivElement | null>(null)
   const heroSlides = [
     {
       src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
@@ -347,6 +347,59 @@ function LandingPage() {
   const HERO_FALLBACK =
     'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=1400&q=80'
   const [heroIndex, setHeroIndex] = useState(0)
+  const storySlides = [
+    {
+      title: 'Outcome-aware matching',
+      body: 'We rank by specialty fit, availability, insurance, and observed outcomes—not just proximity.',
+      points: [
+        'Verified profiles with status, insurance, and location',
+        'Shows who can see you sooner and accepts your plan',
+        'Transparent fit, not just distance',
+      ],
+      image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80', // calm lake sunrise
+    },
+    {
+      title: 'Structured requests in minutes',
+      body: 'One form captures contact preference, time windows, and reason so providers start with context.',
+      points: [
+        'Prevents back-and-forth and reduces no-shows',
+        'Tracks status: pending, confirmed, or needs info',
+        'Respects your preferred contact channel',
+      ],
+      image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80', // ocean horizon
+    },
+    {
+      title: 'AI assist, human decisions',
+      body: 'Describe symptoms and get a suggested specialty with prefilled search—no diagnoses, just guidance.',
+      points: [
+        'Safety-first prompts and clear disclaimers',
+        'Prefills specialty and location/insurance when known',
+        'Fallback to manual search if AI is unavailable',
+      ],
+      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80', // forest trail
+    },
+    {
+      title: 'Trust & safety by default',
+      body: 'HIPAA-aware design, least-privilege access, session logging, and verified accounts keep data protected.',
+      points: [
+        'Audit trails and suspicious-login handling',
+        'Email verification and role-aware access',
+        'Encryption in transit and scoped permissions',
+      ],
+      image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80', // mountain lake
+    },
+    {
+      title: 'Built for patients and providers',
+      body: 'Patients get clarity and speed; providers get structured intake and fewer no-shows.',
+      points: [
+        'Clear journey from search to confirmed request',
+        'Notifications so providers don’t miss patient outreach',
+        'Better prep with the right info upfront',
+      ],
+      image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80', // calm fields
+    },
+  ]
+  const [storyIndex, setStoryIndex] = useState(0)
 
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal-id]'))
@@ -359,15 +412,19 @@ function LandingPage() {
             const el = entry.target as HTMLElement
             const id = el.dataset.revealId
             if (!id) continue
-            if (entry.isIntersecting && !next.has(id)) {
+            const ratio = entry.intersectionRatio
+            if (ratio >= 0.4 && !next.has(id)) {
               next.add(id)
+              changed = true
+            } else if (ratio <= 0.05 && next.has(id)) {
+              next.delete(id)
               changed = true
             }
           }
           return changed ? next : prev
         })
       },
-      { threshold: 0.2 }
+      { threshold: [0, 0.05, 0.4, 1], rootMargin: '-2% 0px -2% 0px' }
     )
     sections.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
@@ -380,53 +437,71 @@ function LandingPage() {
     return () => clearInterval(id)
   }, [heroSlides.length])
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setStoryIndex((i) => (i + 1) % storySlides.length)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [storySlides.length])
+
   return (
-    <>
+    <div className="overflow-y-auto min-h-screen">
       <div
         data-reveal-id="hero"
         className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
       >
         {/* Hero Section - Main headline and primary CTAs */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] text-slate-900 min-h-screen flex items-center">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sky-300/30 blur-[120px] animate-liquid-drift" />
+          <div className="absolute right-0 top-10 h-[26rem] w-[26rem] rounded-full bg-blue-300/25 blur-[140px] animate-liquid-glow" />
+          <div className="absolute left-1/3 bottom-0 h-[22rem] w-[22rem] rounded-full bg-cyan-300/25 blur-[120px] animate-liquid-drift-slow" />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 text-slate-900 w-full h-full flex items-center">
+          <div className="grid md:grid-cols-2 gap-10 items-center w-full">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
+                Smart matching, real outcomes
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
                 Find the right provider, fast.
               </h1>
-              <p className="mt-4 text-lg text-slate-600">
+              <p className="text-lg text-slate-700">
                 MediData matches you to verified clinicians based on your symptoms, insurance, location, and real outcomes—so you spend minutes, not weeks, getting care.
               </p>
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="text-sm text-slate-500">
                 HIPAA-conscious by design, with secure messaging and transparent provider profiles.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-slate-900/15 hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   Get started
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   I already have an account
                 </Link>
               </div>
-              <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-slate-600">
-                <div>
+              <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90">
+                <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
                   <p className="font-semibold text-slate-900">92% faster</p>
                   <p>to schedule compared to phone calls and fragmented portals.</p>
                 </div>
-                <div>
+                <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
                   <p className="font-semibold text-slate-900">Insurance-aware</p>
                   <p>Only shows providers who can accept your plan and network.</p>
                 </div>
               </div>
             </div>
+
             <div className="md:pl-6">
-              <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+              <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-300/40">
                 {heroSlides.map((slide, idx) => (
                   <img
                     key={slide.src}
@@ -442,15 +517,15 @@ function LandingPage() {
                   />
                 ))}
 
-                <div className="absolute bottom-0 left-0 right-0 bg-slate-900/50 text-white text-sm px-4 py-3 backdrop-blur">
+                <div className="absolute bottom-0 left-0 right-0 bg-white/70 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/50">
                   {heroSlides[heroIndex]?.caption}
                 </div>
 
-                <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-2">
+                <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-3">
                   <button
                     type="button"
                     onClick={() => setHeroIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length)}
-                    className="h-9 w-9 rounded-full bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="h-9 w-9 rounded-full bg-white/85 text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
                     aria-label="Previous slide"
                   >
                     ‹
@@ -458,20 +533,20 @@ function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setHeroIndex((i) => (i + 1) % heroSlides.length)}
-                    className="h-9 w-9 rounded-full bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="h-9 w-9 rounded-full bg-white/85 text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
                     aria-label="Next slide"
                   >
                     ›
                   </button>
                 </div>
 
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-2">
                   {heroSlides.map((_, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setHeroIndex(idx)}
-                      className={`h-2.5 w-2.5 rounded-full border border-white/70 ${idx === heroIndex ? 'bg-white' : 'bg-white/30'}`}
+                      className={`h-2.5 w-2.5 rounded-full border border-slate-400/80 ${idx === heroIndex ? 'bg-slate-700' : 'bg-slate-200'}`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />
                   ))}
@@ -480,82 +555,133 @@ function LandingPage() {
             </div>
           </div>
         </div>
+        <div className="absolute inset-x-0 bottom-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900"
+          >
+            <span className="h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow">
+              ↓
+            </span>
+            <span className="text-xs font-semibold tracking-wide uppercase">Explore more</span>
+          </button>
+        </div>
       </section>
       </div>
 
       <div
-        data-reveal-id="features"
-        className={`reveal ${visibleIds.has('features') ? 'visible' : ''}`}
+        data-reveal-id="value"
+        ref={nextSectionRef}
+        className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-        {/* Features Section - Highlights three key platform benefits */}
-      <section id="features" className="bg-slate-50">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard
-              title="Personalized matching"
-              description="We match by condition, specialty, location, insurance, and provider outcomes."
-            />
-            <FeatureCard
-              title="Verified providers"
-              description="Profiles include verified credentials, availability, and accepted insurance."
-            />
-            <FeatureCard
-              title="Fast and secure"
-              description="HIPAA-conscious design with fast response times and secure data handling."
-            />
+      <section className="relative bg-gradient-to-br from-[#eaf4ff] via-[#e3efff] to-[#eaf4ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+          <div className="mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div className="space-y-3">
+              <h3 className="text-2xl font-semibold text-slate-900">
+                {storySlides[storyIndex].title}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {storySlides[storyIndex].body}
+              </p>
+              <ul className="space-y-2 text-sm text-slate-600 leading-relaxed">
+                {storySlides[storyIndex].points.map((pt, idx) => (
+                  <li key={idx}>• {pt}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-lg backdrop-blur min-h-[280px]">
+              {storySlides.map((slide, idx) => (
+                <img
+                  key={slide.image}
+                  src={slide.image}
+                  alt={slide.title}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${idx === storyIndex ? 'opacity-100' : 'opacity-0'}`}
+                  loading="lazy"
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
-      </div>  
-
-      <div
-        data-reveal-id="how-it-works"
-        className={`reveal ${visibleIds.has('how-it-works') ? 'visible' : ''}`}
-      >
-        {/* How It Works Section - Explains the 3-step process for using MediData */}
-      <section id="how-it-works">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <h2 className="text-2xl md:text-3xl font-semibold">How it works</h2>
-          <ol className="mt-6 grid gap-4 md:grid-cols-3">
-            <li className="rounded-lg border border-slate-200 bg-white p-5">
-              <span className="font-semibold">1. Tell us your needs</span>
-              <p className="mt-2 text-slate-600">Symptoms, preferences, insurance, and location.</p>
-            </li>
-            <li className="rounded-lg border border-slate-200 bg-white p-5">
-              <span className="font-semibold">2. Get matched</span>
-              <p className="mt-2 text-slate-600">We surface top providers with real-time availability.</p>
-            </li>
-            <li className="rounded-lg border border-slate-200 bg-white p-5">
-              <span className="font-semibold">3. Book in minutes</span>
-              <p className="mt-2 text-slate-600">Schedule directly and manage follow-ups seamlessly.</p>
-            </li>
-          </ol>
-        </div>
-      </section>
-
-      <div
-        data-reveal-id="why"
-        className={`reveal ${visibleIds.has('why') ? 'visible' : ''}`}
-      >
-      <section className="bg-white border-t border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-6 py-14 grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">Outcomes-aware</h3>
-            <p className="mt-2 text-slate-600">We factor clinical focus and historical outcomes where available, so you see who excels with cases like yours.</p>
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-4">
+            <button
+              type="button"
+              onClick={() => setStoryIndex((i) => (i - 1 + storySlides.length) % storySlides.length)}
+              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              aria-label="Previous highlight"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => setStoryIndex((i) => (i + 1) % storySlides.length)}
+              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              aria-label="Next highlight"
+            >
+              ›
+            </button>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">Built for patients and providers</h3>
-            <p className="mt-2 text-slate-600">Patients get clarity and speed; providers get structured intake, fewer no-shows, and better prep.</p>
+          <div className="absolute inset-x-0 bottom-10 flex justify-center gap-2">
+            {storySlides.map((_, idx) => (
+              <span
+                key={idx}
+                className={`h-2.5 w-2.5 rounded-full border border-slate-400 ${idx === storyIndex ? 'bg-slate-700' : 'bg-slate-200'}`}
+              />
+            ))}
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">Security-first</h3>
-            <p className="mt-2 text-slate-600">Encryption in transit, scoped tokens, and least-privilege data access keep your information safe.</p>
-          </div>
-        </div>
-      </section>
+        </section>
       </div>
+      
+      <div
+        data-reveal-id="guide"
+        className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
+      >
+        <section className="bg-gradient-to-br from-[#eaf4ff] via-[#e3efff] to-[#eaf4ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+          <div className="mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-10 items-center">
+            <div className="space-y-4">
+              <h3 className="text-3xl font-semibold text-slate-900">How to use MediData</h3>
+              <p className="text-slate-600 leading-relaxed">
+                From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
+              </p>
+              <ol className="space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside">
+                <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
+                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
+                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
+                <li><span className="font-semibold text-slate-900">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
+                <li><span className="font-semibold text-slate-900">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
+                <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
+              </ol>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px]">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30" />
+              <div className="relative p-6 space-y-4 text-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
+                  <p className="text-sm font-semibold text-slate-900">Guided flow</p>
+                </div>
+                <p className="text-sm leading-relaxed">
+                  Search, view details, request, and track within two screens. Safety prompts and verification keep data protected.
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm">
+                    <p className="font-semibold text-slate-900">AI assist</p>
+                    <p className="text-slate-600">Prefill specialty/location when you describe symptoms.</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm">
+                    <p className="font-semibold text-slate-900">Transparent status</p>
+                    <p className="text-slate-600">Pending → Confirmed/Needs info with alerts.</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 text-xs">
+                  <span className="px-3 py-1 rounded-full bg-slate-900 text-white">Secure</span>
+                  <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800">Fast</span>
+                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Guided</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -717,6 +843,10 @@ function LoginPage() {
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
         <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-slate-900">Log in to MediData</h1>
+            <p className="mt-1 text-sm text-slate-600">Access your dashboard, requests, and saved providers.</p>
+          </div>
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {error && (
               <div className="rounded-md bg-red-50 border border-red-200 p-3">
