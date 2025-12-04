@@ -143,6 +143,7 @@ function AppHeader() {
   const navigate = useNavigate()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [openDrop, setOpenDrop] = useState(false)
 
   // Check authentication status on mount and when localStorage changes
   useEffect(() => {
@@ -191,14 +192,14 @@ function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/40 bg-white/75 backdrop-blur-xl shadow-sm group relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-2 group-hover:bg-slate-950/95 group-hover:border-slate-800">
-      <div className="mx-auto max-w-6xl px-6 py-3 flex items-center justify-between transition-all duration-500 group-hover:opacity-0 group-hover:-translate-y-2">
+    <header className={`sticky top-0 z-30 border-b bg-white/75 backdrop-blur-xl shadow-sm relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${openDrop ? 'translate-y-2 bg-slate-950/95 border-slate-800' : 'border-white/40'}`}>
+      <div className={`mx-auto max-w-6xl px-6 py-3 flex items-center justify-between transition-all duration-500 ${openDrop ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'}`}>
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 group-hover:from-white group-hover:via-white group-hover:to-white">
+          <span className={`text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 ${openDrop ? 'from-white via-white to-white' : ''}`}>
             MediData
           </span>
         </Link>
-        <nav className="hidden md:flex items-center gap-2 text-sm transition-colors duration-500 group-hover:text-white">
+        <nav className={`hidden md:flex items-center gap-2 text-sm transition-colors duration-500 ${openDrop ? 'text-white' : ''}`}>
           {isAuthenticated ? (
             <>
               {[
@@ -214,8 +215,8 @@ function AppHeader() {
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-full transition-colors ${
                       isActive
-                        ? 'bg-white/70 text-slate-900 shadow-sm border border-white/70 group-hover:bg-white/20 group-hover:text-white group-hover:border-white/30'
-                        : 'text-slate-600 hover:text-slate-800 hover:bg-white/50 group-hover:text-slate-200 group-hover:hover:bg-white/10'
+                        ? `bg-white/70 text-slate-900 shadow-sm border border-white/70 ${openDrop ? 'bg-white/20 text-white border-white/30' : ''}`
+                        : `text-slate-600 hover:text-slate-800 hover:bg-white/50 ${openDrop ? 'text-slate-200 hover:bg-white/10' : ''}`
                     }`
                   }
                 >
@@ -230,8 +231,8 @@ function AppHeader() {
               className={({ isActive }) =>
                 `px-3 py-2 rounded-full transition-colors ${
                   isActive
-                    ? 'bg-white/70 text-slate-900 shadow-sm border border-white/70 group-hover:bg-white/20 group-hover:text-white group-hover:border-white/30'
-                    : 'text-slate-600 hover:text-slate-800 hover:bg-white/50 group-hover:text-slate-200 group-hover:hover:bg-white/10'
+                    ? `bg-white/70 text-slate-900 shadow-sm border border-white/70 ${openDrop ? 'bg-white/20 text-white border-white/30' : ''}`
+                    : `text-slate-600 hover:text-slate-800 hover:bg-white/50 ${openDrop ? 'text-slate-200 hover:bg-white/10' : ''}`
                 }`
               }
             >
@@ -242,12 +243,12 @@ function AppHeader() {
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
-              <span className="hidden sm:inline text-sm text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-white/70 backdrop-blur group-hover:text-white group-hover:bg-white/10 group-hover:border-white/30">
+              <span className={`hidden sm:inline text-sm text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-white/70 backdrop-blur ${openDrop ? 'text-white bg-white/10 border-white/30' : ''}`}>
                 {getUserDisplayName()}
               </span>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center rounded-full border border-white/80 bg-slate-900 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white group-hover:bg-white group-hover:text-slate-900"
+                className={`inline-flex items-center rounded-full border border-white/80 bg-slate-900 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white ${openDrop ? 'bg-white text-slate-900' : ''}`}
               >
                 Log out
               </button>
@@ -256,23 +257,37 @@ function AppHeader() {
             <>
               <Link
                 to="/login"
-                className="hidden sm:inline-flex items-center rounded-full border border-white/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:shadow-sm group-hover:bg-white/10 group-hover:text-white group-hover:border-white/30"
+                className={`hidden sm:inline-flex items-center rounded-full border border-white/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:shadow-sm ${openDrop ? 'bg-white/10 text-white border-white/30' : ''}`}
               >
                 Log in
               </Link>
               <Link
                 to="/register"
-                className="inline-flex items-center rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 px-4 py-2 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white group-hover:from-white group-hover:via-white group-hover:to-white group-hover:text-slate-900"
+                className={`inline-flex items-center rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 px-4 py-2 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white ${openDrop ? 'from-white via-white to-white text-slate-900' : ''}`}
               >
                 Get started
               </Link>
             </>
           )}
+          <button
+            onClick={() => setOpenDrop((v) => !v)}
+            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
+            aria-expanded={openDrop}
+            aria-label="Toggle header panel"
+          >
+            {openDrop ? 'Close' : 'About'}
+          </button>
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
         <div className="px-0">
-          <div className="w-screen max-h-0 group-hover:max-h-[45vh] opacity-0 group-hover:opacity-100 translate-y-0 group-hover:translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-gradient-to-b from-black/75 via-black/60 to-black/70 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-2xl overflow-hidden z-10">
+          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[45vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-gradient-to-b from-black/75 via-black/60 to-black/70 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-2xl overflow-hidden z-10`}>
+            <button
+              onClick={() => setOpenDrop(false)}
+              className="absolute top-4 right-6 inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/15 transition"
+            >
+              Close ✕
+            </button>
             <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
             <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="space-y-3 max-w-2xl text-white">
