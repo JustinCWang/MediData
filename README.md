@@ -44,6 +44,9 @@ pip install fastapi " uvicorn[standard]"  python-dotenv pydantic-settings
 1. Copy the example environment file:
    ```powershell
    copy .env.example .env
+
+   #For MAC users its
+   cp .env.example .env
    ```
 
 2. Edit `.env` and add your Supabase credentials:
