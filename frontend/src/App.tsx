@@ -471,18 +471,15 @@ function LandingPage() {
             const id = el.dataset.revealId
             if (!id) continue
             const ratio = entry.intersectionRatio
-            if (ratio >= 0.08 && !next.has(id)) {
+            if (ratio >= 0.12 && !next.has(id)) {
               next.add(id)
-              changed = true
-            } else if (ratio <= 0.005 && next.has(id)) {
-              next.delete(id)
               changed = true
             }
           }
           return changed ? next : prev
         })
       },
-      { threshold: [0, 0.005, 0.08, 1], rootMargin: '-4% 0px -4% 0px' }
+      { threshold: [0, 0.12, 1], rootMargin: '-10% 0px -10% 0px' }
     )
     sections.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
