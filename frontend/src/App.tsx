@@ -271,14 +271,7 @@ function AppHeader() {
               </Link>
             </>
           )}
-          <button
-            onClick={() => setOpenDrop((v) => !v)}
-            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
-            aria-expanded={openDrop}
-            aria-label="Toggle header panel"
-          >
-            {openDrop ? 'Close' : 'About'}
-          </button>
+
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
@@ -337,15 +330,20 @@ function AppFooter() {
       <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-600">
         <p>© {new Date().getFullYear()} MediData. All rights reserved.</p>
         <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-slate-800">
+          <a href="/privacy" className="hover:text-slate-800">
             Privacy
           </a>
           <a href="Terms" className="hover:text-slate-800">
             Terms
           </a>
           <a href="#" className="hover:text-slate-800">
-            Support
+            Contact Us
           </a>
+            <a href="/about" className="hover:text-slate-800">
+            About Us
+          </a>
+
+
         </div>
       </div>
     </footer>
