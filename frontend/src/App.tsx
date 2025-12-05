@@ -151,7 +151,7 @@ export default function App() {
         </Routes>
       </main>
       <AppFooter />
-      <Chatbot />
+      <Chatbot theme={theme} />
     </div>
   )
 }
