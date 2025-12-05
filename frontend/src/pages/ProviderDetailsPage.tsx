@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import type { Provider } from '../components/ProviderCard'
 
 const API_BASE_URL = 'http://localhost:8000'
@@ -14,20 +14,28 @@ const API_BASE_URL = 'http://localhost:8000'
 export default function ProviderDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [provider, setProvider] = useState<Provider | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const location = useLocation()
+  const state = location.state as { provider?: Provider } | undefined
+
+  const [provider, setProvider] = useState<Provider | null>(state?.provider ?? null)
+  const [isLoading, setIsLoading] = useState(!state?.provider)
   const [error, setError] = useState<string | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
+  const [affiliationError, setAffiliationError] = useState<string | null>(null)
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(true)
 
   useEffect(() => {
-    const fetchProviderDetails = async () => {
-      if (!id) {
+    // If we already have provider from state (e.g. affiliated from search),
+    // don't refetch.
+    if (provider || !id) {
+      if (!id && !provider) {
         setError('No provider ID provided')
         setIsLoading(false)
-        return
       }
+      return
+    }
 
+    const fetchProviderDetails = async () => {
       try {
         setIsLoading(true)
         setError(null)
@@ -48,7 +56,7 @@ export default function ProviderDetailsPage() {
     }
 
     fetchProviderDetails()
-  }, [id])
+  }, [id, provider])
 
   // Check if provider is favorited
   useEffect(() => {
@@ -115,6 +123,24 @@ export default function ProviderDetailsPage() {
 
   const handleBack = () => {
     navigate(-1)
+  }
+
+  const handleRequestAppointment = () => {
+    if (!provider) return
+
+    if (!provider.is_affiliated) {
+      setAffiliationError("Provider isn't affiliated with MediData. Please contact them using their direct information.")
+      return
+    }
+
+    navigate('/request-provider', {
+      state: {
+        providerId: provider.id,
+        providerName: provider.name,
+        providerSpecialty: provider.specialty,
+        providerLocation: provider.location,
+      },
+    })
   }
 
   if (isLoading) {
@@ -211,6 +237,11 @@ export default function ProviderDetailsPage() {
 
           {/* Details */}
           <div className="px-8 py-6 space-y-6">
+            {affiliationError && (
+              <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {affiliationError}
+              </div>
+            )}
             {/* Location */}
             <div>
               <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Location</h2>
@@ -262,11 +293,6 @@ export default function ProviderDetailsPage() {
               </div>
             )}
 
-            {/* Provider ID */}
-            <div>
-              <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Provider ID</h2>
-              <p className="text-slate-900 font-mono text-sm">{provider.id}</p>
-            </div>
           </div>
 
           {/* Actions */}
@@ -278,7 +304,7 @@ export default function ProviderDetailsPage() {
               Back to Search
             </button>
             <button
-              onClick={() => navigate('/request-provider')}
+              onClick={handleRequestAppointment}
               className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Request Appointment
