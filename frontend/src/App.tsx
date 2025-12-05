@@ -101,17 +101,13 @@ function GuestRoute({ children }: { children: React.ReactElement }) {
 type Theme = 'light' | 'dark'
 
 export default function App() {
-  const [theme, setTheme] = useState<Theme>('light')
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'light'
     const stored = localStorage.getItem('theme') as Theme | null
-    if (stored === 'light' || stored === 'dark') {
-      setTheme(stored)
-      return
-    }
+    if (stored === 'light' || stored === 'dark') return stored
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    setTheme(prefersDark ? 'dark' : 'light')
-  }, [])
+    return prefersDark ? 'dark' : 'light'
+  })
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -545,7 +541,7 @@ function LandingPage() {
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white dark:text-white dark:border-white/60 dark:hover:bg-white/10 dark:focus:ring-white/60 dark:focus:ring-offset-slate-900"
                 >
                   I already have an account
                 </Link>
@@ -907,7 +903,7 @@ function LoginPage() {
   }
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden bg-sky-50">
+    <section className="page-surface relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute left-[-8rem] top-[-6rem] h-[26rem] w-[26rem] rounded-full bg-sky-300/80 blur-[90px] animate-light-wander-a" />
         <div className="absolute right-[-10rem] top-0 h-[20rem] w-[20rem] rounded-full bg-blue-300/75 blur-[80px] animate-light-wander-b" />
@@ -917,10 +913,12 @@ function LoginPage() {
         <div className="absolute right-[40%] bottom-[8%] h-[14rem] w-[14rem] rounded-full bg-sky-200/80 blur-[55px] animate-light-wander-f" />
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
-        <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
+        <div className="w-full max-w-md rounded-2xl bg-white/80 shadow-xl backdrop-blur px-8 py-10 border border-white/70">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-slate-900">Log in to MediData</h1>
-            <p className="mt-1 text-sm text-slate-600">Access your dashboard, requests, and saved providers.</p>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-[#d6c7ff]">Log in to MediData</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-[#bfa8ff]">
+              Access your dashboard, requests, and saved providers.
+            </p>
           </div>
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {error && (

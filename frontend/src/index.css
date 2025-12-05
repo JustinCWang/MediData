@@ -66,16 +66,16 @@ body {
   border-color: var(--card-border) !important;
 }
 [data-theme="dark"] .text-slate-900 {
-  color: #9ab4ff !important;
+  color: #d6c7ff !important;
 }
 [data-theme="dark"] .text-slate-700 {
-  color: #7699f0 !important;
+  color: #bfa8ff !important;
 }
 [data-theme="dark"] .text-slate-600 {
-  color: #5e83e0 !important;
+  color: #a48be9 !important;
 }
 [data-theme="dark"] .text-slate-500 {
-  color: #4b72d1 !important;
+  color: #8c76d8 !important;
 }
 
 [data-theme="dark"] .shadow-lg,
