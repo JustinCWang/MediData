@@ -61,6 +61,8 @@ python -m venv .venv
  .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 
+#For Mac users
+
 python3 -m venv .venv
 source .venv/bin/activate or . .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
@@ -128,6 +130,11 @@ Open two terminals from the project root:
 ```powershell
 cd backend
  .\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
+
+#for mac users
+cd backend
+source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
 
