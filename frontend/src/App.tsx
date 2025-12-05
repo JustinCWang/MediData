@@ -28,6 +28,23 @@ import ProfilePage from './pages/ProfilePage'
 import ProviderDetailsPage from './pages/ProviderDetailsPage'
 import React from 'react'
 
+function SunIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M12 2.75v2.2M12 19.05v2.2M4.75 12h-2.2M21.45 12h-2.2M6.4 6.4l-1.56-1.56M19.16 19.16l-1.56-1.56M6.4 17.6l-1.56 1.56M19.16 4.84l-1.56 1.56" />
+    </svg>
+  )
+}
+
+function MoonIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+    </svg>
+  )
+}
+
 /**
  * ProtectedRoute - Route wrapper that requires authentication
  * 
@@ -310,10 +327,20 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
           )}
           <button
             onClick={onToggleTheme}
-            className={`ml-2 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
+            className={`ml-2 inline-flex items-center justify-center rounded-full border p-2 transition ${
+              openDrop
+                ? 'border-white/40 bg-white/10 text-white hover:bg-white/15'
+                : theme === 'dark'
+                  ? 'border-slate-700 bg-slate-900 text-amber-200 hover:border-amber-300 hover:text-amber-100 hover:shadow-sm'
+                  : 'border-slate-200 bg-white/80 text-slate-800 hover:bg-white hover:shadow-sm'
+            }`}
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? 'Light' : 'Dark'}
+            {theme === 'dark' ? (
+              <MoonIcon className="h-5 w-5" />
+            ) : (
+              <SunIcon className="h-5 w-5" />
+            )}
           </button>
           <button
             onClick={() => setOpenDrop((v) => !v)}
