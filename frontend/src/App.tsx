@@ -405,7 +405,7 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
 function AppFooter() {
   return (
     <footer id="contact" className="border-t border-slate-200">
-      <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-600">
+      <div className="mx-auto max-w-6xl px-5 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-600">
         <p>© {new Date().getFullYear()} MediData. All rights reserved.</p>
         <div className="flex items-center gap-4">
           <a href="#" className="hover:text-slate-800">
@@ -612,7 +612,7 @@ function LandingPage() {
             </div>
 
             <div className="md:pl-6">
-              <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-300/40">
+              <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-2xl shadow-slate-300/50 dark:border-slate-700/70 dark:bg-[#0b1b33]/85 dark:shadow-slate-900/50">
                 {heroSlides.map((slide, idx) => (
                   <img
                     key={slide.src}
@@ -628,7 +628,7 @@ function LandingPage() {
                   />
                 ))}
 
-                <div className="absolute bottom-0 left-0 right-0 bg-white/70 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/50">
+                <div className="absolute bottom-0 left-0 right-0 bg-white/90 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/70 dark:bg-[#0b1b33]/90 dark:text-slate-100 dark:border-slate-700/70">
                   {heroSlides[heroIndex]?.caption}
                 </div>
 
@@ -636,7 +636,7 @@ function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setHeroIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length)}
-                    className="h-9 w-9 rounded-full bg-white/85 text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    className="h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80 dark:bg-[#0f233f]/85 dark:text-slate-100 dark:border dark:border-slate-700/70 dark:hover:bg-[#122b4f]"
                     aria-label="Previous slide"
                   >
                     ‹
@@ -644,7 +644,7 @@ function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setHeroIndex((i) => (i + 1) % heroSlides.length)}
-                    className="h-9 w-9 rounded-full bg-white/85 text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    className="h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80 dark:bg-[#0f233f]/85 dark:text-slate-100 dark:border dark:border-slate-700/70 dark:hover:bg-[#122b4f]"
                     aria-label="Next slide"
                   >
                     ›
@@ -657,7 +657,7 @@ function LandingPage() {
                       key={idx}
                       type="button"
                       onClick={() => setHeroIndex(idx)}
-                      className={`h-2.5 w-2.5 rounded-full border border-slate-400/80 ${idx === heroIndex ? 'bg-slate-700' : 'bg-slate-200'}`}
+                      className={`h-2.5 w-2.5 rounded-full border border-slate-300 ${idx === heroIndex ? 'bg-slate-700' : 'bg-white/80'} dark:border-slate-600 ${idx === heroIndex ? 'dark:bg-slate-200' : 'dark:bg-[#0f233f]/70'}`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />
                   ))}
