@@ -18,6 +18,7 @@ export default function ProviderDetailsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(true)
 
   useEffect(() => {
     const fetchProviderDetails = async () => {
@@ -30,22 +31,15 @@ export default function ProviderDetailsPage() {
       try {
         setIsLoading(true)
         setError(null)
-
-        // For now, we'll use the search API with the NPI number as a workaround
-        // since there's no dedicated endpoint for getting a single provider
-        const response = await fetch(`${API_BASE_URL}/api/providers/search?number=${id}`)
+        const response = await fetch(`${API_BASE_URL}/api/providers/${id}`)
         
         if (!response.ok) {
-          throw new Error('Failed to fetch provider details')
+          const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch provider details' }))
+          throw new Error(errorData.detail || 'Failed to fetch provider details')
         }
 
         const data = await response.json()
-        
-        if (data.results && data.results.length > 0) {
-          setProvider(data.results[0])
-        } else {
-          setError('Provider not found')
-        }
+        setProvider(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load provider details')
       } finally {
@@ -62,13 +56,16 @@ export default function ProviderDetailsPage() {
       if (!provider) return
 
       try {
+        setIsFavoriteLoading(true)
+
         const token = localStorage.getItem('access_token')
-        if (!token) return
+        if (!token) {
+          setIsFavoriteLoading(false)
+          return
+        }
 
         const response = await fetch(`${API_BASE_URL}/api/favorites`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          headers: { 'Authorization': `Bearer ${token}` },
         })
 
         if (response.ok) {
@@ -77,6 +74,8 @@ export default function ProviderDetailsPage() {
         }
       } catch (err) {
         console.error('Error checking favorite status:', err)
+      } finally {
+        setIsFavoriteLoading(false)
       }
     }
 
@@ -190,15 +189,21 @@ export default function ProviderDetailsPage() {
                 onClick={handleToggleFavorite}
                 className="p-2 rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
                 title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                disabled={isFavoriteLoading}
               >
-                {isFavorited ? (
-                  <svg className="w-6 h-6 text-red-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                {isFavoriteLoading ? (
+                  // tiny spinner or placeholder
+                  <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : isFavorited ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-red-400">
+                    <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                   </svg>
+
                 ) : (
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-8 h-8 text-white-400">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                   </svg>
+
                 )}
               </button>
             </div>
