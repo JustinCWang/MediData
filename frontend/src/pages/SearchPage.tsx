@@ -46,7 +46,6 @@ interface ApiSearchResponse {
 }
 
 export default function SearchPage() {
-  const navigate = useNavigate()
   const [enumerationType, setEnumerationType] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -63,7 +62,6 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const resultsPerPage = 6
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
-  const navigate = useNavigate()
 
   // Fetch favorites on mount
   useEffect(() => {
