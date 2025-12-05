@@ -518,7 +518,7 @@ function LandingPage() {
 
         <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 text-slate-900 w-full h-full flex items-center">
           <div className="grid md:grid-cols-2 gap-10 items-center w-full">
-            <div className="space-y-4">
+            <div className="space-y-4 landing-plain">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur shadow-sm">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
                 Smart matching, real outcomes
@@ -541,12 +541,12 @@ function LandingPage() {
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white dark:text-white dark:border-white/60 dark:hover:bg-white/10 dark:focus:ring-white/60 dark:focus:ring-offset-slate-900"
+                  className="landing-account-link inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   I already have an account
                 </Link>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90">
+              <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90 landing-plain-exempt">
                 <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
                   <p className="font-semibold text-slate-900">92% faster</p>
                   <p>to schedule compared to phone calls and fragmented portals.</p>
@@ -617,7 +617,7 @@ function LandingPage() {
           <button
             type="button"
             onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
-            className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900"
+            className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900 dark:text-white dark:hover:text-white"
           >
             <span className="h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow">
               ↓
@@ -640,14 +640,14 @@ function LandingPage() {
             <div className="absolute left-1/3 bottom-[-10rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
           <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center w-full">
-            <div className="space-y-3 z-10">
-              <h3 className="text-2xl font-semibold text-slate-900">
+            <div className="space-y-3 z-10 landing-plain">
+              <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
                 {storySlides[storyIndex].title}
               </h3>
-              <p className="text-slate-600 leading-relaxed">
+              <p className="text-slate-600 leading-relaxed dark:text-slate-200">
                 {storySlides[storyIndex].body}
               </p>
-              <ul className="space-y-2 text-sm text-slate-600 leading-relaxed">
+              <ul className="space-y-2 text-sm text-slate-600 leading-relaxed dark:text-slate-200">
                 {storySlides[storyIndex].points.map((pt, idx) => (
                   <li key={idx}>• {pt}</li>
                 ))}
@@ -696,7 +696,7 @@ function LandingPage() {
       
       <div
         data-reveal-id="guide"
-        className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
+              className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
         <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
           <div className="pointer-events-none absolute inset-0">
@@ -705,18 +705,18 @@ function LandingPage() {
             <div className="absolute left-1/2 bottom-[-12rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
           <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-10 items-center">
-            <div className="space-y-4 z-10">
-              <h3 className="text-3xl font-semibold text-slate-900">How to use MediData</h3>
-              <p className="text-slate-600 leading-relaxed">
+            <div className="space-y-4 z-10 landing-plain">
+              <h3 className="text-3xl font-semibold text-slate-900 dark:text-white">How to use MediData</h3>
+              <p className="text-slate-600 leading-relaxed dark:text-slate-200">
                 From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
               </p>
-              <ol className="space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside">
-                <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
-                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
-                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
-                <li><span className="font-semibold text-slate-900">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
-                <li><span className="font-semibold text-slate-900">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
-                <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
+              <ol className="space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside dark:text-slate-200">
+                <li><span className="font-semibold text-slate-900 dark:text-white">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
               </ol>
             </div>
             <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px] z-10">
