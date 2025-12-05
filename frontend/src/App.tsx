@@ -14,6 +14,8 @@
  *   - "/search" - Provider search page
  *   - "/requests" - Requests page to view all requests
  *   - "/request-provider" - Page to request a provider
+ *   - "/dashboard" - User dashboard page
+ *   - "/provider/:provider_id" - Provider details page
  */
 
 import { Link, NavLink, Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom'
@@ -26,6 +28,7 @@ import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
+import ProviderDetailsPage from './pages/ProviderDetailsPage';
 
 /**
  * ProtectedRoute - Route wrapper that requires authentication
@@ -112,6 +115,7 @@ export default function App() {
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
+          <Route path="/provider/:provider_id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
         </Routes>
       </main>
       <AppFooter />
