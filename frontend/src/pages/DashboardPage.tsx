@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(false)
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [userRole, setUserRole] = useState<'patient' | 'provider'>('patient')
+  const [avatar, setAvatar] = useState<string | null>(null)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +47,23 @@ export default function DashboardPage() {
       setUserRole(role as 'patient' | 'provider')
     }
   }, [])
+
+  useEffect(() => {
+    const loadAvatar = () => {
+      const storedAvatar = localStorage.getItem('avatar')
+      if (storedAvatar) {
+        setAvatar(storedAvatar)
+        return
+      }
+      if (user?.user_metadata?.avatar) {
+        setAvatar(user.user_metadata.avatar as unknown as string)
+      }
+    }
+    loadAvatar()
+    const handleAvatarChange = () => loadAvatar()
+    window.addEventListener('avatar-change', handleAvatarChange)
+    return () => window.removeEventListener('avatar-change', handleAvatarChange)
+  }, [user])
 
   useEffect(() => {
     const fetchFavoriteProviders = async () => {
@@ -208,7 +226,13 @@ export default function DashboardPage() {
           <div className="grid md:grid-cols-[1.6fr_1fr]">
             <div className="p-6 md:p-8 flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-sky-500 to-emerald-400 opacity-90" />
+                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-r from-sky-500 to-emerald-400 opacity-90 flex items-center justify-center text-white font-semibold">
+                  {avatar ? (
+                    <img src={avatar} alt="avatar" className="h-full w-full object-cover" />
+                  ) : (
+                    (getUserDisplayName().charAt(0).toUpperCase())
+                  )}
+                </div>
                 <div>
                   <p className="text-sm text-slate-600">Welcome back</p>
                   <h1 className="text-3xl font-semibold text-slate-900 leading-tight">

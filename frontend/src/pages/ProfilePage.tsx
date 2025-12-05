@@ -34,6 +34,11 @@ export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
   useEffect(() => {
+    const stored = localStorage.getItem('avatar')
+    if (stored) {
+      setAvatarPreview(stored)
+    }
+
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('access_token')
@@ -55,7 +60,10 @@ export default function ProfilePage() {
         const data = await response.json()
         setProfile(data)
         if ((data as any)?.avatar) {
-          setAvatarPreview((data as any).avatar as string)
+          const val = (data as any).avatar as string
+          setAvatarPreview(val)
+          localStorage.setItem('avatar', val)
+          window.dispatchEvent(new Event('avatar-change'))
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile')
@@ -125,7 +133,13 @@ export default function ProfilePage() {
       const updatedProfile = await response.json()
       setProfile(updatedProfile)
       if ((updatedProfile as any)?.avatar) {
-        setAvatarPreview((updatedProfile as any).avatar as string)
+        const val = (updatedProfile as any).avatar as string
+        setAvatarPreview(val)
+        localStorage.setItem('avatar', val)
+        window.dispatchEvent(new Event('avatar-change'))
+      } else if (avatarPreview) {
+        localStorage.setItem('avatar', avatarPreview)
+        window.dispatchEvent(new Event('avatar-change'))
       }
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

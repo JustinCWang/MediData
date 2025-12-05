@@ -161,26 +161,32 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [openDrop, setOpenDrop] = useState(false)
+  const [avatar, setAvatar] = useState<string | null>(null)
 
   // Check authentication status on mount and when localStorage changes
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('access_token')
       const userData = localStorage.getItem('user')
+      const parsed = userData ? JSON.parse(userData) : null
       setIsAuthenticated(!!token)
-      setUser(userData ? JSON.parse(userData) : null)
+      setUser(parsed)
+      const storedAvatar = localStorage.getItem('avatar')
+      setAvatar(storedAvatar || parsed?.avatar || parsed?.user_metadata?.avatar || null)
     }
 
     checkAuth()
     
     // Listen for storage changes (e.g., login/logout in another tab)
     window.addEventListener('storage', checkAuth)
+    window.addEventListener('avatar-change', checkAuth)
     
     // Custom event for same-tab auth changes
     window.addEventListener('auth-change', checkAuth)
     
     return () => {
       window.removeEventListener('storage', checkAuth)
+      window.removeEventListener('avatar-change', checkAuth)
       window.removeEventListener('auth-change', checkAuth)
     }
   }, [])
@@ -260,7 +266,10 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
-              <span className={`hidden sm:inline text-sm text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-white/70 backdrop-blur ${openDrop ? 'text-white bg-white/10 border-white/30' : ''}`}>
+              <span className={`hidden sm:inline text-sm text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-white/70 backdrop-blur ${openDrop ? 'text-white bg-white/10 border-white/30' : ''} flex items-center gap-2`}>
+                <span className="h-7 w-7 rounded-full overflow-hidden bg-gradient-to-br from-sky-500 via-blue-500 to-emerald-400 flex items-center justify-center text-white text-xs font-semibold">
+                  {avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : (getUserDisplayName().charAt(0).toUpperCase())}
+                </span>
                 {getUserDisplayName()}
               </span>
               <button
