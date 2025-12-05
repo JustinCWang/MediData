@@ -12,7 +12,6 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import ProviderSearchForm from '../components/ProviderSearchForm'
 import ProviderCard from '../components/ProviderCard'
 import type { Provider } from '../components/ProviderCard'
@@ -46,6 +45,7 @@ interface ApiSearchResponse {
 }
 
 export default function SearchPage() {
+  const navigate = useNavigate()
   const [enumerationType, setEnumerationType] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -134,7 +134,7 @@ export default function SearchPage() {
         }
       }
       
-      // Transform results to match Provider interface
+      // Transform results to match Provider
       const transformedResults: Provider[] = data.results.map((result: ApiProviderResult) => ({
         id: result.id || result.npi_number || '',
         name: result.name || 'Unknown Provider',
@@ -164,12 +164,8 @@ export default function SearchPage() {
   }
 
   const handleViewDetails = (providerId: string) => {
-<<<<<<< HEAD
     const provider = results.find(p => p.id === providerId)
     navigate(`/providers/${providerId}`, {state: { provider } })
-=======
-    navigate(`/provider/${providerId}`)
->>>>>>> 3984c6ad617549f5848b670375f4b1f70e2ccd48
   }
 
   const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {
