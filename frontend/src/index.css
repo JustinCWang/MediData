@@ -113,6 +113,19 @@ body {
   color: #0f172a !important;
 }
 
+[data-theme="dark"] .register-card label,
+[data-theme="dark"] .register-card p,
+[data-theme="dark"] .register-card span,
+[data-theme="dark"] .register-card input,
+[data-theme="dark"] .register-card select,
+[data-theme="dark"] .register-card textarea,
+[data-theme="dark"] .register-card h1,
+[data-theme="dark"] .register-card h2,
+[data-theme="dark"] .register-card h3,
+[data-theme="dark"] .register-card button {
+  color: #0f172a !important;
+}
+
 [data-theme="dark"] .explore-more-text {
   color: #ffffff !important;
 }

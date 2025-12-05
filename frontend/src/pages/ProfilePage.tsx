@@ -33,8 +33,23 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
+  const avatarStorageKey = () => {
+    const userData = localStorage.getItem('user')
+    if (!userData) return 'avatar'
+    try {
+      const parsed = JSON.parse(userData)
+      const email = parsed?.email || parsed?.user_metadata?.email
+      if (email) return `avatar_${email}`
+      if (parsed?.id) return `avatar_${parsed.id}`
+    } catch {
+      return 'avatar'
+    }
+    return 'avatar'
+  }
+
   useEffect(() => {
-    const stored = localStorage.getItem('avatar')
+    const key = avatarStorageKey()
+    const stored = localStorage.getItem(key)
     if (stored) {
       setAvatarPreview(stored)
     }
@@ -62,7 +77,7 @@ export default function ProfilePage() {
         if ((data as any)?.avatar) {
           const val = (data as any).avatar as string
           setAvatarPreview(val)
-          localStorage.setItem('avatar', val)
+          localStorage.setItem(key, val)
           window.dispatchEvent(new Event('avatar-change'))
         }
       } catch (err) {
@@ -135,10 +150,10 @@ export default function ProfilePage() {
       if ((updatedProfile as any)?.avatar) {
         const val = (updatedProfile as any).avatar as string
         setAvatarPreview(val)
-        localStorage.setItem('avatar', val)
+        localStorage.setItem(avatarStorageKey(), val)
         window.dispatchEvent(new Event('avatar-change'))
       } else if (avatarPreview) {
-        localStorage.setItem('avatar', avatarPreview)
+        localStorage.setItem(avatarStorageKey(), avatarPreview)
         window.dispatchEvent(new Event('avatar-change'))
       }
       setSuccess(true)
@@ -234,7 +249,12 @@ export default function ProfilePage() {
                     const file = e.target.files?.[0]
                     if (!file) return
                     const reader = new FileReader()
-                    reader.onload = () => setAvatarPreview(reader.result as string)
+                    reader.onload = () => {
+                      const val = reader.result as string
+                      setAvatarPreview(val)
+                      localStorage.setItem(avatarStorageKey(), val)
+                      window.dispatchEvent(new Event('avatar-change'))
+                    }
                     reader.readAsDataURL(file)
                   }}
                 />

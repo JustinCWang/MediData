@@ -38,6 +38,14 @@ export default function DashboardPage() {
   const [avatar, setAvatar] = useState<string | null>(null)
   const navigate = useNavigate();
 
+  const avatarKeyForUser = (u: User | null) => {
+    if (!u) return null
+    const email = (u as any)?.email || (u as any)?.user_metadata?.email
+    if (email) return `avatar_${email}`
+    if ((u as any)?.id) return `avatar_${(u as any).id}`
+    return null
+  }
+
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (userData) {
@@ -50,13 +58,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const loadAvatar = () => {
-      const storedAvatar = localStorage.getItem('avatar')
-      if (storedAvatar) {
-        setAvatar(storedAvatar)
-        return
+      const key = avatarKeyForUser(user)
+      if (key) {
+        const storedAvatar = localStorage.getItem(key)
+        if (storedAvatar) {
+          setAvatar(storedAvatar)
+          return
+        }
       }
       if (user?.user_metadata?.avatar) {
         setAvatar(user.user_metadata.avatar as unknown as string)
+      } else {
+        setAvatar(null)
       }
     }
     loadAvatar()

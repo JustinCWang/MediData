@@ -163,6 +163,14 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   const [openDrop, setOpenDrop] = useState(false)
   const [avatar, setAvatar] = useState<string | null>(null)
 
+  const avatarKeyForUser = (u: User | null) => {
+    if (!u) return null
+    const email = (u as any)?.email || (u as any)?.user_metadata?.email
+    if (email) return `avatar_${email}`
+    if (u.id) return `avatar_${u.id}`
+    return null
+  }
+
   // Check authentication status on mount and when localStorage changes
   useEffect(() => {
     const checkAuth = () => {
@@ -171,7 +179,8 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
       const parsed = userData ? JSON.parse(userData) : null
       setIsAuthenticated(!!token)
       setUser(parsed)
-      const storedAvatar = localStorage.getItem('avatar')
+      const key = avatarKeyForUser(parsed)
+      const storedAvatar = key ? localStorage.getItem(key) : null
       setAvatar(storedAvatar || parsed?.avatar || parsed?.user_metadata?.avatar || null)
     }
 
@@ -192,6 +201,10 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   }, [])
 
   const handleLogout = () => {
+    const key = avatarKeyForUser(user)
+    if (key) {
+      localStorage.removeItem(key)
+    }
     localStorage.removeItem('access_token')
     localStorage.removeItem('user')
     setIsAuthenticated(false)
@@ -1123,7 +1136,7 @@ function RegisterPage() {
 
   return (
     <AuthBackground>
-      <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
+      <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10 register-card">
         {/* Step 1: Role Selection */}
         {step === 'role' && (
           <>
