@@ -588,13 +588,13 @@ function LandingPage() {
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-slate-900/15 hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
+                  className="inline-flex items-center justify-center rounded-full border border-white/80 bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-sm hover:border-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   Get started
                 </Link>
                 <Link
                   to="/login"
-                  className="landing-account-link inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
+                  className="landing-account-link inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 hover:border-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   I already have an account
                 </Link>
