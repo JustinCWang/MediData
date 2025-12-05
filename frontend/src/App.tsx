@@ -26,6 +26,7 @@ import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import ProviderDetailsPage from './pages/ProviderDetailsPage'
+import Privacy from './pages/Privacy'
 import React from 'react'
 
 /**
@@ -108,6 +109,7 @@ export default function App() {
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
@@ -335,7 +337,7 @@ function AppFooter() {
       <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-600">
         <p>© {new Date().getFullYear()} MediData. All rights reserved.</p>
         <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-slate-800">
+          <a href="/privacy" className="hover:text-slate-800">
             Privacy
           </a>
           <a href="#" className="hover:text-slate-800">
