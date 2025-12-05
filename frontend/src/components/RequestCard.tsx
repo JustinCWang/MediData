@@ -195,9 +195,23 @@ export default function RequestCard({
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-semibold text-slate-900">
-              {userRole === 'provider' ? `Patient: ${request.providerName}` : request.providerName}
-            </h3>
+            <div className="flex items-center gap-2">
+              {request.provider_id === 'NPI-2' ? (
+                // Organization icon
+                <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : (
+                // Individual icon (default)
+                <svg className="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+
+              <h3 className="text-lg font-semibold text-slate-900">
+                {userRole === 'provider' ? `Patient: ${request.providerName}` : request.providerName}
+              </h3>
+            </div>
             <span
               className={`px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 ${getStatusColor(
                 request.status

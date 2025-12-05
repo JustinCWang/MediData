@@ -565,6 +565,8 @@ def search_affiliated_providers(
                 location_parts = [provider_city, provider_state]
                 location = ", ".join([part for part in location_parts if part]).strip()
                 
+                enum_type = "NPI-1" if provider.get("provider_type") == "individual" else "NPI-2"
+                
                 affiliated_results.append({
                     "id": provider.get("provider_id", ""),
                     "name": name,
@@ -573,7 +575,7 @@ def search_affiliated_providers(
                     "rating": 0,  # Providers table doesn't have ratings
                     "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
                     "npi_number": "",  # Providers table doesn't store NPI
-                    "enumeration_type": "",
+                    "enumeration_type": enum_type,
                     "is_affiliated": True,  # Mark as affiliated provider
                     "email": provider.get("email", ""),
                 })
@@ -743,20 +745,26 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         dict: Transformed provider data matching Provider interface
     """
     try:
-        # Extract basic info - NPI number is at the top level
         npi_number = str(npi_result.get("number", ""))
-        
         if not npi_number:
             return None
-        
-        # Extract name (can be individual or organization)
-        # The "basic" object contains provider information
+
         basic_info = npi_result.get("basic", {})
         if not basic_info:
             return None
-            
+
+        # Derive enumeration_type explicitly from NPI data
+        enumeration_type = basic_info.get("enumeration_type")
+        if not enumeration_type:
+            # Fallback: individuals have first/last name, orgs have organization_name
+            if "organization_name" in basic_info:
+                enumeration_type = "NPI-2"
+            else:
+                enumeration_type = "NPI-1"
+        
+        # Extract name (can be individual or organization)
+        # The "basic" object contains provider information
         name = ""
-        enumeration_type = basic_info.get("enumeration_type", "")
         
         if enumeration_type == "NPI-1" or "first_name" in basic_info or "last_name" in basic_info:
             # Individual provider
@@ -794,7 +802,7 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         location = ""
         phone = ""
         if addresses and len(addresses) > 0:
-            # Find primary address or use first one
+            # Find primary address or use first
             primary_address = next((a for a in addresses if a.get("address_purpose", "") == "LOCATION"), addresses[0])
             city = primary_address.get("city", "")
             state = primary_address.get("state", "")

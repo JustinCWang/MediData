@@ -29,6 +29,7 @@ interface ApiProviderResult {
   location?: string
   insurance?: string[]
   is_affiliated?: boolean
+  enumeration_type?: string
 }
 
 interface ApiSearchResponse {
@@ -142,7 +143,10 @@ export default function SearchPage() {
         location: result.location || 'Location not available',
         insurance: result.insurance || [],
         is_affiliated: result.is_affiliated || false,
+        enumeration_type: result.enumeration_type, // pass through
       }))
+
+      console.log('providers', transformedResults.slice(0, 3))
 
       setResults(transformedResults)
       setSearchStats({
