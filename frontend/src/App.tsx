@@ -26,7 +26,8 @@ import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import ProviderDetailsPage from './pages/ProviderDetailsPage'
-import Privacy from './pages/Privacy'
+//import ContactPage from './pages/ContactPage'
+import AboutPage from './pages/AboutPage'
 import React from 'react'
 
 /**
@@ -109,7 +110,8 @@ export default function App() {
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
-          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/about" element={<AboutPage />} />
+          
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
@@ -271,14 +273,7 @@ function AppHeader() {
               </Link>
             </>
           )}
-          <button
-            onClick={() => setOpenDrop((v) => !v)}
-            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
-            aria-expanded={openDrop}
-            aria-label="Toggle header panel"
-          >
-            {openDrop ? 'Close' : 'About'}
-          </button>
+
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
@@ -344,8 +339,13 @@ function AppFooter() {
             Terms
           </a>
           <a href="#" className="hover:text-slate-800">
-            Support
+            Contact Us
           </a>
+            <a href="/about" className="hover:text-slate-800">
+            About Us
+          </a>
+
+
         </div>
       </div>
     </footer>
