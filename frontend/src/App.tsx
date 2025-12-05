@@ -138,7 +138,7 @@ export default function App() {
       <AppHeader theme={theme} onToggleTheme={toggleTheme} />
       <main>
         <Routes>
-          <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
+          <Route path="/" element={<GuestRoute><LandingPage theme={theme} /></GuestRoute>} />
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
@@ -245,14 +245,24 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   }
 
   return (
-    <header className={`sticky top-0 z-30 border-b bg-white/75 backdrop-blur-xl shadow-sm relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${openDrop ? 'translate-y-2 bg-slate-950/95 border-slate-800' : 'border-white/40'}`}>
+    <header
+      className={`sticky top-0 z-30 border-b backdrop-blur-xl relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        openDrop
+          ? 'translate-y-2 bg-slate-950/95 border-slate-800 shadow-lg'
+          : theme === 'dark'
+            ? 'bg-slate-900/80 border-slate-800 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.8)]'
+            : 'bg-white/75 border-white/40 shadow-sm'
+      }`}
+    >
       <div className={`mx-auto max-w-6xl px-6 py-3 flex items-center justify-between transition-all duration-500 ${openDrop ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'}`}>
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2">
           <span className={`text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 ${openDrop ? 'from-white via-white to-white' : ''}`}>
             MediData
           </span>
         </Link>
-        <nav className={`hidden md:flex items-center gap-2 text-sm transition-colors duration-500 ${openDrop ? 'text-white' : ''}`}>
+        <nav className={`hidden md:flex items-center gap-2 text-sm transition-colors duration-500 ${
+          openDrop ? 'text-white' : theme === 'dark' ? 'text-slate-100' : 'text-slate-700'
+        }`}>
           {isAuthenticated ? (
             <>
               {[
@@ -268,8 +278,8 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-full transition-colors ${
                       isActive
-                        ? `bg-white/70 text-slate-900 shadow-sm border border-white/70 ${openDrop ? 'bg-white/20 text-white border-white/30' : ''}`
-                        : `text-slate-600 hover:text-slate-800 hover:bg-white/50 ${openDrop ? 'text-slate-200 hover:bg-white/10' : ''}`
+                        ? `${openDrop ? 'bg-white/20 text-white border border-white/30' : theme === 'dark' ? 'bg-slate-800 text-white border border-slate-700 shadow-sm' : 'bg-white/70 text-slate-900 shadow-sm border border-white/70'}`
+                        : `${openDrop ? 'text-slate-200 hover:bg-white/10' : theme === 'dark' ? 'text-slate-200 hover:text-white hover:bg-slate-800/60' : 'text-slate-600 hover:text-slate-800 hover:bg-white/50'}`
                     }`
                   }
                 >
@@ -284,8 +294,8 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
               className={({ isActive }) =>
                 `px-3 py-2 rounded-full transition-colors ${
                   isActive
-                    ? `bg-white/70 text-slate-900 shadow-sm border border-white/70 ${openDrop ? 'bg-white/20 text-white border-white/30' : ''}`
-                    : `text-slate-600 hover:text-slate-800 hover:bg-white/50 ${openDrop ? 'text-slate-200 hover:bg-white/10' : ''}`
+                    ? `${openDrop ? 'bg-white/20 text-white border-white/30' : theme === 'dark' ? 'bg-slate-800 text-white border border-slate-700 shadow-sm' : 'bg-white/70 text-slate-900 shadow-sm border border-white/70'}`
+                    : `${openDrop ? 'text-slate-200 hover:bg-white/10' : theme === 'dark' ? 'text-slate-200 hover:text-white hover:bg-slate-800/60' : 'text-slate-600 hover:text-slate-800 hover:bg-white/50'}`
                 }`
               }
             >
@@ -313,7 +323,13 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
             <>
               <Link
                 to="/login"
-                className={`hidden sm:inline-flex items-center rounded-full border border-white/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:shadow-sm ${openDrop ? 'bg-white/10 text-white border-white/30' : ''}`}
+                className={`hidden sm:inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                  openDrop
+                    ? 'bg-white/10 text-white border-white/30'
+                    : theme === 'dark'
+                      ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
+                      : 'border-white/80 bg-white/70 text-slate-700 hover:bg-white hover:shadow-sm'
+                }`}
               >
                 Log in
               </Link>
@@ -344,7 +360,13 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
           </button>
           <button
             onClick={() => setOpenDrop((v) => !v)}
-            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
+            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
+              openDrop
+                ? 'border-white/40 bg-white/10 text-white hover:bg-white/15'
+                : theme === 'dark'
+                  ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
+                  : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'
+            }`}
             aria-expanded={openDrop}
             aria-label="Toggle header panel"
           >
@@ -431,7 +453,7 @@ function AppFooter() {
  * - Features section: Three key features of the platform
  * - How it works section: Step-by-step explanation of the service
  */
-function LandingPage() {
+function LandingPage({ theme }: { theme: Theme }) {
   const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
   const nextSectionRef = useRef<HTMLDivElement | null>(null)
   const heroSlides = [
@@ -562,12 +584,18 @@ function LandingPage() {
           <div className="absolute left-1/3 bottom-0 h-[22rem] w-[22rem] rounded-full bg-cyan-300/25 blur-[120px] animate-liquid-drift-slow" />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 text-slate-900 w-full h-full flex items-center">
+        <div className="relative mx-auto max-w-6xl px-6 py-8 md:py-10 text-slate-900 w-full h-full flex items-center">
           <div className="grid md:grid-cols-2 gap-10 items-center w-full">
             <div className="space-y-4 landing-plain">
-              <div className="landing-ribbon inline-flex items-center gap-3 rounded-full border border-white/60 bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
-                Smart matching, real outcomes
+              <div
+                className={`landing-ribbon inline-flex items-center gap-3 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur shadow-sm ${
+                  theme === 'dark'
+                    ? 'border-slate-700/60 bg-slate-900/80 text-slate-100'
+                    : 'border-white/60 bg-white/70 text-slate-700'
+                }`}
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_6px_rgba(16,185,129,0.28)]" />
+                <span className="dark:text-slate-100">Smart matching, real outcomes</span>
                 <Link
                   to="/register"
                   className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:shadow-md hover:-translate-y-[1px] transition dark:bg-white dark:text-slate-900"
@@ -686,27 +714,27 @@ function LandingPage() {
         ref={nextSectionRef}
         className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[70vh] flex items-center py-12 md:py-14">
+      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center py-14 md:py-16">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
             <div className="absolute left-1/3 bottom-[-10rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center w-full">
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-10 items-center w-full">
             <div className="space-y-3 z-10 landing-plain">
-              <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white">
                 {storySlides[storyIndex].title}
               </h3>
-              <p className="text-slate-600 leading-relaxed dark:text-slate-200">
+              <p className="text-base md:text-lg text-slate-600 leading-relaxed dark:text-slate-200">
                 {storySlides[storyIndex].body}
               </p>
-              <ul className="space-y-2 text-sm text-slate-600 leading-relaxed dark:text-slate-200">
+              <ul className="space-y-2 text-sm md:text-base text-slate-600 leading-relaxed dark:text-slate-200">
                 {storySlides[storyIndex].points.map((pt, idx) => (
                   <li key={idx}>• {pt}</li>
                 ))}
               </ul>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-lg backdrop-blur min-h-[280px] z-10">
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-lg backdrop-blur min-h-[320px] md:min-h-[360px] aspect-[4/3] z-10">
               {storySlides.map((slide, idx) => (
                 <img
                   key={slide.image}
@@ -751,19 +779,19 @@ function LandingPage() {
         data-reveal-id="guide"
               className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
-        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[70vh] flex items-center py-12 md:py-14">
+        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center py-14 md:py-16">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-16 top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-14rem] top-0 h-[22rem] w-[22rem] rounded-full bg-blue-300/25 blur-[130px]" />
             <div className="absolute left-1/2 bottom-[-12rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-10 items-center">
-            <div className="space-y-4 z-10 landing-plain">
-              <h3 className="text-3xl font-semibold text-slate-900 dark:text-white">How to use MediData</h3>
-              <p className="text-slate-600 leading-relaxed dark:text-slate-200">
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-5 z-10 landing-plain">
+              <h3 className="text-4xl md:text-5xl font-semibold text-slate-900 dark:text-white">How to use MediData</h3>
+              <p className="text-base md:text-lg text-slate-600 leading-relaxed dark:text-slate-200">
                 From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
               </p>
-              <ol className="landing-guide-list space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside">
+              <ol className="landing-guide-list space-y-3 text-base md:text-lg text-slate-700 leading-relaxed list-decimal list-inside">
                 <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
                 <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
                 <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
@@ -772,27 +800,27 @@ function LandingPage() {
                 <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
               </ol>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px] z-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30" />
-              <div className="relative p-6 space-y-4 text-slate-800">
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[320px] md:min-h-[380px] aspect-[4/3] z-10">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30 dark:from-slate-900/40 dark:via-blue-900/30 dark:to-slate-800/30" />
+              <div className="relative p-7 space-y-5 text-slate-800 dark:text-slate-100">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
-                  <p className="text-sm font-semibold text-slate-900">Guided flow</p>
+                  <p className="text-base md:text-lg font-semibold text-slate-900 dark:text-white">Guided flow</p>
                 </div>
-                <p className="text-sm leading-relaxed">
+                <p className="text-base md:text-lg leading-relaxed">
                   Search, view details, request, and track within two screens. Safety prompts and verification keep data protected.
                 </p>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm">
-                    <p className="font-semibold text-slate-900">AI assist</p>
-                    <p className="text-slate-600">Prefill specialty/location when you describe symptoms.</p>
+                <div className="grid grid-cols-2 gap-3 text-sm md:text-base">
+                  <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                    <p className="font-semibold text-slate-900 dark:text-white">AI assist</p>
+                    <p className="text-slate-600 dark:text-slate-200">Prefill specialty/location when you describe symptoms.</p>
                   </div>
-                  <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm">
-                    <p className="font-semibold text-slate-900">Transparent status</p>
-                    <p className="text-slate-600">Pending → Confirmed/Needs info with alerts.</p>
+                  <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                    <p className="font-semibold text-slate-900 dark:text-white">Transparent status</p>
+                    <p className="text-slate-600 dark:text-slate-200">Pending → Confirmed/Needs info with alerts.</p>
                   </div>
                 </div>
-                <div className="flex gap-2 text-xs">
+                <div className="flex gap-2 text-xs md:text-sm">
                   <span className="px-3 py-1 rounded-full bg-slate-900 text-white">Secure</span>
                   <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800">Fast</span>
                   <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Guided</span>
