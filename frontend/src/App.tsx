@@ -332,7 +332,7 @@ function AppFooter() {
       <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-600">
         <p>© {new Date().getFullYear()} MediData. All rights reserved.</p>
         <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-slate-800">
+          <a href="/privacy" className="hover:text-slate-800">
             Privacy
           </a>
           <a href="#" className="hover:text-slate-800">
