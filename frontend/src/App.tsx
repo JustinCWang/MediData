@@ -271,14 +271,7 @@ function AppHeader() {
               </Link>
             </>
           )}
-          <button
-            onClick={() => setOpenDrop((v) => !v)}
-            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
-            aria-expanded={openDrop}
-            aria-label="Toggle header panel"
-          >
-            {openDrop ? 'Close' : 'About'}
-          </button>
+
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
@@ -343,9 +336,13 @@ function AppFooter() {
           <a href="#" className="hover:text-slate-800">
             Terms
           </a>
-          <a href="/contact" className="hover:text-slate-800">
+          <a href="#" className="hover:text-slate-800">
             Contact Us
           </a>
+            <a href="/about" className="hover:text-slate-800">
+            About Us
+          </a>
+
 
         </div>
       </div>
