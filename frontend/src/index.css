@@ -176,14 +176,25 @@ body {
 /* Scroll reveal + page flip feel */
 .reveal {
   opacity: 0;
-  transform: perspective(1500px) rotateX(2deg) translateY(14px) scale(0.994);
+  transform: perspective(1500px) rotateX(2deg) translateY(16px) scale(0.992);
   transform-origin: top;
-  transition: opacity 0.46s cubic-bezier(0.25, 0.85, 0.35, 1.05), transform 0.46s cubic-bezier(0.25, 0.85, 0.35, 1.05);
+  transition: opacity 0.5s cubic-bezier(0.22, 0.82, 0.32, 1), transform 0.5s cubic-bezier(0.22, 0.82, 0.32, 1);
+  padding-top: 8px;
+  padding-bottom: 8px;
   will-change: opacity, transform;
 }
 .reveal.visible {
   opacity: 1;
   transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+  padding-top: 0;
+  padding-bottom: 0;
+  animation: reveal-bounce 0.6s cubic-bezier(0.2, 0.85, 0.35, 1.1);
+}
+
+@keyframes reveal-bounce {
+  0% { transform: perspective(1200px) rotateX(2deg) translateY(16px) scale(0.992); opacity: 0; }
+  50% { transform: perspective(1200px) rotateX(0deg) translateY(-4px) scale(1.01); opacity: 1; }
+  100% { transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1); opacity: 1; }
 }
 
 /* Smooth scroll and gentle resistance */
