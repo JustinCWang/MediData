@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import ProviderSearchForm from '../components/ProviderSearchForm'
 import ProviderCard from '../components/ProviderCard'
 import type { Provider } from '../components/ProviderCard'
@@ -44,6 +45,7 @@ interface ApiSearchResponse {
 }
 
 export default function SearchPage() {
+  const navigate = useNavigate()
   const [enumerationType, setEnumerationType] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -162,8 +164,7 @@ export default function SearchPage() {
   }
 
   const handleViewDetails = (providerId: string) => {
-    // TODO: Navigate to provider details page
-    console.log('View details for provider:', providerId)
+    navigate(`/provider/${providerId}`)
   }
 
   const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {
