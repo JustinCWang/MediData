@@ -686,7 +686,7 @@ function LandingPage() {
         ref={nextSectionRef}
         className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[70vh] flex items-center py-12 md:py-14">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
@@ -751,7 +751,7 @@ function LandingPage() {
         data-reveal-id="guide"
               className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
-        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[70vh] flex items-center py-12 md:py-14">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-16 top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-14rem] top-0 h-[22rem] w-[22rem] rounded-full bg-blue-300/25 blur-[130px]" />
