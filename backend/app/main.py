@@ -841,6 +841,59 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         return None
 
 
+@app.get("/api/providers/{npi_number}")
+async def get_provider_by_npi(npi_number: str):
+    """Get a single provider by NPI number.
+
+    This uses the same NPI Registry API as the search endpoint
+    but forces an exact lookup on the NPI number and returns a
+    single transformed provider object.
+    """
+    params = {"number": npi_number, "version": "2.1"}
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                "https://npiregistry.cms.hhs.gov/api/",
+                params=params,
+            )
+            response.raise_for_status()
+            data = response.json()
+
+        results = data.get("results") or []
+        if not results:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider not found",
+            )
+
+        provider = transform_npi_result(results[0])
+        if not provider:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider not found",
+            )
+
+        provider["is_affiliated"] = False
+        return provider
+
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"NPI Registry API error: {e.response.status_code}",
+        )
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Failed to connect to NPI Registry API: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching provider: {str(e)}",
+        )
+
+
 @app.get("/api/profile")
 async def get_profile(current_user = Depends(get_current_user)):
     """
