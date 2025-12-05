@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function ContactPage() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -296,7 +298,10 @@ export default function ContactPage() {
             Join thousands of users who trust MediData for their healthcare needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-3 bg-white text-sky-600 font-semibold rounded-lg hover:bg-slate-100 transition">
+            <button 
+              onClick={() => navigate('/login')}
+              className="px-8 py-3 bg-white text-sky-600 font-semibold rounded-lg hover:bg-slate-100 transition"
+            >
               Get Started
             </button>
             <button className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition">
