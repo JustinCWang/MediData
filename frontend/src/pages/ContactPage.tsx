@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import AboutPage from './AboutPage'
 
 export default function ContactPage() {
   const navigate = useNavigate()
@@ -299,12 +300,13 @@ export default function ContactPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/register')}
               className="px-8 py-3 bg-white text-sky-600 font-semibold rounded-lg hover:bg-slate-100 transition"
             >
               Get Started
             </button>
-            <button className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition">
+            <button onClick={() => navigate('/about')}
+            className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition">
               Learn More
             </button>
           </div>
