@@ -7,7 +7,7 @@
  * - Account summary
  */
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import RequestCard from '../components/RequestCard'
 import type { Request } from '../components/RequestCard'
@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(false)
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [userRole, setUserRole] = useState<'patient' | 'provider'>('patient')
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -141,8 +142,8 @@ export default function DashboardPage() {
   }
 
   const handleProviderViewDetails = (providerId: string) => {
-    // TODO: Navigate to provider details page
-    console.log('View details for provider:', providerId)
+    const provider = favoriteProviders.find(p => p.id === providerId)
+    navigate(`/providers/${providerId}`, { state: { provider } })
   }
 
   const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {

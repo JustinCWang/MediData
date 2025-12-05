@@ -19,16 +19,16 @@
  */
 
 import { Link, NavLink, Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Chatbot from './components/Chatbot'
 import AuthBackground from './components/AuthBackground'
-import FeatureCard from './components/FeatureCard'
 import SearchPage from './pages/SearchPage'
 import RequestsPage from './pages/RequestsPage'
 import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
-import ProviderDetailsPage from './pages/ProviderDetailsPage';
+import ProviderDetailsPage from './pages/ProviderDetailsPage'
+import React from 'react'
 
 /**
  * ProtectedRoute - Route wrapper that requires authentication
@@ -115,7 +115,7 @@ export default function App() {
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
-          <Route path="/provider/:provider_id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
+          <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
         </Routes>
       </main>
       <AppFooter />
@@ -145,6 +145,7 @@ function AppHeader() {
   const navigate = useNavigate()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [openDrop, setOpenDrop] = useState(false)
 
   // Check authentication status on mount and when localStorage changes
   useEffect(() => {
@@ -193,98 +194,63 @@ function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
-      <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
+    <header className={`sticky top-0 z-30 border-b bg-white/75 backdrop-blur-xl shadow-sm relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${openDrop ? 'translate-y-2 bg-slate-950/95 border-slate-800' : 'border-white/40'}`}>
+      <div className={`mx-auto max-w-6xl px-6 py-3 flex items-center justify-between transition-all duration-500 ${openDrop ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'}`}>
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight">MediData</span>
+          <span className={`text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 ${openDrop ? 'from-white via-white to-white' : ''}`}>
+            MediData
+          </span>
         </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm">
+        <nav className={`hidden md:flex items-center gap-2 text-sm transition-colors duration-500 ${openDrop ? 'text-white' : ''}`}>
           {isAuthenticated ? (
             <>
-              <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-                }
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-3 w-4 h-4 inline-block mr-1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
-              </svg>
-
-                Dashboard
-              </NavLink>
-              <NavLink
-                to="/search"
-                className={({ isActive }) =>
-                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-                }
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-3 w-4 h-4 inline-block mr-1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-
-                Search
-              </NavLink>
-              <NavLink
-                to="/requests"
-                className={({ isActive }) =>
-                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-                }
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-3 w-4 h-4 inline-block mr-1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-              </svg>
-
-                Requests
-              </NavLink>
-              <NavLink
-                to="/request-provider"
-                className={({ isActive }) =>
-                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-                }
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-3 w-4 h-4 inline-block mr-1">
-               <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-              </svg>
-
-                Request Provider
-              </NavLink>
-              <NavLink
-                to="/profile"
-                className={({ isActive }) =>
-                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-                }
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-3 w-4 h-4 inline-block mr-1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              </svg>
-
-                Profile
-              </NavLink>
+              {[
+                { to: '/dashboard', label: 'Dashboard' },
+                { to: '/search', label: 'Search' },
+                { to: '/requests', label: 'Requests' },
+                { to: '/request-provider', label: 'Request Provider' },
+                { to: '/profile', label: 'Profile' },
+              ].map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `px-3 py-2 rounded-full transition-colors ${
+                      isActive
+                        ? `bg-white/70 text-slate-900 shadow-sm border border-white/70 ${openDrop ? 'bg-white/20 text-white border-white/30' : ''}`
+                        : `text-slate-600 hover:text-slate-800 hover:bg-white/50 ${openDrop ? 'text-slate-200 hover:bg-white/10' : ''}`
+                    }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
             </>
           ) : (
-            <>
-              <NavLink
-                to="/"
-                end
-                className={({ isActive }) =>
-                  `hover:text-slate-600 ${isActive ? 'text-slate-900 font-semibold' : 'text-slate-600'}`
-                }
-              >
-                Home
-              </NavLink>
-            </>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `px-3 py-2 rounded-full transition-colors ${
+                  isActive
+                    ? `bg-white/70 text-slate-900 shadow-sm border border-white/70 ${openDrop ? 'bg-white/20 text-white border-white/30' : ''}`
+                    : `text-slate-600 hover:text-slate-800 hover:bg-white/50 ${openDrop ? 'text-slate-200 hover:bg-white/10' : ''}`
+                }`
+              }
+            >
+              Home
+            </NavLink>
           )}
         </nav>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
-              <span className="hidden sm:inline text-sm text-slate-600">
+              <span className={`hidden sm:inline text-sm text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-white/70 backdrop-blur ${openDrop ? 'text-white bg-white/10 border-white/30' : ''}`}>
                 {getUserDisplayName()}
               </span>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className={`inline-flex items-center rounded-full border border-white/80 bg-slate-900 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white ${openDrop ? 'bg-white text-slate-900' : ''}`}
               >
                 Log out
               </button>
@@ -293,18 +259,66 @@ function AppHeader() {
             <>
               <Link
                 to="/login"
-                className="hidden sm:inline-flex items-center rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className={`hidden sm:inline-flex items-center rounded-full border border-white/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:shadow-sm ${openDrop ? 'bg-white/10 text-white border-white/30' : ''}`}
               >
                 Log in
               </Link>
               <Link
                 to="/register"
-                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white text-sm font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className={`inline-flex items-center rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 px-4 py-2 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white ${openDrop ? 'from-white via-white to-white text-slate-900' : ''}`}
               >
                 Get started
               </Link>
             </>
           )}
+          <button
+            onClick={() => setOpenDrop((v) => !v)}
+            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${openDrop ? 'border-white/40 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'}`}
+            aria-expanded={openDrop}
+            aria-label="Toggle header panel"
+          >
+            {openDrop ? 'Close' : 'About'}
+          </button>
+        </div>
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0">
+        <div className="px-0">
+          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[45vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-gradient-to-b from-black/75 via-black/60 to-black/70 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-2xl overflow-hidden z-10`}>
+            <button
+              onClick={() => setOpenDrop(false)}
+              className="absolute top-4 right-6 inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/15 transition"
+            >
+              Close ✕
+            </button>
+            <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="space-y-3 max-w-2xl text-white">
+                <p className="text-lg font-semibold">A calmer way to get care</p>
+                <p className="text-sm text-slate-200 leading-relaxed">
+                  MediData connects you to verified providers, gathers the context they need, and keeps every request traceable—so booking feels smooth and safe.
+                </p>
+                <div className="flex items-center gap-2 text-slate-200 text-sm">
+                  <span className="text-base">↘</span>
+                  <span>Start by creating your profile or log in to continue.</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/register"
+                  className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+                >
+                  Get started
+                  <span className="ml-2 text-base">↗</span>
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 hover:shadow-sm"
+                >
+                  Log in
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -347,89 +361,373 @@ function AppFooter() {
  * - How it works section: Step-by-step explanation of the service
  */
 function LandingPage() {
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
+  const nextSectionRef = useRef<HTMLDivElement | null>(null)
+  const heroSlides = [
+    {
+      src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Friendly clinician smiling during telehealth',
+      caption: 'Verified clinicians with up-to-date availability',
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Patient using a laptop to book care',
+      caption: 'Book in minutes with insurance-aware matching',
+    },
+    {
+      src: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80',
+      alt: 'Medical team collaborating on patient care',
+      caption: 'Coordinated care with secure messaging',
+    },
+  ]
+  const HERO_FALLBACK =
+    'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=1400&q=80'
+  const [heroIndex, setHeroIndex] = useState(0)
+  const storySlides = [
+    {
+      title: 'Outcome-aware matching',
+      body: 'We rank by specialty fit, availability, insurance, and observed outcomes—not just proximity.',
+      points: [
+        'Verified profiles with status, insurance, and location',
+        'Shows who can see you sooner and accepts your plan',
+        'Transparent fit, not just distance',
+      ],
+      image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80', // calm lake sunrise
+    },
+    {
+      title: 'Structured requests in minutes',
+      body: 'One form captures contact preference, time windows, and reason so providers start with context.',
+      points: [
+        'Prevents back-and-forth and reduces no-shows',
+        'Tracks status: pending, confirmed, or needs info',
+        'Respects your preferred contact channel',
+      ],
+      image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80', // ocean horizon
+    },
+    {
+      title: 'AI assist, human decisions',
+      body: 'Describe symptoms and get a suggested specialty with prefilled search—no diagnoses, just guidance.',
+      points: [
+        'Safety-first prompts and clear disclaimers',
+        'Prefills specialty and location/insurance when known',
+        'Fallback to manual search if AI is unavailable',
+      ],
+      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80', // forest trail
+    },
+    {
+      title: 'Trust & safety by default',
+      body: 'HIPAA-aware design, least-privilege access, session logging, and verified accounts keep data protected.',
+      points: [
+        'Audit trails and suspicious-login handling',
+        'Email verification and role-aware access',
+        'Encryption in transit and scoped permissions',
+      ],
+      image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80', // mountain lake
+    },
+    {
+      title: 'Built for patients and providers',
+      body: 'Patients get clarity and speed; providers get structured intake and fewer no-shows.',
+      points: [
+        'Clear journey from search to confirmed request',
+        'Notifications so providers don’t miss patient outreach',
+        'Better prep with the right info upfront',
+      ],
+      image: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80', // calm fields
+    },
+  ]
+  const [storyIndex, setStoryIndex] = useState(0)
+
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal-id]'))
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setVisibleIds((prev) => {
+          const next = new Set(prev)
+          let changed = false
+          for (const entry of entries) {
+            const el = entry.target as HTMLElement
+            const id = el.dataset.revealId
+            if (!id) continue
+            const ratio = entry.intersectionRatio
+            if (ratio >= 0.4 && !next.has(id)) {
+              next.add(id)
+              changed = true
+            } else if (ratio <= 0.05 && next.has(id)) {
+              next.delete(id)
+              changed = true
+            }
+          }
+          return changed ? next : prev
+        })
+      },
+      { threshold: [0, 0.05, 0.4, 1], rootMargin: '-2% 0px -2% 0px' }
+    )
+    sections.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % heroSlides.length)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [heroSlides.length])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setStoryIndex((i) => (i + 1) % storySlides.length)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [storySlides.length])
+
   return (
-    <>
-      {/* Hero Section - Main headline and primary CTAs */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+    <div className="overflow-y-auto min-h-screen">
+      <div
+        data-reveal-id="hero"
+        className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
+      >
+        {/* Hero Section - Main headline and primary CTAs */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] text-slate-900 min-h-screen flex items-center">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sky-300/30 blur-[120px] animate-liquid-drift" />
+          <div className="absolute right-0 top-10 h-[26rem] w-[26rem] rounded-full bg-blue-300/25 blur-[140px] animate-liquid-glow" />
+          <div className="absolute left-1/3 bottom-0 h-[22rem] w-[22rem] rounded-full bg-cyan-300/25 blur-[120px] animate-liquid-drift-slow" />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 text-slate-900 w-full h-full flex items-center">
+          <div className="grid md:grid-cols-2 gap-10 items-center w-full">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
+                Smart matching, real outcomes
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
                 Find the right provider, fast.
               </h1>
-              <p className="mt-4 text-lg text-slate-600">
-                MediData connects patients with the most suitable healthcare provider based on
-                needs, availability, insurance, and outcomes—within minutes.
+              <p className="text-lg text-slate-700">
+                MediData matches you to verified clinicians based on your symptoms, insurance, location, and real outcomes—so you spend minutes, not weeks, getting care.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <p className="text-sm text-slate-500">
+                HIPAA-conscious by design, with secure messaging and transparent provider profiles.
+              </p>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center rounded-md bg-blue-600 px-5 py-3 text-white font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-slate-900/15 hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   Get started
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center rounded-md border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300/70 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
                 >
                   I already have an account
                 </Link>
               </div>
+              <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90">
+                <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
+                  <p className="font-semibold text-slate-900">92% faster</p>
+                  <p>to schedule compared to phone calls and fragmented portals.</p>
+                </div>
+                <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
+                  <p className="font-semibold text-slate-900">Insurance-aware</p>
+                  <p>Only shows providers who can accept your plan and network.</p>
+                </div>
+              </div>
             </div>
+
             <div className="md:pl-6">
-              <div className="aspect-4/3 w-full rounded-xl border border-slate-200 bg-linear-to-br from-blue-50 to-sky-50 p-6">
-                <div className="h-full w-full rounded-lg border border-dashed border-slate-300 grid place-items-center text-slate-500 text-center text-sm">
-                  Future: search, match results, and booking UI\n
-                  <br />
-                  For now, use the Login / Sign up buttons to access authentication screens.
+              <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-300/40">
+                {heroSlides.map((slide, idx) => (
+                  <img
+                    key={slide.src}
+                    src={slide.src}
+                    alt={slide.alt}
+                    onError={(e) => {
+                      if (e.currentTarget.src !== HERO_FALLBACK) {
+                        e.currentTarget.src = HERO_FALLBACK
+                      }
+                    }}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${idx === heroIndex ? 'opacity-100' : 'opacity-0'}`}
+                    loading="lazy"
+                  />
+                ))}
+
+                <div className="absolute bottom-0 left-0 right-0 bg-white/70 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/50">
+                  {heroSlides[heroIndex]?.caption}
+                </div>
+
+                <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-3">
+                  <button
+                    type="button"
+                    onClick={() => setHeroIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length)}
+                    className="h-9 w-9 rounded-full bg-white/85 text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    aria-label="Previous slide"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHeroIndex((i) => (i + 1) % heroSlides.length)}
+                    className="h-9 w-9 rounded-full bg-white/85 text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    aria-label="Next slide"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-2">
+                  {heroSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setHeroIndex(idx)}
+                      className={`h-2.5 w-2.5 rounded-full border border-slate-400/80 ${idx === heroIndex ? 'bg-slate-700' : 'bg-slate-200'}`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <div className="absolute inset-x-0 bottom-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900"
+          >
+            <span className="h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow">
+              ↓
+            </span>
+            <span className="text-xs font-semibold tracking-wide uppercase">Explore more</span>
+          </button>
+        </div>
       </section>
+      </div>
 
-      {/* Features Section - Highlights three key platform benefits */}
-      <section id="features" className="bg-slate-50">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard
-              title="Personalized matching"
-              description="We match by condition, specialty, location, insurance, and provider outcomes."
-            />
-            <FeatureCard
-              title="Verified providers"
-              description="Profiles include verified credentials, availability, and accepted insurance."
-            />
-            <FeatureCard
-              title="Fast and secure"
-              description="HIPAA-conscious design with fast response times and secure data handling."
-            />
+      <div
+        data-reveal-id="value"
+        ref={nextSectionRef}
+        className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
+      >
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
+            <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
+            <div className="absolute left-1/3 bottom-[-10rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
-        </div>
-      </section>
-
-      {/* How It Works Section - Explains the 3-step process for using MediData */}
-      <section id="how-it-works">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <h2 className="text-2xl md:text-3xl font-semibold">How it works</h2>
-          <ol className="mt-6 grid gap-4 md:grid-cols-3">
-            <li className="rounded-lg border border-slate-200 bg-white p-5">
-              <span className="font-semibold">1. Tell us your needs</span>
-              <p className="mt-2 text-slate-600">Symptoms, preferences, insurance, and location.</p>
-            </li>
-            <li className="rounded-lg border border-slate-200 bg-white p-5">
-              <span className="font-semibold">2. Get matched</span>
-              <p className="mt-2 text-slate-600">We surface top providers with real-time availability.</p>
-            </li>
-            <li className="rounded-lg border border-slate-200 bg-white p-5">
-              <span className="font-semibold">3. Book in minutes</span>
-              <p className="mt-2 text-slate-600">Schedule directly and manage follow-ups seamlessly.</p>
-            </li>
-          </ol>
-        </div>
-      </section>
-    </>
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div className="space-y-3 z-10">
+              <h3 className="text-2xl font-semibold text-slate-900">
+                {storySlides[storyIndex].title}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {storySlides[storyIndex].body}
+              </p>
+              <ul className="space-y-2 text-sm text-slate-600 leading-relaxed">
+                {storySlides[storyIndex].points.map((pt, idx) => (
+                  <li key={idx}>• {pt}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/70 shadow-lg backdrop-blur min-h-[280px] z-10">
+              {storySlides.map((slide, idx) => (
+                <img
+                  key={slide.image}
+                  src={slide.image}
+                  alt={slide.title}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${idx === storyIndex ? 'opacity-100' : 'opacity-0'}`}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-4">
+            <button
+              type="button"
+              onClick={() => setStoryIndex((i) => (i - 1 + storySlides.length) % storySlides.length)}
+              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              aria-label="Previous highlight"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => setStoryIndex((i) => (i + 1) % storySlides.length)}
+              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              aria-label="Next highlight"
+            >
+              ›
+            </button>
+          </div>
+          <div className="absolute inset-x-0 bottom-10 flex justify-center gap-2">
+            {storySlides.map((_, idx) => (
+              <span
+                key={idx}
+                className={`h-2.5 w-2.5 rounded-full border border-slate-400 ${idx === storyIndex ? 'bg-slate-700' : 'bg-slate-200'}`}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+      
+      <div
+        data-reveal-id="guide"
+        className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
+      >
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-16 top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-sky-300/30 blur-[120px]" />
+            <div className="absolute right-[-14rem] top-0 h-[22rem] w-[22rem] rounded-full bg-blue-300/25 blur-[130px]" />
+            <div className="absolute left-1/2 bottom-[-12rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
+          </div>
+          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-10 items-center">
+            <div className="space-y-4 z-10">
+              <h3 className="text-3xl font-semibold text-slate-900">How to use MediData</h3>
+              <p className="text-slate-600 leading-relaxed">
+                From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
+              </p>
+              <ol className="space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside">
+                <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
+                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
+                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
+                <li><span className="font-semibold text-slate-900">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
+                <li><span className="font-semibold text-slate-900">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
+                <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
+              </ol>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px] z-10">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30" />
+              <div className="relative p-6 space-y-4 text-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
+                  <p className="text-sm font-semibold text-slate-900">Guided flow</p>
+                </div>
+                <p className="text-sm leading-relaxed">
+                  Search, view details, request, and track within two screens. Safety prompts and verification keep data protected.
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm">
+                    <p className="font-semibold text-slate-900">AI assist</p>
+                    <p className="text-slate-600">Prefill specialty/location when you describe symptoms.</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm">
+                    <p className="font-semibold text-slate-900">Transparent status</p>
+                    <p className="text-slate-600">Pending → Confirmed/Needs info with alerts.</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 text-xs">
+                  <span className="px-3 py-1 rounded-full bg-slate-900 text-white">Secure</span>
+                  <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800">Fast</span>
+                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Guided</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
   )
 }
 
@@ -583,89 +881,93 @@ function LoginPage() {
   }
 
   return (
-    <AuthBackground>
-      <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
-        <h1 className="text-2xl font-semibold text-slate-900">Welcome back</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Log in to continue finding your best-fit providers with MediData.
-        </p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-          {info && (
-            <div className="rounded-md bg-green-50 border border-green-200 p-3">
-              <p className="text-sm text-green-800">{info}</p>
-            </div>
-          )}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="you@example.com"
-            />
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden bg-sky-50">
+      <div className="absolute inset-0">
+        <div className="absolute left-[-8rem] top-[-6rem] h-[26rem] w-[26rem] rounded-full bg-sky-300/80 blur-[90px] animate-light-wander-a" />
+        <div className="absolute right-[-10rem] top-0 h-[20rem] w-[20rem] rounded-full bg-blue-300/75 blur-[80px] animate-light-wander-b" />
+        <div className="absolute left-[15%] bottom-[-6rem] h-[18rem] w-[18rem] rounded-full bg-cyan-300/70 blur-[70px] animate-light-wander-c" />
+        <div className="absolute right-[12%] bottom-[-4rem] h-[22rem] w-[22rem] rounded-full bg-emerald-300/75 blur-[90px] animate-light-wander-d" />
+        <div className="absolute left-[55%] top-[10%] h-[16rem] w-[16rem] rounded-full bg-teal-300/70 blur-[60px] animate-light-wander-e" />
+        <div className="absolute right-[40%] bottom-[8%] h-[14rem] w-[14rem] rounded-full bg-sky-200/80 blur-[55px] animate-light-wander-f" />
+      </div>
+      <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-slate-900">Log in to MediData</h1>
+            <p className="mt-1 text-sm text-slate-600">Access your dashboard, requests, and saved providers.</p>
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              disabled={isLoading}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-              placeholder="••••••••"
-            />
-          </div>
-          <div className="flex items-center justify-between text-xs text-slate-600">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              disabled={isLoading}
-              className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
-            >
-              Forgot your password?
-            </button>
-            {showResendVerification && (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {error && (
+              <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+            {info && (
+              <div className="rounded-md bg-green-50 border border-green-200 p-3">
+                <p className="text-sm text-green-800">{info}</p>
+              </div>
+            )}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                placeholder="••••••••"
+              />
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-600">
               <button
                 type="button"
-                onClick={handleResendVerification}
+                onClick={handleForgotPassword}
                 disabled={isLoading}
                 className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
               >
-                Resend verification email
+                Forgot your password?
               </button>
-            )}
-          </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Logging in...' : 'Log in'}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
-          New to MediData?{' '}
-          <Link to="/register" className="font-medium text-blue-600 hover:text-blue-700">
-            Create an account
-          </Link>
-        </p>
+              {showResendVerification && (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isLoading}
+                  className="text-blue-600 hover:text-blue-700 font-medium disabled:text-blue-400 disabled:cursor-not-allowed"
+                >
+                  Resend verification email
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Logging in...' : 'Log in'}
+            </button>
+          </form>
+        </div>
       </div>
-    </AuthBackground>
+    </section>
   )
 }
 
@@ -1277,4 +1579,3 @@ function ResetPasswordPage() {
     </AuthBackground>
   )
 }
-

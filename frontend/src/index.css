@@ -22,3 +22,102 @@ html, body, #root {
 body {
   margin: 0;
 }
+
+@keyframes light-wander-a {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+  25%  { transform: translate3d(80px, 120px, 0) scale(1.08); opacity: 0.82; }
+  50%  { transform: translate3d(-100px, 60px, 0) scale(1.12); opacity: 0.6; }
+  75%  { transform: translate3d(120px, -80px, 0) scale(1.06); opacity: 0.75; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+}
+@keyframes light-wander-b {
+  0%   { transform: translate3d(0, 0, 0) scale(0.95); opacity: 0.65; }
+  30%  { transform: translate3d(-120px, 90px, 0) scale(1.1); opacity: 0.8; }
+  60%  { transform: translate3d(90px, 140px, 0) scale(1.08); opacity: 0.55; }
+  90%  { transform: translate3d(-80px, -80px, 0) scale(1.04); opacity: 0.7; }
+  100% { transform: translate3d(0, 0, 0) scale(0.95); opacity: 0.65; }
+}
+@keyframes light-wander-c {
+  0%   { transform: translate3d(0, 0, 0) scale(0.98); opacity: 0.65; }
+  25%  { transform: translate3d(100px, -120px, 0) scale(1.1); opacity: 0.82; }
+  50%  { transform: translate3d(-140px, -60px, 0) scale(1.12); opacity: 0.55; }
+  75%  { transform: translate3d(90px, 100px, 0) scale(1.06); opacity: 0.7; }
+  100% { transform: translate3d(0, 0, 0) scale(0.98); opacity: 0.65; }
+}
+@keyframes light-wander-d {
+  0%   { transform: translate3d(0, 0, 0) scale(1.02); opacity: 0.7; }
+  30%  { transform: translate3d(-130px, 70px, 0) scale(1.1); opacity: 0.84; }
+  55%  { transform: translate3d(60px, 140px, 0) scale(1.12); opacity: 0.58; }
+  85%  { transform: translate3d(100px, -120px, 0) scale(1.08); opacity: 0.72; }
+  100% { transform: translate3d(0, 0, 0) scale(1.02); opacity: 0.7; }
+}
+@keyframes light-wander-e {
+  0%   { transform: translate3d(0, 0, 0) scale(0.96); opacity: 0.7; }
+  20%  { transform: translate3d(90px, -70px, 0) scale(1.1); opacity: 0.84; }
+  50%  { transform: translate3d(-80px, 90px, 0) scale(1.12); opacity: 0.55; }
+  80%  { transform: translate3d(70px, -100px, 0) scale(1.08); opacity: 0.78; }
+  100% { transform: translate3d(0, 0, 0) scale(0.96); opacity: 0.7; }
+}
+@keyframes light-wander-f {
+  0%   { transform: translate3d(0, 0, 0) scale(0.94); opacity: 0.68; }
+  25%  { transform: translate3d(-80px, 100px, 0) scale(1.1); opacity: 0.82; }
+  55%  { transform: translate3d(100px, 70px, 0) scale(1.12); opacity: 0.55; }
+  80%  { transform: translate3d(-60px, -90px, 0) scale(1.06); opacity: 0.72; }
+  100% { transform: translate3d(0, 0, 0) scale(0.94); opacity: 0.68; }
+}
+
+.animate-light-wander-a { animation: light-wander-a 12s ease-in-out infinite; }
+.animate-light-wander-b { animation: light-wander-b 14s ease-in-out infinite; }
+.animate-light-wander-c { animation: light-wander-c 13s ease-in-out infinite; }
+.animate-light-wander-d { animation: light-wander-d 15s ease-in-out infinite; }
+.animate-light-wander-e { animation: light-wander-e 11s ease-in-out infinite; }
+.animate-light-wander-f { animation: light-wander-f 10s ease-in-out infinite; }
+
+@keyframes liquid-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(30px, -20px, 0) scale(1.05); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes liquid-drift-slow {
+  0%   { transform: translate3d(0, 0, 0) scale(0.98); }
+  50%  { transform: translate3d(-20px, 24px, 0) scale(1.04); }
+  100% { transform: translate3d(0, 0, 0) scale(0.98); }
+}
+
+@keyframes liquid-glow {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+  50%  { transform: translate3d(18px, -12px, 0) scale(1.06); opacity: 0.55; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+}
+
+.animate-liquid-drift      { animation: liquid-drift 18s ease-in-out infinite; }
+.animate-liquid-drift-slow { animation: liquid-drift-slow 22s ease-in-out infinite; }
+.animate-liquid-glow       { animation: liquid-glow 16s ease-in-out infinite; }
+
+/* Scroll reveal + page flip feel */
+.reveal {
+  opacity: 0;
+  transform: perspective(1200px) rotateX(16deg) translateY(60px) scale(0.95);
+  transform-origin: top;
+  transition: opacity 0.8s cubic-bezier(0.16, 0.9, 0.25, 1.1), transform 0.8s cubic-bezier(0.16, 0.9, 0.25, 1.1);
+  will-change: opacity, transform;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+}
+
+/* Smooth scroll and gentle resistance */
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 1.5s ease-in-out infinite;
+}
