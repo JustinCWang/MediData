@@ -135,6 +135,17 @@ body {
   color: #111827 !important;
 }
 
+[data-theme="dark"] footer#contact {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+[data-theme="dark"] footer#contact p,
+[data-theme="dark"] footer#contact a {
+  color: #e2e8f0 !important;
+}
+[data-theme="dark"] footer#contact a:hover {
+  color: #ffffff !important;
+}
+
 
 [data-theme="dark"] .shadow-lg,
 [data-theme="dark"] .shadow-sm {
