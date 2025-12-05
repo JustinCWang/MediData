@@ -594,7 +594,7 @@ function LandingPage({ theme }: { theme: Theme }) {
                     : 'border-white/60 bg-white/70 text-slate-700'
                 }`}
               >
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_6px_rgba(16,185,129,0.28)]" />
+                <span className="ribbon-dot h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_6px_rgba(16,185,129,0.28)]" />
                 <span className="dark:text-slate-100">Smart matching, real outcomes</span>
                 <Link
                   to="/register"
@@ -800,30 +800,30 @@ function LandingPage({ theme }: { theme: Theme }) {
                 <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
               </ol>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[320px] md:min-h-[380px] aspect-[4/3] z-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30 dark:from-slate-900/40 dark:via-blue-900/30 dark:to-slate-800/30" />
-              <div className="relative p-7 space-y-5 text-slate-800 dark:text-slate-100">
+            <div className="landing-guide-card relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[320px] md:min-h-[380px] aspect-[4/3] z-10">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-sky-100/40 to-blue-100/30" />
+              <div className="relative p-7 space-y-5 text-slate-800 dark:text-white">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
                   <p className="text-base md:text-lg font-semibold text-slate-900 dark:text-white">Guided flow</p>
                 </div>
-                <p className="text-base md:text-lg leading-relaxed">
+                <p className="text-base md:text-lg leading-relaxed text-slate-700 dark:text-white">
                   Search, view details, request, and track within two screens. Safety prompts and verification keep data protected.
                 </p>
                 <div className="grid grid-cols-2 gap-3 text-sm md:text-base">
-                  <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                  <div className="landing-guide-feature rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
                     <p className="font-semibold text-slate-900 dark:text-white">AI assist</p>
-                    <p className="text-slate-600 dark:text-slate-200">Prefill specialty/location when you describe symptoms.</p>
+                    <p className="text-slate-600 dark:text-white">Prefill specialty/location when you describe symptoms.</p>
                   </div>
-                  <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                  <div className="landing-guide-feature rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm">
                     <p className="font-semibold text-slate-900 dark:text-white">Transparent status</p>
-                    <p className="text-slate-600 dark:text-slate-200">Pending → Confirmed/Needs info with alerts.</p>
+                    <p className="text-slate-600 dark:text-white">Pending → Confirmed/Needs info with alerts.</p>
                   </div>
                 </div>
                 <div className="flex gap-2 text-xs md:text-sm">
-                  <span className="px-3 py-1 rounded-full bg-slate-900 text-white">Secure</span>
-                  <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800">Fast</span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Guided</span>
+                  <span className="landing-guide-badge px-3 py-1 rounded-full bg-slate-900 text-white">Secure</span>
+                  <span className="landing-guide-badge px-3 py-1 rounded-full bg-blue-100 text-blue-800">Fast</span>
+                  <span className="landing-guide-badge px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">Guided</span>
                 </div>
               </div>
             </div>
