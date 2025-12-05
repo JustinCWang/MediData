@@ -500,7 +500,7 @@ function LandingPage() {
   }, [storySlides.length])
 
   return (
-    <div className="overflow-y-auto min-h-screen page-surface">
+    <div className="min-h-screen page-surface">
       <div
         data-reveal-id="hero"
         className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
@@ -616,10 +616,10 @@ function LandingPage() {
             onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
             className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900 dark:text-white dark:hover:text-white"
           >
-            <span className="h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow">
+            <span className="h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow dark:border-white/70 dark:bg-white/20 dark:text-white">
               ↓
             </span>
-            <span className="text-xs font-semibold tracking-wide uppercase">Explore more</span>
+            <span className="explore-more-text text-xs font-semibold tracking-wide uppercase text-slate-800/90">Explore more</span>
           </button>
         </div>
       </section>
@@ -707,13 +707,13 @@ function LandingPage() {
               <p className="text-slate-600 leading-relaxed dark:text-slate-200">
                 From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
               </p>
-              <ol className="space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside dark:text-slate-200">
-                <li><span className="font-semibold text-slate-900 dark:text-white">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
-                <li><span className="font-semibold text-slate-900 dark:text-white">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
-                <li><span className="font-semibold text-slate-900 dark:text-white">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
-                <li><span className="font-semibold text-slate-900 dark:text-white">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
-                <li><span className="font-semibold text-slate-900 dark:text-white">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
-                <li><span className="font-semibold text-slate-900 dark:text-white">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
+              <ol className="landing-guide-list space-y-3 text-sm text-slate-700 leading-relaxed list-decimal list-inside">
+                <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
+                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
+                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
+                <li><span className="font-semibold text-slate-900">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
+                <li><span className="font-semibold text-slate-900">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
+                <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
               </ol>
             </div>
             <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[260px] z-10">
