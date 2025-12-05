@@ -199,7 +199,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="profile-card bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6">
           <div className="flex items-center gap-4">
             <div className="relative h-16 w-16 rounded-full bg-gradient-to-br from-sky-500 via-emerald-400 to-blue-500 flex items-center justify-center text-white text-xl font-semibold overflow-hidden">
               {avatarPreview ? (
