@@ -26,8 +26,7 @@ import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import ProviderDetailsPage from './pages/ProviderDetailsPage'
-//import ContactPage from './pages/ContactPage'
-import AboutPage from './pages/AboutPage'
+import TermsofUse from './pages/Terms'
 import React from 'react'
 
 /**
@@ -110,8 +109,7 @@ export default function App() {
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
-          <Route path="/about" element={<AboutPage />} />
-          
+          <Route path="/terms" element={<TermsofUse />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
@@ -335,7 +333,7 @@ function AppFooter() {
           <a href="/privacy" className="hover:text-slate-800">
             Privacy
           </a>
-          <a href="#" className="hover:text-slate-800">
+          <a href="Terms" className="hover:text-slate-800">
             Terms
           </a>
           <a href="#" className="hover:text-slate-800">
