@@ -32,10 +32,10 @@ body {
 }
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0b1626;
-  --text: #e5ecf5;
-  --card: rgba(15, 23, 42, 0.65);
-  --card-border: rgba(255, 255, 255, 0.08);
+  --bg: #081220;
+  --text: #f6f8ff;
+  --card: rgba(6, 10, 18, 0.9);
+  --card-border: rgba(255, 255, 255, 0.22);
 }
 
 body {
@@ -48,9 +48,9 @@ body {
 }
 [data-theme="dark"] .page-surface {
   background:
-    radial-gradient(80% 60% at 10% 20%, rgba(14,165,233,0.12), transparent),
+    radial-gradient(80% 60% at 10% 20%, rgba(14,165,233,0.14), transparent),
     radial-gradient(70% 50% at 80% 30%, rgba(16,185,129,0.12), transparent),
-    #0b1626;
+    #081220;
 }
 
 [data-theme="dark"] .bg-white,
@@ -66,16 +66,16 @@ body {
   border-color: var(--card-border) !important;
 }
 [data-theme="dark"] .text-slate-900 {
-  color: #e5ecf5 !important;
+  color: #9ab4ff !important;
 }
 [data-theme="dark"] .text-slate-700 {
-  color: #cbd5e1 !important;
+  color: #7699f0 !important;
 }
 [data-theme="dark"] .text-slate-600 {
-  color: #94a3b8 !important;
+  color: #5e83e0 !important;
 }
 [data-theme="dark"] .text-slate-500 {
-  color: #7c8aa8 !important;
+  color: #4b72d1 !important;
 }
 
 [data-theme="dark"] .shadow-lg,

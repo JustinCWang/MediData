@@ -121,7 +121,7 @@ export default function App() {
   const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors">
       <AppHeader theme={theme} onToggleTheme={toggleTheme} />
       <main>
         <Routes>
@@ -507,13 +507,13 @@ function LandingPage() {
   }, [storySlides.length])
 
   return (
-    <div className="overflow-y-auto min-h-screen">
+    <div className="overflow-y-auto min-h-screen page-surface">
       <div
         data-reveal-id="hero"
         className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
       >
         {/* Hero Section - Main headline and primary CTAs */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] text-slate-900 min-h-screen flex items-center">
+      <section className="relative overflow-hidden page-surface text-slate-900 min-h-screen flex items-center">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sky-300/30 blur-[120px] animate-liquid-drift" />
           <div className="absolute right-0 top-10 h-[26rem] w-[26rem] rounded-full bg-blue-300/25 blur-[140px] animate-liquid-glow" />
@@ -637,7 +637,7 @@ function LandingPage() {
         ref={nextSectionRef}
         className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
@@ -702,7 +702,7 @@ function LandingPage() {
         data-reveal-id="guide"
         className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#e6f3ff] via-[#d7e8ff] to-[#e6f3ff] border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
+        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center pb-16 md:pb-20">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-16 top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-14rem] top-0 h-[22rem] w-[22rem] rounded-full bg-blue-300/25 blur-[130px]" />
