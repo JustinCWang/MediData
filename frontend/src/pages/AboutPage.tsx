@@ -200,29 +200,23 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Experience Better Healthcare Access?</h2>
-          <p className="text-lg mb-10 opacity-90">
-            Join thousands of families who've already discovered how easy finding quality care can be.
+      <div className="max-w-6xl mx-auto mt-16">
+        <div className="bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 rounded-lg shadow-xl p-12 text-center text-white">
+          <h2 className="text-3xl font-bold mb-4">Ready to Experience MediData?</h2>
+          <p className="text-lg mb-8 opacity-90">
+            Join thousands of users who trust MediData for their healthcare needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
+            <button 
               onClick={() => navigate('/register')}
-              className="px-8 py-4 bg-white text-sky-600 font-bold rounded-lg hover:bg-slate-100 transition shadow-lg"
+              className="px-8 py-3 bg-white text-sky-600 font-semibold rounded-lg hover:bg-slate-100 transition"
             >
-              Get Started Today
+              Get Started
             </button>
-            <button
-              onClick={() => navigate('/contact')}
-              className="px-8 py-4 border-2 border-white text-white font-bold rounded-lg hover:bg-white/10 transition"
-            >
-              Learn More
-            </button>
+            
           </div>
         </div>
-      </section>
-
+      </div>
     </div>
   )
 }
