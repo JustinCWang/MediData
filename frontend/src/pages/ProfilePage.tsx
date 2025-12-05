@@ -31,6 +31,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -53,6 +54,9 @@ export default function ProfilePage() {
 
         const data = await response.json()
         setProfile(data)
+        if ((data as any)?.avatar) {
+          setAvatarPreview((data as any).avatar as string)
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile')
       } finally {
@@ -87,6 +91,7 @@ export default function ProfilePage() {
         insurance: string
         location?: string
         taxonomy?: string
+        avatar?: string
       } = {
         firstName: formData.get('firstName') as string,
         lastName: formData.get('lastName') as string,
@@ -95,6 +100,7 @@ export default function ProfilePage() {
         state: formData.get('state') as string,
         city: formData.get('city') as string,
         insurance: formData.get('insurance') as string,
+        avatar: avatarPreview || undefined,
       }
 
       if (profile?.role === 'provider') {
@@ -118,6 +124,9 @@ export default function ProfilePage() {
 
       const updatedProfile = await response.json()
       setProfile(updatedProfile)
+      if ((updatedProfile as any)?.avatar) {
+        setAvatarPreview((updatedProfile as any).avatar as string)
+      }
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
@@ -191,6 +200,34 @@ export default function ProfilePage() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6">
+          <div className="flex items-center gap-4">
+            <div className="relative h-16 w-16 rounded-full bg-gradient-to-br from-sky-500 via-emerald-400 to-blue-500 flex items-center justify-center text-white text-xl font-semibold overflow-hidden">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
+              ) : (
+                <span>{profile.firstName?.[0]?.toUpperCase() || 'U'}</span>
+              )}
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-900">Profile photo</p>
+              <label className="inline-flex items-center px-3 py-2 text-xs font-semibold rounded-full border border-slate-300 bg-white/70 cursor-pointer hover:bg-white text-slate-800">
+                Upload image
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onload = () => setAvatarPreview(reader.result as string)
+                    reader.readAsDataURL(file)
+                  }}
+                />
+              </label>
+              <p className="text-xs text-slate-500">Preview only; stored with other profile updates if backend supports.</p>
+            </div>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
