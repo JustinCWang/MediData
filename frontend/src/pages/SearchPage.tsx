@@ -253,7 +253,7 @@ export default function SearchPage() {
         </div>
 
         <div className="grid lg:grid-cols-[1.1fr_1.3fr] gap-6">
-          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 search-card">
             <ProviderSearchForm
               enumerationType={enumerationType}
               firstName={firstName}
@@ -284,7 +284,7 @@ export default function SearchPage() {
             )}
           </div>
 
-          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4">
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4 search-card">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">Results</h2>

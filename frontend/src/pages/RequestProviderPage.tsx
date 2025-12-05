@@ -223,7 +223,7 @@ export default function RequestProviderPage() {
             <p className="text-sm text-slate-500">Redirecting to requests page...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6 space-y-6 request-provider-card">
             {error && (
               <div className="rounded-md bg-red-50 border border-red-200 p-3">
                 <p className="text-sm text-red-800">{error}</p>

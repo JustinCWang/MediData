@@ -89,10 +89,28 @@ body {
   color: #0f172a !important;
 }
 
+[data-theme="dark"] .search-card label,
+[data-theme="dark"] .search-card p,
+[data-theme="dark"] .search-card span,
+[data-theme="dark"] .search-card input,
+[data-theme="dark"] .search-card select,
+[data-theme="dark"] .search-card textarea {
+  color: #0f172a !important;
+}
+
 [data-theme="dark"] .landing-guide-list,
 [data-theme="dark"] .landing-guide-list li,
 [data-theme="dark"] .landing-guide-list span {
   color: #ffffff !important;
+}
+
+[data-theme="dark"] .request-provider-card label,
+[data-theme="dark"] .request-provider-card p,
+[data-theme="dark"] .request-provider-card span,
+[data-theme="dark"] .request-provider-card input,
+[data-theme="dark"] .request-provider-card select,
+[data-theme="dark"] .request-provider-card textarea {
+  color: #0f172a !important;
 }
 
 [data-theme="dark"] .explore-more-text {
