@@ -565,9 +565,16 @@ function LandingPage() {
         <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 text-slate-900 w-full h-full flex items-center">
           <div className="grid md:grid-cols-2 gap-10 items-center w-full">
             <div className="space-y-4 landing-plain">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur shadow-sm">
+              <div className="landing-ribbon inline-flex items-center gap-3 rounded-full border border-white/60 bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur shadow-sm">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)]" />
                 Smart matching, real outcomes
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:shadow-md hover:-translate-y-[1px] transition dark:bg-white dark:text-slate-900"
+                >
+                  Create account
+                  <span aria-hidden="true" className="text-[12px]">↗</span>
+                </Link>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
                 Find the right provider, fast.
