@@ -135,6 +135,19 @@ body {
   color: #111827 !important;
 }
 
+[data-theme="dark"] .landing-metric {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 20px 50px -35px rgba(0, 0, 0, 0.7) !important;
+}
+[data-theme="dark"] .landing-metric p {
+  color: #e2e8f0 !important;
+}
+[data-theme="dark"] .landing-metric p:first-child {
+  color: #f8fafc !important;
+}
+
 [data-theme="dark"] .landing-ribbon {
   background-color: rgba(15, 23, 42, 0.75) !important;
   border-color: rgba(148, 163, 184, 0.3) !important;

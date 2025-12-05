@@ -600,11 +600,11 @@ function LandingPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90 landing-plain-exempt">
-                <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
+                <div className="landing-metric rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
                   <p className="font-semibold text-slate-900">92% faster</p>
                   <p>to schedule compared to phone calls and fragmented portals.</p>
                 </div>
-                <div className="rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
+                <div className="landing-metric rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
                   <p className="font-semibold text-slate-900">Insurance-aware</p>
                   <p>Only shows providers who can accept your plan and network.</p>
                 </div>
