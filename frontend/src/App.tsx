@@ -376,31 +376,31 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
         <div className="px-0">
-          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[70vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-slate-950 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-xl overflow-hidden z-10`}>
+          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[85vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-slate-950 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-xl overflow-hidden z-10`}>
             <button
               onClick={() => setOpenDrop(false)}
-              className="absolute top-4 right-6 inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 h-9 w-9 text-sm font-semibold text-white hover:bg-white/15 transition"
+              className="absolute top-4 right-6 z-20 inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 h-9 w-9 text-sm font-semibold text-white hover:bg-white/15 transition"
               aria-label="Close about"
             >
               ✕
             </button>
-            <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-            <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-              <div className="flex items-center gap-3 mb-1">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
-                >
-                  Get started
-                  <span className="ml-2 text-base">↗</span>
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 hover:shadow-sm"
-                >
-                  Log in
-                </Link>
-              </div>
+            <div className="absolute top-4 right-6 z-10 flex items-center gap-2 pr-14 pointer-events-auto">
+              <Link
+                to="/register"
+                className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+              >
+                Get started
+                <span className="ml-2 text-base">↗</span>
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 hover:shadow-sm"
+              >
+                Log in
+              </Link>
+            </div>
+            <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/30 to-transparent mt-16" />
+            <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-start md:justify-center gap-10 text-center md:text-left max-w-6xl mx-auto">
               <div className="space-y-4 max-w-2xl text-white">
                 <p className="text-lg font-semibold">A calmer way to get care</p>
                 <p className="text-sm text-slate-200 leading-relaxed">
@@ -436,21 +436,6 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
                   <span className="text-base">↘</span>
                   <span>Start by creating your profile or log in to continue.</span>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 mt-4 md:mt-6 self-start md:self-end">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
-                >
-                  Get started
-                  <span className="ml-2 text-base">↗</span>
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 hover:shadow-sm"
-                >
-                  Log in
-                </Link>
               </div>
             </div>
           </div>
