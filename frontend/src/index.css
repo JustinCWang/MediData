@@ -225,6 +225,36 @@ body {
   color: #f8fafc !important;
 }
 
+.hero-slider-btn {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+[data-theme="dark"] .hero-slider-btn {
+  background-color: #0b1b33 !important;
+  color: #f8fafc !important;
+  border-color: rgba(148, 163, 184, 0.5) !important;
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .hero-slider-btn:hover {
+  background-color: #122b4f !important;
+}
+
+.hero-frame {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+[data-theme="dark"] .hero-frame {
+  background-color: rgba(12, 19, 33, 0.9) !important;
+  border-color: rgba(71, 85, 105, 0.6) !important;
+  box-shadow: 0 30px 80px -50px rgba(0,0,0,0.8) !important;
+}
+.hero-caption {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+[data-theme="dark"] .hero-caption {
+  background-color: rgba(12, 19, 33, 0.92) !important;
+  color: #f8fafc !important;
+  border-color: rgba(71, 85, 105, 0.7) !important;
+}
+
 .modal-tile {
   background-color: rgba(255, 255, 255, 0.95);
   color: #0f172a;

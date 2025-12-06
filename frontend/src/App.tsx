@@ -712,7 +712,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             </div>
 
             <div className="md:pl-6">
-              <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-2xl shadow-slate-300/50 dark:border-slate-700/70 dark:bg-[#0b1b33]/85 dark:shadow-slate-900/50">
+              <div className="hero-frame relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-2xl shadow-slate-300/50">
                 {heroSlides.map((slide, idx) => (
                   <img
                     key={slide.src}
@@ -728,7 +728,7 @@ function LandingPage({ theme }: { theme: Theme }) {
                   />
                 ))}
 
-                <div className="absolute bottom-0 left-0 right-0 bg-white/90 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/70 dark:bg-[#0b1b33]/90 dark:text-slate-100 dark:border-slate-700/70">
+                <div className="hero-caption absolute bottom-0 left-0 right-0 bg-white/90 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/70">
                   {heroSlides[heroIndex]?.caption}
                 </div>
 
@@ -736,7 +736,7 @@ function LandingPage({ theme }: { theme: Theme }) {
                   <button
                     type="button"
                     onClick={() => setHeroIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length)}
-                    className="h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80 dark:bg-[#0f233f]/85 dark:text-slate-100 dark:border dark:border-slate-700/70 dark:hover:bg-[#122b4f]"
+                    className="hero-slider-btn h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80"
                     aria-label="Previous slide"
                   >
                     ‹
@@ -744,7 +744,7 @@ function LandingPage({ theme }: { theme: Theme }) {
                   <button
                     type="button"
                     onClick={() => setHeroIndex((i) => (i + 1) % heroSlides.length)}
-                    className="h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80 dark:bg-[#0f233f]/85 dark:text-slate-100 dark:border dark:border-slate-700/70 dark:hover:bg-[#122b4f]"
+                    className="hero-slider-btn h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80"
                     aria-label="Next slide"
                   >
                     ›
