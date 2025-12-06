@@ -475,6 +475,10 @@ function AppFooter() {
     e.preventDefault()
     window.dispatchEvent(new CustomEvent('show-terms'))
   }
+  const handleSupportClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    window.dispatchEvent(new CustomEvent('show-support'))
+  }
 
   return (
     <footer id="contact" className="border-t border-slate-200">
@@ -487,9 +491,9 @@ function AppFooter() {
           <button type="button" onClick={handleTermsClick} className="hover:text-slate-800">
             Terms
           </button>
-          <a href="#" className="hover:text-slate-800">
+          <button type="button" onClick={handleSupportClick} className="hover:text-slate-800">
             Support
-          </a>
+          </button>
         </div>
       </div>
     </footer>
@@ -509,6 +513,7 @@ function LandingPage({ theme }: { theme: Theme }) {
   const nextSectionRef = useRef<HTMLDivElement | null>(null)
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
+  const [showSupport, setShowSupport] = useState(false)
   const heroSlides = [
     {
       src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
@@ -612,11 +617,14 @@ function LandingPage({ theme }: { theme: Theme }) {
   useEffect(() => {
     const handleShowPrivacy = () => setShowPrivacy(true)
     const handleShowTerms = () => setShowTerms(true)
+    const handleShowSupport = () => setShowSupport(true)
     window.addEventListener('show-privacy', handleShowPrivacy)
     window.addEventListener('show-terms', handleShowTerms)
+    window.addEventListener('show-support', handleShowSupport)
     return () => {
       window.removeEventListener('show-privacy', handleShowPrivacy)
       window.removeEventListener('show-terms', handleShowTerms)
+      window.removeEventListener('show-support', handleShowSupport)
     }
   }, [])
 
@@ -981,6 +989,47 @@ function LandingPage({ theme }: { theme: Theme }) {
                     <li>We respect privacy and security; see the Privacy section for how data is handled.</li>
                     <li>Contact support if you have questions about acceptable use or service limits.</li>
                   </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSupport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <button
+            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
+            aria-label="Close support"
+            onClick={() => setShowSupport(false)}
+          />
+          <div className="relative w-full max-w-4xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+            <button
+              onClick={() => setShowSupport(false)}
+              className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
+              aria-label="Close support modal"
+            >
+              ✕
+            </button>
+            <div className="relative overflow-hidden">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-16 top-[-8rem] h-[18rem] w-[18rem] rounded-full bg-emerald-200/25 dark:bg-emerald-400/15 blur-[110px]" />
+                <div className="absolute right-[-10rem] bottom-[-6rem] h-[16rem] w-[16rem] rounded-full bg-sky-200/25 dark:bg-sky-500/15 blur-[110px]" />
+              </div>
+              <div className="relative mx-auto px-6 py-8 md:px-10 md:py-10">
+                <div className="space-y-4 max-w-3xl text-slate-800 dark:text-slate-100">
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Support</p>
+                  <h3 className="text-2xl md:text-3xl font-semibold">We’re here to help</h3>
+                  <ul className="space-y-2 text-sm md:text-base leading-relaxed list-disc list-inside">
+                    <li>Email us anytime for account, request, or provider questions.</li>
+                    <li>Report issues or feedback and we’ll respond as quickly as we can.</li>
+                    <li>Need data reviewed or exported? Ask and we’ll assist securely.</li>
+                    <li>For urgent clinical needs, contact your provider directly or call emergency services.</li>
+                  </ul>
+                  <div className="space-y-1 text-sm md:text-base">
+                    <p><span className="font-semibold">Email:</span> support@medidata.example</p>
+                    <p><span className="font-semibold">Hours:</span> Mon–Fri, 9a–6p ET</p>
+                  </div>
                 </div>
               </div>
             </div>
