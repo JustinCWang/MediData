@@ -255,12 +255,13 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
       }`}
     >
       <div className={`mx-auto max-w-6xl px-6 py-3 flex items-center justify-between transition-all duration-500 ${openDrop ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'}`}>
+        <div className="w-8 sm:w-12" />
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2">
           <span className={`text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 ${openDrop ? 'from-white via-white to-white' : ''}`}>
             MediData
           </span>
         </Link>
-        <nav className={`hidden md:flex items-center gap-2 text-sm transition-colors duration-500 ${
+        <nav className={`hidden md:flex flex-1 items-center gap-2 justify-end text-sm transition-colors duration-500 ${
           openDrop ? 'text-white' : theme === 'dark' ? 'text-slate-100' : 'text-slate-700'
         }`}>
           {isAuthenticated ? (
@@ -287,21 +288,7 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
                 </NavLink>
               ))}
             </>
-          ) : (
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `px-3 py-2 rounded-full transition-colors ${
-                  isActive
-                    ? `${openDrop ? 'bg-white/20 text-white border-white/30' : theme === 'dark' ? 'bg-slate-800 text-white border border-slate-700 shadow-sm' : 'bg-white/70 text-slate-900 shadow-sm border border-white/70'}`
-                    : `${openDrop ? 'text-slate-200 hover:bg-white/10' : theme === 'dark' ? 'text-slate-200 hover:text-white hover:bg-slate-800/60' : 'text-slate-600 hover:text-slate-800 hover:bg-white/50'}`
-                }`
-              }
-            >
-              Home
-            </NavLink>
-          )}
+          ) : null}
         </nav>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
