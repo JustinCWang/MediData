@@ -910,7 +910,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             aria-label="Close privacy"
             onClick={() => setShowPrivacy(false)}
           />
-          <div className="relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="privacy-modal relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
             <button
               onClick={() => setShowPrivacy(false)}
               className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
@@ -933,19 +933,19 @@ function LandingPage({ theme }: { theme: Theme }) {
                     </p>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-700 dark:text-slate-100">
-                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
                       <p className="font-semibold text-slate-900 dark:text-white">Minimal collection</p>
                       <p className="text-slate-600 dark:text-slate-200">Only info needed for matching and scheduling—no selling data.</p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
                       <p className="font-semibold text-slate-900 dark:text-white">Encryption</p>
                       <p className="text-slate-600 dark:text-slate-200">TLS in transit, scoped access, and activity logging for transparency.</p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
                       <p className="font-semibold text-slate-900 dark:text-white">Control</p>
                       <p className="text-slate-600 dark:text-slate-200">Update or delete your account anytime; manage notifications easily.</p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
                       <p className="font-semibold text-slate-900 dark:text-white">Support</p>
                       <p className="text-slate-600 dark:text-slate-200">Questions? Reach out and we’ll help you review or export your data.</p>
                     </div>
@@ -964,7 +964,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             aria-label="Close terms"
             onClick={() => setShowTerms(false)}
           />
-          <div className="relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="terms-modal relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
             <button
               onClick={() => setShowTerms(false)}
               className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
@@ -1003,7 +1003,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             aria-label="Close support"
             onClick={() => setShowSupport(false)}
           />
-          <div className="relative w-full max-w-4xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="support-modal relative w-full max-w-4xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
             <button
               onClick={() => setShowSupport(false)}
               className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
