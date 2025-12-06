@@ -751,17 +751,6 @@ function LandingPage({ theme }: { theme: Theme }) {
                   </button>
                 </div>
 
-                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-2">
-                  {heroSlides.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setHeroIndex(idx)}
-                      className={`h-2.5 w-2.5 rounded-full border border-slate-300 ${idx === heroIndex ? 'bg-slate-700' : 'bg-white/80'} dark:border-slate-600 ${idx === heroIndex ? 'dark:bg-slate-200' : 'dark:bg-[#0f233f]/70'}`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
               </div>
             </div>
           </div>
