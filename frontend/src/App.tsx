@@ -761,7 +761,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
             className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900 dark:text-white dark:hover:text-white"
           >
-            <span className="h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow dark:border-white/70 dark:bg-white/20 dark:text-white">
+            <span className="hero-scroll-btn h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow dark:border-slate-700 dark:bg-slate-900/90 dark:text-white">
               ↓
             </span>
             <span className="explore-more-text text-xs font-semibold tracking-wide uppercase text-slate-800/90">Explore more</span>
@@ -811,7 +811,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             <button
               type="button"
               onClick={() => setStoryIndex((i) => (i - 1 + storySlides.length) % storySlides.length)}
-              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 hero-slider-btn"
               aria-label="Previous highlight"
             >
               ‹
@@ -819,7 +819,7 @@ function LandingPage({ theme }: { theme: Theme }) {
             <button
               type="button"
               onClick={() => setStoryIndex((i) => (i + 1) % storySlides.length)}
-              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 hero-slider-btn"
               aria-label="Next highlight"
             >
               ›
