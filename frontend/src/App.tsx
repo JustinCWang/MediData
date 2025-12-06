@@ -471,6 +471,10 @@ function AppFooter() {
     e.preventDefault()
     window.dispatchEvent(new CustomEvent('show-privacy'))
   }
+  const handleTermsClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    window.dispatchEvent(new CustomEvent('show-terms'))
+  }
 
   return (
     <footer id="contact" className="border-t border-slate-200">
@@ -480,9 +484,9 @@ function AppFooter() {
           <button type="button" onClick={handlePrivacyClick} className="hover:text-slate-800">
             Privacy
           </button>
-          <a href="#" className="hover:text-slate-800">
+          <button type="button" onClick={handleTermsClick} className="hover:text-slate-800">
             Terms
-          </a>
+          </button>
           <a href="#" className="hover:text-slate-800">
             Support
           </a>
@@ -504,6 +508,7 @@ function LandingPage({ theme }: { theme: Theme }) {
   const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
   const nextSectionRef = useRef<HTMLDivElement | null>(null)
   const [showPrivacy, setShowPrivacy] = useState(false)
+  const [showTerms, setShowTerms] = useState(false)
   const heroSlides = [
     {
       src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
@@ -606,8 +611,13 @@ function LandingPage({ theme }: { theme: Theme }) {
 
   useEffect(() => {
     const handleShowPrivacy = () => setShowPrivacy(true)
+    const handleShowTerms = () => setShowTerms(true)
     window.addEventListener('show-privacy', handleShowPrivacy)
-    return () => window.removeEventListener('show-privacy', handleShowPrivacy)
+    window.addEventListener('show-terms', handleShowTerms)
+    return () => {
+      window.removeEventListener('show-privacy', handleShowPrivacy)
+      window.removeEventListener('show-terms', handleShowTerms)
+    }
   }, [])
 
   useEffect(() => {
@@ -932,6 +942,45 @@ function LandingPage({ theme }: { theme: Theme }) {
                       <p className="text-slate-600 dark:text-slate-200">Questions? Reach out and we’ll help you review or export your data.</p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTerms && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <button
+            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
+            aria-label="Close terms"
+            onClick={() => setShowTerms(false)}
+          />
+          <div className="relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+            <button
+              onClick={() => setShowTerms(false)}
+              className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
+              aria-label="Close terms modal"
+            >
+              ✕
+            </button>
+            <div className="relative overflow-hidden">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-20 top-[-8rem] h-[20rem] w-[20rem] rounded-full bg-blue-300/25 dark:bg-blue-500/20 blur-[120px]" />
+                <div className="absolute right-[-12rem] bottom-[-8rem] h-[18rem] w-[18rem] rounded-full bg-emerald-200/25 dark:bg-emerald-400/15 blur-[110px]" />
+              </div>
+              <div className="relative mx-auto px-6 py-8 md:px-10 md:py-10">
+                <div className="space-y-4 max-w-4xl text-slate-800 dark:text-slate-100">
+                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Terms</p>
+                  <h3 className="text-2xl md:text-3xl font-semibold">Plain-english basics</h3>
+                  <ul className="space-y-2 text-sm md:text-base leading-relaxed list-disc list-inside">
+                    <li>Use MediData responsibly; don’t misuse or attempt to break the service.</li>
+                    <li>Your account is yours—keep credentials private and notify us of issues.</li>
+                    <li>We may update features and terms; continued use means you accept changes.</li>
+                    <li>Content is informational only; clinical decisions remain with you and your provider.</li>
+                    <li>We respect privacy and security; see the Privacy section for how data is handled.</li>
+                    <li>Contact support if you have questions about acceptable use or service limits.</li>
+                  </ul>
                 </div>
               </div>
             </div>
