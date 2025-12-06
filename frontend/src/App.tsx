@@ -376,26 +376,68 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
         <div className="px-0">
-          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[45vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-gradient-to-b from-black/75 via-black/60 to-black/70 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-2xl overflow-hidden z-10`}>
+          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[70vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-slate-950 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-xl overflow-hidden z-10`}>
             <button
               onClick={() => setOpenDrop(false)}
-              className="absolute top-4 right-6 inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/15 transition"
+              className="absolute top-4 right-6 inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 h-9 w-9 text-sm font-semibold text-white hover:bg-white/15 transition"
+              aria-label="Close about"
             >
-              Close ✕
+              ✕
             </button>
             <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-            <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="space-y-3 max-w-2xl text-white">
+            <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+              <div className="flex items-center gap-3 mb-1">
+                <Link
+                  to="/register"
+                  className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
+                >
+                  Get started
+                  <span className="ml-2 text-base">↗</span>
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 hover:shadow-sm"
+                >
+                  Log in
+                </Link>
+              </div>
+              <div className="space-y-4 max-w-2xl text-white">
                 <p className="text-lg font-semibold">A calmer way to get care</p>
                 <p className="text-sm text-slate-200 leading-relaxed">
-                  MediData connects you to verified providers, gathers the context they need, and keeps every request traceable—so booking feels smooth and safe.
+                  MediData was founded by clinicians and builders who kept hearing the same thing: finding care feels confusing and slow. We verify providers, capture the context they need up front, and keep every request traceable so patients move from search to scheduled without the usual friction.
                 </p>
+                <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-200">
+                  <div className="rounded-xl border border-white/15 bg-white/5 p-3 space-y-2">
+                    <p className="font-semibold text-white">What we do</p>
+                    <p className="text-slate-200 leading-relaxed">
+                      We take the friction out of finding care by combining verified provider data, outcomes-aware matching, and structured requests that give clinicians the context they need on the first touch.
+                    </p>
+                    <ul className="text-slate-200 text-sm space-y-1.5 list-disc list-inside">
+                      <li>Match by specialty fit, availability, insurance, and observed outcomes.</li>
+                      <li>Capture contact preference, time windows, and reason once—reduce back-and-forth.</li>
+                      <li>Keep everything traceable: pending → confirmed → follow-up, with clear next steps.</li>
+                      <li>Blend human support with AI assist to keep requests safe, fast, and focused.</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-xl border border-white/15 bg-white/5 p-3 space-y-1.5">
+                    <p className="font-semibold text-white">Founders</p>
+                    <p className="text-slate-200 leading-relaxed">
+                      MediData is built by a founding team of computer science students from Boston University who care deeply about simplifying access to care and shipping reliable products people can trust.
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-slate-100 text-sm">
+                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Eshaan Jalali — product sense & delivery</span>
+                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Justin Wang — systems & data</span>
+                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Jason Sandoval — ops & partnerships</span>
+                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Jason Zhao — engineering @ BU</span>
+                    </div>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2 text-slate-200 text-sm">
                   <span className="text-base">↘</span>
                   <span>Start by creating your profile or log in to continue.</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mt-4 md:mt-6 self-start md:self-end">
                 <Link
                   to="/register"
                   className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
@@ -425,14 +467,19 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
  * Appears at the bottom of all pages.
  */
 function AppFooter() {
+  const handlePrivacyClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    window.dispatchEvent(new CustomEvent('show-privacy'))
+  }
+
   return (
     <footer id="contact" className="border-t border-slate-200">
       <div className="mx-auto max-w-6xl px-5 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-600">
         <p>© {new Date().getFullYear()} MediData. All rights reserved.</p>
         <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-slate-800">
+          <button type="button" onClick={handlePrivacyClick} className="hover:text-slate-800">
             Privacy
-          </a>
+          </button>
           <a href="#" className="hover:text-slate-800">
             Terms
           </a>
@@ -456,6 +503,7 @@ function AppFooter() {
 function LandingPage({ theme }: { theme: Theme }) {
   const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
   const nextSectionRef = useRef<HTMLDivElement | null>(null)
+  const [showPrivacy, setShowPrivacy] = useState(false)
   const heroSlides = [
     {
       src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
@@ -554,6 +602,12 @@ function LandingPage({ theme }: { theme: Theme }) {
     )
     sections.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
+  }, [showPrivacy])
+
+  useEffect(() => {
+    const handleShowPrivacy = () => setShowPrivacy(true)
+    window.addEventListener('show-privacy', handleShowPrivacy)
+    return () => window.removeEventListener('show-privacy', handleShowPrivacy)
   }, [])
 
   useEffect(() => {
@@ -830,6 +884,60 @@ function LandingPage({ theme }: { theme: Theme }) {
           </div>
         </section>
       </div>
+
+      {showPrivacy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <button
+            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
+            aria-label="Close privacy"
+            onClick={() => setShowPrivacy(false)}
+          />
+          <div className="relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+            <button
+              onClick={() => setShowPrivacy(false)}
+              className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
+              aria-label="Close privacy modal"
+            >
+              ✕
+            </button>
+            <div className="relative overflow-hidden">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-24 top-[-8rem] h-[20rem] w-[20rem] rounded-full bg-sky-300/30 dark:bg-sky-500/20 blur-[120px]" />
+                <div className="absolute right-[-12rem] bottom-[-8rem] h-[18rem] w-[18rem] rounded-full bg-emerald-200/30 dark:bg-emerald-400/15 blur-[110px]" />
+              </div>
+              <div className="relative mx-auto px-6 py-8 md:px-10 md:py-10">
+                <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-start">
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-sky-700 dark:text-sky-300">Privacy</p>
+                    <h3 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white">Built to keep your data safe</h3>
+                    <p className="text-slate-600 dark:text-slate-200">
+                      We collect only what’s needed to match you with providers and manage requests. Your data is encrypted in transit, access is limited, and you control your account at any time.
+                    </p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-700 dark:text-slate-100">
+                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                      <p className="font-semibold text-slate-900 dark:text-white">Minimal collection</p>
+                      <p className="text-slate-600 dark:text-slate-200">Only info needed for matching and scheduling—no selling data.</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                      <p className="font-semibold text-slate-900 dark:text-white">Encryption</p>
+                      <p className="text-slate-600 dark:text-slate-200">TLS in transit, scoped access, and activity logging for transparency.</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                      <p className="font-semibold text-slate-900 dark:text-white">Control</p>
+                      <p className="text-slate-600 dark:text-slate-200">Update or delete your account anytime; manage notifications easily.</p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
+                      <p className="font-semibold text-slate-900 dark:text-white">Support</p>
+                      <p className="text-slate-600 dark:text-slate-200">Questions? Reach out and we’ll help you review or export your data.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
