@@ -14,6 +14,8 @@
  *   - "/search" - Provider search page
  *   - "/requests" - Requests page to view all requests
  *   - "/request-provider" - Page to request a provider
+ *   - "/dashboard" - User dashboard page
+ *   - "/provider/:provider_id" - Provider details page
  */
 
 import { Link, NavLink, Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom'
@@ -26,6 +28,10 @@ import RequestProviderPage from './pages/RequestProviderPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import ProviderDetailsPage from './pages/ProviderDetailsPage'
+import TermsofUse from './pages/Terms'
+import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
+import PrivacyPage from './pages/Privacy'
 import React from 'react'
 
 function SunIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -142,9 +148,14 @@ export default function App() {
           <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
           <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
+          <Route path="/terms" element={<TermsofUse />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+          <Route path="/provider/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
           <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
@@ -359,6 +370,7 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
           >
             {openDrop ? 'Close' : 'About'}
           </button>
+
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0">
@@ -466,6 +478,20 @@ function AppFooter() {
           <button type="button" onClick={handleSupportClick} className="hover:text-slate-800">
             Support
           </button>
+          <a href="/privacy" className="hover:text-slate-800">
+            Privacy
+          </a>
+          <a href="/terms" className="hover:text-slate-800">
+            Terms
+          </a>
+          <a href="/contact" className="hover:text-slate-800">
+            Contact Us
+          </a>
+            <a href="/about" className="hover:text-slate-800">
+            About Us
+          </a>
+
+
         </div>
       </div>
     </footer>

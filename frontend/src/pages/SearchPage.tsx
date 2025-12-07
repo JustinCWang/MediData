@@ -29,6 +29,7 @@ interface ApiProviderResult {
   location?: string
   insurance?: string[]
   is_affiliated?: boolean
+  enumeration_type?: string
 }
 
 interface ApiSearchResponse {
@@ -45,6 +46,7 @@ interface ApiSearchResponse {
 }
 
 export default function SearchPage() {
+  const navigate = useNavigate()
   const [enumerationType, setEnumerationType] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -61,7 +63,6 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const resultsPerPage = 6
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
-  const navigate = useNavigate()
 
   // Fetch favorites on mount
   useEffect(() => {
@@ -134,7 +135,7 @@ export default function SearchPage() {
         }
       }
       
-      // Transform results to match Provider interface
+      // Transform results to match Provider
       const transformedResults: Provider[] = data.results.map((result: ApiProviderResult) => ({
         id: result.id || result.npi_number || '',
         name: result.name || 'Unknown Provider',
@@ -142,7 +143,10 @@ export default function SearchPage() {
         location: result.location || 'Location not available',
         insurance: result.insurance || [],
         is_affiliated: result.is_affiliated || false,
+        enumeration_type: result.enumeration_type, // pass through
       }))
+
+      console.log('providers', transformedResults.slice(0, 3))
 
       setResults(transformedResults)
       setSearchStats({

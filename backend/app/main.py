@@ -565,6 +565,8 @@ def search_affiliated_providers(
                 location_parts = [provider_city, provider_state]
                 location = ", ".join([part for part in location_parts if part]).strip()
                 
+                enum_type = "NPI-1" if provider.get("provider_type") == "individual" else "NPI-2"
+                
                 affiliated_results.append({
                     "id": provider.get("provider_id", ""),
                     "name": name,
@@ -573,7 +575,7 @@ def search_affiliated_providers(
                     "rating": 0,  # Providers table doesn't have ratings
                     "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
                     "npi_number": "",  # Providers table doesn't store NPI
-                    "enumeration_type": "",
+                    "enumeration_type": enum_type,
                     "is_affiliated": True,  # Mark as affiliated provider
                     "email": provider.get("email", ""),
                 })
@@ -743,20 +745,26 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         dict: Transformed provider data matching Provider interface
     """
     try:
-        # Extract basic info - NPI number is at the top level
         npi_number = str(npi_result.get("number", ""))
-        
         if not npi_number:
             return None
-        
-        # Extract name (can be individual or organization)
-        # The "basic" object contains provider information
+
         basic_info = npi_result.get("basic", {})
         if not basic_info:
             return None
-            
+
+        # Derive enumeration_type explicitly from NPI data
+        enumeration_type = basic_info.get("enumeration_type")
+        if not enumeration_type:
+            # Fallback: individuals have first/last name, orgs have organization_name
+            if "organization_name" in basic_info:
+                enumeration_type = "NPI-2"
+            else:
+                enumeration_type = "NPI-1"
+        
+        # Extract name (can be individual or organization)
+        # The "basic" object contains provider information
         name = ""
-        enumeration_type = basic_info.get("enumeration_type", "")
         
         if enumeration_type == "NPI-1" or "first_name" in basic_info or "last_name" in basic_info:
             # Individual provider
@@ -794,7 +802,7 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         location = ""
         phone = ""
         if addresses and len(addresses) > 0:
-            # Find primary address or use first one
+            # Find primary address or use first
             primary_address = next((a for a in addresses if a.get("address_purpose", "") == "LOCATION"), addresses[0])
             city = primary_address.get("city", "")
             state = primary_address.get("state", "")
@@ -839,6 +847,59 @@ def transform_npi_result(npi_result: dict) -> Optional[dict]:
         import logging
         logging.error(f"Error transforming NPI result: {str(e)}")
         return None
+
+
+@app.get("/api/providers/{npi_number}")
+async def get_provider_by_npi(npi_number: str):
+    """Get a single provider by NPI number.
+
+    This uses the same NPI Registry API as the search endpoint
+    but forces an exact lookup on the NPI number and returns a
+    single transformed provider object.
+    """
+    params = {"number": npi_number, "version": "2.1"}
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                "https://npiregistry.cms.hhs.gov/api/",
+                params=params,
+            )
+            response.raise_for_status()
+            data = response.json()
+
+        results = data.get("results") or []
+        if not results:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider not found",
+            )
+
+        provider = transform_npi_result(results[0])
+        if not provider:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider not found",
+            )
+
+        provider["is_affiliated"] = False
+        return provider
+
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"NPI Registry API error: {e.response.status_code}",
+        )
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Failed to connect to NPI Registry API: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching provider: {str(e)}",
+        )
 
 
 @app.get("/api/profile")

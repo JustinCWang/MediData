@@ -31,11 +31,22 @@ python -m pip install --upgrade pip
 pip install fastapi uvicorn[standard] python-dotenv pydantic-settings
 ```
 
+For Mac Users: 
+```powershell
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate or . .venv/bin/activate
+pip install fastapi " uvicorn[standard]"  python-dotenv pydantic-settings
+```
+
 **Configure Environment Variables:**
 
 1. Copy the example environment file:
    ```powershell
    copy .env.example .env
+
+   #For MAC users its
+   cp .env.example .env
    ```
 
 2. Edit `.env` and add your Supabase credentials:
@@ -48,6 +59,12 @@ Start the API (default port 8000):
 ```powershell
 python -m venv .venv
  .\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
+
+#For Mac users
+
+python3 -m venv .venv
+source .venv/bin/activate or . .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -113,6 +130,11 @@ Open two terminals from the project root:
 ```powershell
 cd backend
  .\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
+
+#for mac users
+cd backend
+source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
 
