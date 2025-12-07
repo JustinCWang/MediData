@@ -14,8 +14,7 @@ import type { Request } from '../components/RequestCard'
 import ProviderCard from '../components/ProviderCard'
 import type { Provider } from '../components/ProviderCard'
 import EmptyState from '../components/EmptyState'
-
-const API_BASE_URL = 'http://localhost:8000'
+import { API_BASE_URL } from '../config'
 
 interface UserMetadata {
   first_name?: string

@@ -12,6 +12,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react'
+import { API_BASE_URL } from '../config'
 
 type Theme = 'light' | 'dark'
 
@@ -40,8 +41,6 @@ export default function Chatbot({ theme }: { theme: Theme }) {
     setIsLoading(true)
 
     try {
-      const API_BASE_URL = 'http://localhost:8000'
-      
       // Send conversation history to backend
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',

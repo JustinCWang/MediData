@@ -16,8 +16,7 @@ import type { RequestStatus } from '../components/RequestFilterTabs'
 import RequestCard from '../components/RequestCard'
 import type { Request } from '../components/RequestCard'
 import EmptyState from '../components/EmptyState'
-
-const API_BASE_URL = 'http://localhost:8000'
+import { API_BASE_URL } from '../config'
 
 export default function RequestsPage() {
   const [filter, setFilter] = useState<RequestStatus | 'all'>('all')

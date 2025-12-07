@@ -17,8 +17,7 @@ import ProviderCard from '../components/ProviderCard'
 import type { Provider } from '../components/ProviderCard'
 import EmptyState from '../components/EmptyState'
 import { useNavigate } from 'react-router-dom'
-
-const API_BASE_URL = 'http://localhost:8000'
+import { API_BASE_URL } from '../config'
 
 // Type definitions for API response
 interface ApiProviderResult {

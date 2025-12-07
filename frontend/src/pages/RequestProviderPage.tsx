@@ -14,8 +14,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import type { Provider } from '../components/ProviderCard'
-
-const API_BASE_URL = 'http://localhost:8000'
+import { API_BASE_URL } from '../config'
 
 export default function RequestProviderPage() {
   const navigate = useNavigate()

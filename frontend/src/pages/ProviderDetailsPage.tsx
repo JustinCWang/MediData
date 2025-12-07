@@ -16,8 +16,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
 import type { Provider } from '../components/ProviderCard'
-
-const API_BASE_URL = 'http://localhost:8000'
+import { API_BASE_URL } from '../config'
 
 interface LocationState {
   provider?: Provider

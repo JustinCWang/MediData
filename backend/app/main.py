@@ -31,6 +31,7 @@ load_dotenv()
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase_anon_key = os.getenv("SUPABASE_ANON_KEY")
+frontend_origin = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 
 if not supabase_url:
     raise ValueError("SUPABASE_URL must be set in .env file")
@@ -60,7 +61,12 @@ app = FastAPI(
 
 # CORS configuration - allow requests from frontend dev server
 # These origins match the Vite dev server default ports
-origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    frontend_origin,
+    "https://medidata-frontend.vercel.app",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -440,7 +446,7 @@ async def forgot_password(request: EmailRequest):
                 # reset-password route, while keeping the global Site URL for email confirmations.
                 redirect_url = os.getenv(
                     "FRONTEND_RESET_PASSWORD_URL",
-                    "http://localhost:5173/reset-password",
+                    f"{frontend_origin}/reset-password",
                 )
                 try:
                     # Most GoTrue clients accept (email, options)

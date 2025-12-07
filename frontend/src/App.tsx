@@ -33,6 +33,7 @@ import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import PrivacyPage from './pages/Privacy'
 import React from 'react'
+import { API_BASE_URL } from './config'
 
 function SunIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -786,7 +787,7 @@ function LoginPage() {
     setEmail(submittedEmail)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -834,7 +835,7 @@ function LoginPage() {
     setError(null)
     setInfo(null)
     try {
-      const response = await fetch('/api/auth/resend-verification', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -871,7 +872,7 @@ function LoginPage() {
     setError(null)
     setInfo(null)
     try {
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1082,7 +1083,7 @@ function RegisterPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1502,7 +1503,7 @@ function ResetPasswordPage() {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
