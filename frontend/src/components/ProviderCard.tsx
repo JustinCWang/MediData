@@ -78,49 +78,54 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            {/* Type icon: person for individuals, building for orgs */}
-            {provider.enumeration_type === 'NPI-2' ? (
-              // Organization icon
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                className="w-5 h-5 text-indigo-500"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 21h16.5M4.5 21V8.25A2.25 2.25 0 0 1 6.75 6h10.5A2.25 2.25 0 0 1 19.5 8.25V21M9 9.75h.008v.008H9v-.008Zm0 3h.008v.008H9v-.008Zm0 3h.008v.008H9v-.008Zm3-6h.008v.008H12v-.008Zm0 3h.008v.008H12v-.008Zm0 3h.008v.008H12v-.008Zm3-6h.008v.008H15v-.008Zm0 3h.008v.008H15v-.008Zm0 3h.008v.008H15v-.008Z"
-                />
-              </svg>
-            ) : (
-              // Individual/person icon (default)
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                className="w-5 h-5 text-sky-500"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0v.75H4.5v-.75z"
-                />
-              </svg>
-            )}
+          <div className="flex items-start gap-2">
+            <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+              {/* Type icon: person for individuals, building for orgs */}
+              {provider.enumeration_type === 'NPI-2' ? (
+                // Organization icon
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  className="w-5 h-5 text-indigo-500"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 21h16.5M4.5 21V8.25A2.25 2.25 0 0 1 6.75 6h10.5A2.25 2.25 0 0 1 19.5 8.25V21M9 9.75h.008v.008H9v-.008Zm0 3h.008v.008H9v-.008Zm0 3h.008v.008H9v-.008Zm3-6h.008v.008H12v-.008Zm0 3h.008v.008H12v-.008Zm0 3h.008v.008H12v-.008Zm3-6h.008v.008H15v-.008Zm0 3h.008v.008H15v-.008Zm0 3h.008v.008H15v-.008Z"
+                  />
+                </svg>
+              ) : (
+                // Individual/person icon (default)
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  className="w-5 h-5 text-sky-500"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0v.75H4.5v-.75z"
+                  />
+                </svg>
+              )}
+            </div>
 
-            <h3 className="text-lg font-semibold text-slate-900">{provider.name}</h3>
-
-            {provider.is_affiliated && (
-              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md">
-                Affiliated
-              </span>
-            )}
+            <div className="flex flex-col">
+              <h3 className="text-lg font-semibold text-slate-900 leading-snug">
+                {provider.name}
+              </h3>
+              {provider.is_affiliated && (
+                <span className="mt-1 inline-flex w-fit px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md">
+                  Affiliated
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-sm text-slate-600">{provider.specialty}</p>
         </div>
