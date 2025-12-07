@@ -1,99 +1,81 @@
 /**
  * ProviderDetailsPage.tsx - Provider Details Page
- * 
+ *
  * Displays detailed information about a specific healthcare provider.
- * The provider ID is retrieved from the URL params.
+ * The provider can be passed via router state (from search/favorites) or
+ * fetched from the backend using the ID in the URL.
+ *
+ * Features:
+ * - Rich provider header with specialty, location, and affiliation badge
+ * - Journey explanation (what happens after you request)
+ * - Contact + insurance details
+ * - Favorite/unfavorite provider
+ * - Request appointment CTA (only for affiliated providers)
  */
 
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom'
 import type { Provider } from '../components/ProviderCard'
 
 const API_BASE_URL = 'http://localhost:8000'
 
+interface LocationState {
+  provider?: Provider
+}
+
+type ProviderApiResponse = Partial<Provider> & {
+  taxonomy_description?: string
+  city?: string
+  state?: string
+  phone?: string
+  practice_phone?: string
+  email?: string
+  practice_email?: string
+  enumeration_type?: string
+}
+
+const journeySteps = [
+  {
+    title: 'Request sent',
+    desc: 'Share your reason, availability, and insurance so the team starts with context.',
+  },
+  {
+    title: 'Provider reviews',
+    desc: 'We surface fit, availability, and accepted plans so the right clinician responds.',
+  },
+  {
+    title: 'Confirm details',
+    desc: 'You get a confirmation with location/contact options and prep guidance.',
+  },
+]
+
 export default function ProviderDetailsPage() {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const stateProvider = (location.state as LocationState | null)?.provider;
-    const [provider, setProvider] = useState<Provider | null>(stateProvider ?? null);
-    const [isLoading, setIsLoading] = useState(!stateProvider);
-    const [error, setError] = useState<string | null>(null);
-    const journeySteps = [
-        {
-            title: 'Request sent',
-            desc: 'Share your reason, availability, and insurance so the team starts with context.',
-        },
-        {
-            title: 'Provider reviews',
-            desc: 'We surface fit, availability, and accepted plans so the right clinician responds.',
-        },
-        {
-            title: 'Confirm details',
-            desc: 'You get a confirmation with location/contact options and prep guidance.',
-        },
-    ];
-
-    const header = useMemo(() => {
-        if (!provider) return { title: 'Provider Details', subtitle: '' };
-        return {
-            title: provider.name,
-            subtitle: provider.specialty || 'Not Specified',
-        };
-    }, [provider]);
-
-    useEffect(() => {
-        if (provider || !id || stateProvider) return;
-
-        const fetchById = async () => {
-            setIsLoading(true)
-            setError(null)
-            try {
-                const resp = await fetch(`${API_BASE_URL}/api/providers/search?number=${encodeURIComponent(id)}&limit=1`)
-                if (!resp.ok) {
-                    const err = await resp.json().catch(() => ({}))
-                    throw new Error(err.detail || 'Failed to load provider details')
-                }
-                const data = await resp.json()
-                const result = data.results?.[0]
-                if (!result) {
-                    setError('Provider not found')
-                    return
-                }
-                const mapper: Provider = {
-                    id: result.id || result.npi_number || id,
-                    name: result.name || 'Unknown Provider',
-                    specialty: result.specialty || result.taxonomy_description || 'Not specified',
-                    location:
-                        result.location ||
-                        [result.city, result.state].filter(Boolean).join(', ') ||
-                        'Location not available',
-                    insurance: result.insurance || [],
-                    is_affiliated: result.is_affiliated || false,
-                    phone: result.phone || result.practice_phone,
-                    email: result.email || result.practice_email,
-                }
-                setProvider(mapper)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Unable to load provider')
-            } finally {
-                setIsLoading(false)
-            }
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const state = location.state as { provider?: Provider } | undefined
+  const state = location.state as LocationState | undefined
 
   const [provider, setProvider] = useState<Provider | null>(state?.provider ?? null)
   const [isLoading, setIsLoading] = useState(!state?.provider)
   const [error, setError] = useState<string | null>(null)
-  const [isFavorited, setIsFavorited] = useState(false)
-  const [affiliationError, setAffiliationError] = useState<string | null>(null)
-  const [isFavoriteLoading, setIsFavoriteLoading] = useState(true)
 
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(true)
+  const [affiliationError, setAffiliationError] = useState<string | null>(null)
+
+  const header = useMemo(
+    () =>
+      provider
+        ? {
+            title: provider.name,
+            subtitle: provider.specialty || 'Not specified',
+          }
+        : { title: 'Provider details', subtitle: '' },
+    [provider]
+  )
+
+  // Fetch provider details if not passed via state
   useEffect(() => {
-    // If we already have provider from state (e.g. affiliated from search),
-    // don't refetch.
     if (provider || !id) {
       if (!id && !provider) {
         setError('No provider ID provided')
@@ -106,15 +88,30 @@ export default function ProviderDetailsPage() {
       try {
         setIsLoading(true)
         setError(null)
+
         const response = await fetch(`${API_BASE_URL}/api/providers/${id}`)
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch provider details' }))
           throw new Error(errorData.detail || 'Failed to fetch provider details')
         }
 
-        const data = await response.json()
-        setProvider(data)
+        const data: ProviderApiResponse = await response.json()
+
+        // Ensure we have the fields our UI expects
+        const mapped: Provider = {
+          id: data.id ?? id,
+          name: data.name ?? 'Unknown provider',
+          specialty: data.specialty ?? data.taxonomy_description ?? 'Not specified',
+          location: data.location ?? [data.city, data.state].filter(Boolean).join(', ') ?? 'Location not available',
+          insurance: data.insurance ?? [],
+          is_affiliated: data.is_affiliated ?? false,
+          phone: data.phone ?? data.practice_phone,
+          email: data.email ?? data.practice_email,
+          enumeration_type: data.enumeration_type,
+        }
+
+        setProvider(mapped)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load provider details')
       } finally {
@@ -122,154 +119,6 @@ export default function ProviderDetailsPage() {
       }
     }
 
-    return (
-        <div className="page-surface relative min-h-screen overflow-hidden">
-            <div className="pointer-events-none absolute inset-0">
-                <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
-                <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
-                <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
-            </div>
-            <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-6 z-10">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                    >
-                        Back
-                    </button>
-                    <span className="text-sm text-slate-500">Provider ID: {id}</span>
-                </div>
-
-                <div className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6 space-y-6">
-                    {isLoading && <p className="text-slate-600">Loading provider details...</p>}
-                    {error && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">
-                            {error}
-                        </div>
-                    )}
-                    {!isLoading && !error && provider && (
-                        <div className="space-y-6">
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                <div>
-                                    <h1 className="text-3xl font-semibold text-slate-900">{header.title}</h1>
-                                    <p className="text-slate-600 mt-1">{header.subtitle}</p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                        {provider.is_affiliated && (
-                                            <span className="inline-flex px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md">
-                                                Affiliated
-                                            </span>
-                                        )}
-                                        <span className="text-xs text-slate-500">ID: {provider.id}</span>
-                                    </div>
-                                </div>
-                                <div className="text-right text-sm text-slate-500">
-                                    <p>{provider.location}</p>
-                                </div>
-                            </div>
-
-                            <div className="grid lg:grid-cols-[2fr_1fr] gap-6">
-                                <div className="space-y-4">
-                                    <DetailCard title="About this provider">
-                                        <p className="text-sm text-slate-700 leading-relaxed">
-                                            {provider.specialty
-                                                ? `${provider.name} focuses on ${provider.specialty}, keeping availability, insurance, and location up to date so you can book with confidence.`
-                                                : `${provider.name} keeps profile details current so you can book with confidence.`}
-                                        </p>
-                                    </DetailCard>
-
-                                    <DetailCard title="Contact & location">
-                                        <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-700">
-                                            <div>
-                                                <p className="font-semibold text-slate-900">Phone</p>
-                                                <p className="text-slate-700">{provider.phone || 'Not provided'}</p>
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-900">Email</p>
-                                                {provider.email ? (
-                                                    <a href={`mailto:${provider.email}`} className="text-blue-600 hover:text-blue-700">
-                                                        {provider.email}
-                                                    </a>
-                                                ) : (
-                                                    <p className="text-slate-700">Not provided</p>
-                                                )}
-                                            </div>
-                                            <div className="sm:col-span-2">
-                                                <p className="font-semibold text-slate-900">Address</p>
-                                                <p className="text-slate-700">{provider.location}</p>
-                                            </div>
-                                        </div>
-                                    </DetailCard>
-
-                                    <DetailCard title="Accepted insurance">
-                                        {provider.insurance.length > 0 ? (
-                                            <div className="flex flex-wrap gap-2">
-                                                {provider.insurance.map((ins, idx) => (
-                                                    <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
-                                                        {ins}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-slate-700">Not provided</p>
-                                        )}
-                                    </DetailCard>
-
-                                    <DetailCard title="Visit prep">
-                                        <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
-                                            <li>Share your symptoms and goals to speed up intake.</li>
-                                            <li>Confirm your preferred contact method and time windows.</li>
-                                            <li>Have insurance details ready if applicable.</li>
-                                        </ul>
-                                    </DetailCard>
-
-                                    <DetailCard title="What to expect">
-                                        <div className="space-y-3">
-                                            {journeySteps.map((step, idx) => (
-                                                <div key={idx} className="flex gap-3">
-                                                    <div className="mt-1 h-6 w-6 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold flex items-center justify-center">
-                                                        {idx + 1}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-slate-900">{step.title}</p>
-                                                        <p className="text-sm text-slate-700">{step.desc}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </DetailCard>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="p-4 rounded-2xl bg-white/80 border border-white/60 shadow-sm backdrop-blur">
-                                        <p className="text-sm text-slate-500 mb-2">Ready to book?</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/request-provider', { state: { provider } })}
-                                            className="w-full px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                        >
-                                            Request appointment
-                                        </button>
-                                        <Link
-                                            to="/search"
-                                            className="mt-3 inline-flex justify-center w-full px-4 py-2 rounded-md bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200"
-                                        >
-                                            Back to search
-                                        </Link>
-                                    </div>
-
-                                    <DetailCard title="At a glance">
-                                        <div className="space-y-2 text-sm text-slate-700">
-                                            <p><span className="font-semibold text-slate-900">Specialty: </span>{provider.specialty || 'Not specified'}</p>
-                                            <p><span className="font-semibold text-slate-900">Affiliation: </span>{provider.is_affiliated ? 'Yes' : 'Not listed'}</p>
-                                            <p><span className="font-semibold text-slate-900">Location: </span>{provider.location}</p>
-                                        </div>
-                                    </DetailCard>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
     fetchProviderDetails()
   }, [id, provider])
 
@@ -280,7 +129,6 @@ export default function ProviderDetailsPage() {
 
       try {
         setIsFavoriteLoading(true)
-
         const token = localStorage.getItem('access_token')
         if (!token) {
           setIsFavoriteLoading(false)
@@ -288,7 +136,7 @@ export default function ProviderDetailsPage() {
         }
 
         const response = await fetch(`${API_BASE_URL}/api/favorites`, {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         })
 
         if (response.ok) {
@@ -304,6 +152,10 @@ export default function ProviderDetailsPage() {
 
     checkFavoriteStatus()
   }, [provider])
+
+  const handleBack = () => {
+    navigate(-1)
+  }
 
   const handleToggleFavorite = async () => {
     if (!provider) return
@@ -321,7 +173,7 @@ export default function ProviderDetailsPage() {
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 
@@ -336,15 +188,13 @@ export default function ProviderDetailsPage() {
     }
   }
 
-  const handleBack = () => {
-    navigate(-1)
-  }
-
   const handleRequestAppointment = () => {
     if (!provider) return
 
     if (!provider.is_affiliated) {
-      setAffiliationError("Provider isn't affiliated with MediData. Please contact them using their direct information.")
+      setAffiliationError(
+        "Provider isn't affiliated with MediData. Please contact them using their direct information."
+      )
       return
     }
 
@@ -362,19 +212,13 @@ export default function ProviderDetailsPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
           <p className="mt-2 text-slate-600">Loading provider details...</p>
         </div>
       </div>
     )
   }
 
-function DetailCard({ title, children }: { title: string; children: React.ReactNode }) {
-    return (
-        <div className="p-4 rounded-2xl border border-white/60 bg-white/80 shadow-sm backdrop-blur">
-            <p className="text-xs uppercase tracking-wide text-slate-500 font-semibold">{title}</p>
-            <div className="mt-2 text-sm text-slate-900">{children}</div>
-        </div>
   if (error || !provider) {
     return (
       <div className="min-h-screen bg-slate-50">
@@ -383,8 +227,15 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
             onClick={handleBack}
             className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 mb-6"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-4 h-4 mr-1"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
             </svg>
             Back to Search
           </button>
@@ -410,8 +261,15 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
           onClick={handleBack}
           className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 mb-6"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-4 h-4 mr-1"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
           </svg>
           Back to Search
         </button>
@@ -425,7 +283,6 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
                 <div className="flex items-center gap-3 mb-2">
                   {/* Type icon: person for individuals, building for orgs */}
                   {provider.enumeration_type === 'NPI-2' ? (
-                    // Organization icon
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -441,7 +298,6 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
                       />
                     </svg>
                   ) : (
-                    // Individual/person icon (default)
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -458,14 +314,14 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
                     </svg>
                   )}
 
-                  <h1 className="text-3xl font-bold">{provider.name}</h1>
+                  <h1 className="text-3xl font-bold">{header.title}</h1>
                   {provider.is_affiliated && (
                     <span className="px-3 py-1 text-sm font-medium bg-green-500 text-white rounded-md">
                       Affiliated
                     </span>
                   )}
                 </div>
-                <p className="text-blue-100 text-lg">{provider.specialty}</p>
+                <p className="text-blue-100 text-lg">{header.subtitle}</p>
               </div>
               <button
                 onClick={handleToggleFavorite}
@@ -474,18 +330,31 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
                 disabled={isFavoriteLoading}
               >
                 {isFavoriteLoading ? (
-                  // tiny spinner or placeholder
                   <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : isFavorited ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-red-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-8 h-8 text-red-400"
+                  >
                     <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                   </svg>
-
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-8 h-8 text-white-400">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-8 h-8 text-white"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                    />
                   </svg>
-
                 )}
               </button>
             </div>
@@ -498,13 +367,29 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
                 {affiliationError}
               </div>
             )}
+
             {/* Location */}
             <div>
               <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Location</h2>
               <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-slate-400 mt-0.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 0 1 6 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5 text-slate-400 mt-0.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 11-6 0 3 3 0 0 1 6 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                  />
                 </svg>
                 <p className="text-slate-900">{provider.location}</p>
               </div>
@@ -517,31 +402,58 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
                 <div className="space-y-2">
                   {provider.phone && (
                     <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-slate-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5 text-slate-400"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
+                        />
                       </svg>
                       <p className="text-slate-900">{provider.phone}</p>
                     </div>
                   )}
                   {provider.email && (
                     <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-slate-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5 text-slate-400"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                        />
                       </svg>
-                      <p className="text-slate-900">{provider.email}</p>
+                      <a href={`mailto:${provider.email}`} className="text-slate-900 underline">
+                        {provider.email}
+                      </a>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Insurance */}
+            {/* Accepted Insurance */}
             {provider.insurance && provider.insurance.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Accepted Insurance</h2>
                 <div className="flex flex-wrap gap-2">
                   {provider.insurance.map((ins, idx) => (
-                    <span key={idx} className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-md border border-blue-200">
+                    <span
+                      key={idx}
+                      className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-md border border-blue-200"
+                    >
                       {ins}
                     </span>
                   ))}
@@ -549,25 +461,63 @@ function DetailCard({ title, children }: { title: string; children: React.ReactN
               </div>
             )}
 
+            {/* Journey / what to expect */}
+            <div>
+              <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">What to expect</h2>
+              <div className="space-y-3">
+                {journeySteps.map((step, idx) => (
+                  <div key={idx} className="flex gap-3">
+                    <div className="mt-1 h-6 w-6 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold flex items-center justify-center">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{step.title}</p>
+                      <p className="text-sm text-slate-700">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Short blurb about visit prep */}
+            <div>
+              <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Visit prep</h2>
+              <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
+                <li>Share your symptoms and goals to speed up intake.</li>
+                <li>Confirm your preferred contact method and time windows.</li>
+                <li>Have insurance details ready if applicable.</li>
+              </ul>
+            </div>
           </div>
 
           {/* Actions */}
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex gap-3">
+          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-3">
             <button
               onClick={handleBack}
-              className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-md text-sm font-medium hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex-1 min-w-[140px] px-4 py-2.5 border border-slate-300 text-slate-700 rounded-md text-sm font-medium hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Back to Search
             </button>
             <button
               onClick={handleRequestAppointment}
-              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex-1 min-w-[180px] px-4 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Request Appointment
             </button>
           </div>
         </div>
+
+        {/* Secondary navigation back to search */}
+        <div className="mt-4 text-sm text-slate-600">
+          Or{' '}
+          <Link to="/search" className="text-blue-600 hover:text-blue-700 underline">
+            browse more providers
+          </Link>
+          .
+        </div>
       </div>
     </div>
   )
 }
+
+

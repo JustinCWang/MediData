@@ -22,6 +22,7 @@ interface UserProfile {
   email?: string
   location?: string  // Provider only
   taxonomy?: string  // Provider only
+  avatar?: string
 }
 
 export default function ProfilePage() {
@@ -72,12 +73,11 @@ export default function ProfilePage() {
           throw new Error('Failed to fetch profile')
         }
 
-        const data = await response.json()
+        const data: UserProfile = await response.json()
         setProfile(data)
-        if ((data as any)?.avatar) {
-          const val = (data as any).avatar as string
-          setAvatarPreview(val)
-          localStorage.setItem(key, val)
+        if (data.avatar) {
+          setAvatarPreview(data.avatar)
+          localStorage.setItem(key, data.avatar)
           window.dispatchEvent(new Event('avatar-change'))
         }
       } catch (err) {
@@ -145,15 +145,12 @@ export default function ProfilePage() {
         throw new Error(errorData.detail || 'Failed to update profile')
       }
 
-      const updatedProfile = await response.json()
+      const updatedProfile: UserProfile = await response.json()
       setProfile(updatedProfile)
-      if ((updatedProfile as any)?.avatar) {
-        const val = (updatedProfile as any).avatar as string
-        setAvatarPreview(val)
-        localStorage.setItem(avatarStorageKey(), val)
-        window.dispatchEvent(new Event('avatar-change'))
-      } else if (avatarPreview) {
-        localStorage.setItem(avatarStorageKey(), avatarPreview)
+      const avatarValue = updatedProfile.avatar ?? avatarPreview
+      if (avatarValue) {
+        setAvatarPreview(avatarValue)
+        localStorage.setItem(avatarStorageKey(), avatarValue)
         window.dispatchEvent(new Event('avatar-change'))
       }
       setSuccess(true)

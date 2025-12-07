@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AboutPage from './AboutPage'
 
 export default function ContactPage() {
   const navigate = useNavigate()
@@ -30,7 +29,7 @@ export default function ContactPage() {
       setSubmitStatus('success')
       setFormData({ name: '', email: '', subject: '', message: '' })
       setTimeout(() => setSubmitStatus('idle'), 3000)
-    } catch (error) {
+    } catch {
       setSubmitStatus('error')
       setTimeout(() => setSubmitStatus('idle'), 3000)
     }

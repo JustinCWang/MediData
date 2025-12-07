@@ -17,16 +17,19 @@ import EmptyState from '../components/EmptyState'
 
 const API_BASE_URL = 'http://localhost:8000'
 
+interface UserMetadata {
+  first_name?: string
+  last_name?: string
+  full_name?: string
+  avatar?: string
+  role?: string
+  email?: string
+}
+
 interface User {
   id: string
   email: string
-  user_metadata?: {
-    first_name?: string
-    last_name?: string
-    full_name?: string
-    avatar?: string
-    role?: string
-  }
+  user_metadata?: UserMetadata
 }
 
 export default function DashboardPage() {
@@ -38,14 +41,13 @@ export default function DashboardPage() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [userRole, setUserRole] = useState<'patient' | 'provider'>('patient')
   const [avatar, setAvatar] = useState<string | null>(null)
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const avatarKeyForUser = (u: User | null) => {
     if (!u) return null
-    const email = (u as any)?.email || (u as any)?.user_metadata?.email
+    const email = u.email || u.user_metadata?.email
     if (email) return `avatar_${email}`
-    if ((u as any)?.id) return `avatar_${(u as any).id}`
-    return null
+    return u.id ? `avatar_${u.id}` : null
   }
 
   useEffect(() => {
@@ -68,11 +70,7 @@ export default function DashboardPage() {
           return
         }
       }
-      if (user?.user_metadata?.avatar) {
-        setAvatar(user.user_metadata.avatar as unknown as string)
-      } else {
-        setAvatar(null)
-      }
+      setAvatar(user?.user_metadata?.avatar ?? null)
     }
     loadAvatar()
     const handleAvatarChange = () => loadAvatar()

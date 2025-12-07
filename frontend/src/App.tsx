@@ -133,7 +133,9 @@ export default function App() {
   })
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
+    const root = document.documentElement
+    root.dataset.theme = theme
+    root.classList.toggle('dark', theme === 'dark')
     localStorage.setItem('theme', theme)
   }, [theme])
 
@@ -181,6 +183,8 @@ interface User {
     first_name?: string
     last_name?: string
     full_name?: string
+    email?: string
+    avatar?: string
   }
 }
 
@@ -188,15 +192,13 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   const navigate = useNavigate()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [openDrop, setOpenDrop] = useState(false)
   const [avatar, setAvatar] = useState<string | null>(null)
 
   const avatarKeyForUser = (u: User | null) => {
     if (!u) return null
-    const email = (u as any)?.email || (u as any)?.user_metadata?.email
+    const email = u.email || u.user_metadata?.email
     if (email) return `avatar_${email}`
-    if (u.id) return `avatar_${u.id}`
-    return null
+    return u.id ? `avatar_${u.id}` : null
   }
 
   // Check authentication status on mount and when localStorage changes
@@ -213,14 +215,14 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
     }
 
     checkAuth()
-    
+
     // Listen for storage changes (e.g., login/logout in another tab)
     window.addEventListener('storage', checkAuth)
     window.addEventListener('avatar-change', checkAuth)
-    
+
     // Custom event for same-tab auth changes
     window.addEventListener('auth-change', checkAuth)
-    
+
     return () => {
       window.removeEventListener('storage', checkAuth)
       window.removeEventListener('avatar-change', checkAuth)
@@ -255,64 +257,61 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
     return 'User'
   }
 
+  const headerThemeClasses =
+    theme === 'dark'
+      ? 'bg-slate-900/80 border-slate-800 text-slate-100'
+      : 'bg-white/80 border-slate-200 text-slate-700'
+
+  const navItems = isAuthenticated
+    ? [
+        { to: '/dashboard', label: 'Dashboard' },
+        { to: '/search', label: 'Search' },
+        { to: '/requests', label: 'Requests' },
+        { to: '/request-provider', label: 'Request Provider' },
+        { to: '/profile', label: 'Profile' },
+      ]
+    : []
+
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-1.5 rounded-full font-medium transition-colors ${
+      isActive
+        ? theme === 'dark'
+          ? 'bg-slate-800 text-white border border-slate-700'
+          : 'bg-slate-900 text-white border border-slate-900'
+        : theme === 'dark'
+          ? 'text-slate-200 hover:text-white hover:bg-slate-800/70'
+          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+    }`
+
   return (
-    <header
-      className={`sticky top-0 z-30 border-b backdrop-blur-xl relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        openDrop
-          ? 'translate-y-2 bg-slate-950/95 border-slate-800 shadow-lg'
-          : theme === 'dark'
-            ? 'bg-slate-900/80 border-slate-800 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.8)]'
-            : 'bg-white/75 border-white/40 shadow-sm'
-      }`}
-    >
-      <div className={`mx-auto max-w-6xl px-6 py-3 flex items-center justify-between transition-all duration-500 ${openDrop ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'}`}>
-        <div className="w-8 sm:w-12" />
-        <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2">
-          <span className={`text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 ${openDrop ? 'from-white via-white to-white' : ''}`}>
+    <header className={`sticky top-0 z-30 border-b backdrop-blur-xl transition-all duration-300 ${headerThemeClasses}`}>
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+        <Link to={isAuthenticated ? '/dashboard' : '/'} className="inline-flex items-center gap-2">
+          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500">
             MediData
           </span>
         </Link>
-        <nav className={`hidden md:flex flex-1 items-center gap-2 justify-end text-sm transition-colors duration-500 ${
-          openDrop ? 'text-white' : theme === 'dark' ? 'text-slate-100' : 'text-slate-700'
-        }`}>
-          {isAuthenticated ? (
-            <>
-              {[
-                { to: '/dashboard', label: 'Dashboard' },
-                { to: '/search', label: 'Search' },
-                { to: '/requests', label: 'Requests' },
-                { to: '/request-provider', label: 'Request Provider' },
-                { to: '/profile', label: 'Profile' },
-              ].map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `px-3 py-2 rounded-full transition-colors ${
-                      isActive
-                        ? `${openDrop ? 'bg-white/20 text-white border border-white/30' : theme === 'dark' ? 'bg-slate-800 text-white border border-slate-700 shadow-sm' : 'bg-white/70 text-slate-900 shadow-sm border border-white/70'}`
-                        : `${openDrop ? 'text-slate-200 hover:bg-white/10' : theme === 'dark' ? 'text-slate-200 hover:text-white hover:bg-slate-800/60' : 'text-slate-600 hover:text-slate-800 hover:bg-white/50'}`
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </>
-          ) : null}
+
+        <nav className="hidden flex-1 items-center justify-end gap-2 text-sm md:flex">
+          {navItems.map((item) => (
+            <NavLink key={item.to} to={item.to} className={navLinkClass}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
-              <span className={`hidden sm:inline text-sm text-slate-600 bg-white/60 px-3 py-1 rounded-full border border-white/70 backdrop-blur ${openDrop ? 'text-white bg-white/10 border-white/30' : ''} flex items-center gap-2`}>
+              <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 text-sm text-slate-700 backdrop-blur">
                 <span className="h-7 w-7 rounded-full overflow-hidden bg-gradient-to-br from-sky-500 via-blue-500 to-emerald-400 flex items-center justify-center text-white text-xs font-semibold">
-                  {avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : (getUserDisplayName().charAt(0).toUpperCase())}
+                  {avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : getUserDisplayName().charAt(0).toUpperCase()}
                 </span>
                 {getUserDisplayName()}
               </span>
               <button
                 onClick={handleLogout}
-                className={`inline-flex items-center rounded-full border border-white/80 bg-slate-900 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white ${openDrop ? 'bg-white text-slate-900' : ''}`}
+                className="inline-flex items-center rounded-full border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
               >
                 Log out
               </button>
@@ -322,18 +321,16 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
               <Link
                 to="/login"
                 className={`hidden sm:inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-                  openDrop
-                    ? 'bg-white/10 text-white border-white/30'
-                    : theme === 'dark'
-                      ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
-                      : 'border-white/80 bg-white/70 text-slate-700 hover:bg-white hover:shadow-sm'
+                  theme === 'dark'
+                    ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
+                    : 'border-slate-200 bg-white/80 text-slate-700 hover:bg-white'
                 }`}
               >
                 Log in
               </Link>
               <Link
                 to="/register"
-                className={`inline-flex items-center rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 px-4 py-2 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white ${openDrop ? 'from-white via-white to-white text-slate-900' : ''}`}
+                className="inline-flex items-center rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white"
               >
                 Get started
               </Link>
@@ -341,103 +338,15 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
           )}
           <button
             onClick={onToggleTheme}
-            className={`ml-2 inline-flex items-center justify-center rounded-full border p-2 transition ${
-              openDrop
-                ? 'border-white/40 bg-white/10 text-white hover:bg-white/15'
-                : theme === 'dark'
-                  ? 'border-slate-700 bg-slate-900 text-amber-200 hover:border-amber-300 hover:text-amber-100 hover:shadow-sm'
-                  : 'border-slate-200 bg-white/80 text-slate-800 hover:bg-white hover:shadow-sm'
+            className={`inline-flex items-center justify-center rounded-full border p-2 transition ${
+              theme === 'dark'
+                ? 'border-slate-700 bg-slate-900 text-amber-200 hover:border-amber-300 hover:text-amber-100 hover:shadow-sm'
+                : 'border-slate-200 bg-white/80 text-slate-800 hover:bg-white hover:shadow-sm'
             }`}
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? (
-              <MoonIcon className="h-5 w-5" />
-            ) : (
-              <SunIcon className="h-5 w-5" />
-            )}
+            {theme === 'dark' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
           </button>
-          <button
-            onClick={() => setOpenDrop((v) => !v)}
-            className={`ml-3 inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
-              openDrop
-                ? 'border-white/40 bg-white/10 text-white hover:bg-white/15'
-                : theme === 'dark'
-                  ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
-                  : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm'
-            }`}
-            aria-expanded={openDrop}
-            aria-label="Toggle header panel"
-          >
-            {openDrop ? 'Close' : 'About'}
-          </button>
-
-        </div>
-      </div>
-      <div className="pointer-events-none absolute inset-x-0 top-0">
-        <div className="px-0">
-          <div className={`relative w-screen max-h-0 ${openDrop ? 'max-h-[85vh] opacity-100' : 'opacity-0'} translate-y-0 transition-[max-height,opacity,transform] duration-900 ease-[cubic-bezier(0.18,0.9,0.2,1)] pointer-events-auto rounded-b-3xl bg-slate-950 border border-white/10 shadow-[0_28px_80px_-30px_rgba(0,0,0,0.65)] backdrop-blur-xl overflow-hidden z-10`}>
-            <button
-              onClick={() => setOpenDrop(false)}
-              className="absolute top-4 right-6 z-20 inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 h-9 w-9 text-sm font-semibold text-white hover:bg-white/15 transition"
-              aria-label="Close about"
-            >
-              ✕
-            </button>
-            <div className="absolute top-4 right-6 z-10 flex items-center gap-2 pr-14 pointer-events-auto">
-              <Link
-                to="/register"
-                className="inline-flex items-center rounded-full bg-white text-slate-900 px-4 py-2 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-slate-900"
-              >
-                Get started
-                <span className="ml-2 text-base">↗</span>
-              </Link>
-              <Link
-                to="/login"
-                className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/15 hover:shadow-sm"
-              >
-                Log in
-              </Link>
-            </div>
-            <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/30 to-transparent mt-16" />
-            <div className="px-8 md:px-12 py-8 md:py-10 flex flex-col md:flex-row md:items-start md:justify-center gap-10 text-center md:text-left max-w-6xl mx-auto">
-              <div className="space-y-4 max-w-2xl text-white">
-                <p className="text-lg font-semibold">A calmer way to get care</p>
-                <p className="text-sm text-slate-200 leading-relaxed">
-                  MediData was founded by clinicians and builders who kept hearing the same thing: finding care feels confusing and slow. We verify providers, capture the context they need up front, and keep every request traceable so patients move from search to scheduled without the usual friction.
-                </p>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-200">
-                  <div className="rounded-xl border border-white/15 bg-white/5 p-3 space-y-2">
-                    <p className="font-semibold text-white">What we do</p>
-                    <p className="text-slate-200 leading-relaxed">
-                      We take the friction out of finding care by combining verified provider data, outcomes-aware matching, and structured requests that give clinicians the context they need on the first touch.
-                    </p>
-                    <ul className="text-slate-200 text-sm space-y-1.5 list-disc list-inside">
-                      <li>Match by specialty fit, availability, insurance, and observed outcomes.</li>
-                      <li>Capture contact preference, time windows, and reason once—reduce back-and-forth.</li>
-                      <li>Keep everything traceable: pending → confirmed → follow-up, with clear next steps.</li>
-                      <li>Blend human support with AI assist to keep requests safe, fast, and focused.</li>
-                    </ul>
-                  </div>
-                  <div className="rounded-xl border border-white/15 bg-white/5 p-3 space-y-1.5">
-                    <p className="font-semibold text-white">Founders</p>
-                    <p className="text-slate-200 leading-relaxed">
-                      MediData is built by a founding team of computer science students from Boston University who care deeply about simplifying access to care and shipping reliable products people can trust.
-                    </p>
-                    <div className="flex flex-wrap gap-2 text-slate-100 text-sm">
-                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Eshaan Jalali — product sense & delivery</span>
-                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Justin Wang — systems & data</span>
-                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Jason Sandoval — ops & partnerships</span>
-                      <span className="px-3 py-1 rounded-full border border-white/25 bg-white/10">Jason Zhao — engineering @ BU</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-slate-200 text-sm">
-                  <span className="text-base">↘</span>
-                  <span>Start by creating your profile or log in to continue.</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </header>
@@ -447,51 +356,27 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
 /**
  * AppFooter - Shared footer component
  * 
- * Displays copyright information and footer links (Privacy, Terms, Support).
+ * Displays copyright information and footer links to policy and info pages.
  * Appears at the bottom of all pages.
  */
 function AppFooter() {
-  const handlePrivacyClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    window.dispatchEvent(new CustomEvent('show-privacy'))
-  }
-  const handleTermsClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    window.dispatchEvent(new CustomEvent('show-terms'))
-  }
-  const handleSupportClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    window.dispatchEvent(new CustomEvent('show-support'))
-  }
-
   return (
     <footer id="contact" className="border-t border-slate-200">
       <div className="mx-auto max-w-6xl px-5 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-600">
-        <p>© {new Date().getFullYear()} MediData. All rights reserved.</p>
+        <p>(c) {new Date().getFullYear()} MediData. All rights reserved.</p>
         <div className="flex items-center gap-4">
-          <button type="button" onClick={handlePrivacyClick} className="hover:text-slate-800">
+          <Link to="/privacy" className="hover:text-slate-800">
             Privacy
-          </button>
-          <button type="button" onClick={handleTermsClick} className="hover:text-slate-800">
+          </Link>
+          <Link to="/terms" className="hover:text-slate-800">
             Terms
-          </button>
-          <button type="button" onClick={handleSupportClick} className="hover:text-slate-800">
-            Support
-          </button>
-          <a href="/privacy" className="hover:text-slate-800">
-            Privacy
-          </a>
-          <a href="/terms" className="hover:text-slate-800">
-            Terms
-          </a>
-          <a href="/contact" className="hover:text-slate-800">
-            Contact Us
-          </a>
-            <a href="/about" className="hover:text-slate-800">
-            About Us
-          </a>
-
-
+          </Link>
+          <Link to="/about" className="hover:text-slate-800">
+            About
+          </Link>
+          <Link to="/contact" className="hover:text-slate-800">
+            Contact
+          </Link>
         </div>
       </div>
     </footer>
@@ -509,9 +394,6 @@ function AppFooter() {
 function LandingPage({ theme }: { theme: Theme }) {
   const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set())
   const nextSectionRef = useRef<HTMLDivElement | null>(null)
-  const [showPrivacy, setShowPrivacy] = useState(false)
-  const [showTerms, setShowTerms] = useState(false)
-  const [showSupport, setShowSupport] = useState(false)
   const heroSlides = [
     {
       src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
@@ -610,20 +492,6 @@ function LandingPage({ theme }: { theme: Theme }) {
     )
     sections.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [showPrivacy])
-
-  useEffect(() => {
-    const handleShowPrivacy = () => setShowPrivacy(true)
-    const handleShowTerms = () => setShowTerms(true)
-    const handleShowSupport = () => setShowSupport(true)
-    window.addEventListener('show-privacy', handleShowPrivacy)
-    window.addEventListener('show-terms', handleShowTerms)
-    window.addEventListener('show-support', handleShowSupport)
-    return () => {
-      window.removeEventListener('show-privacy', handleShowPrivacy)
-      window.removeEventListener('show-terms', handleShowTerms)
-      window.removeEventListener('show-support', handleShowSupport)
-    }
   }, [])
 
   useEffect(() => {
@@ -647,14 +515,14 @@ function LandingPage({ theme }: { theme: Theme }) {
         className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
       >
         {/* Hero Section - Main headline and primary CTAs */}
-      <section className="relative overflow-hidden page-surface text-slate-900 min-h-screen flex items-center">
+      <section className="relative overflow-hidden page-surface text-slate-900 min-h-[85vh] flex items-center">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sky-300/30 blur-[120px] animate-liquid-drift" />
           <div className="absolute right-0 top-10 h-[26rem] w-[26rem] rounded-full bg-blue-300/25 blur-[140px] animate-liquid-glow" />
           <div className="absolute left-1/3 bottom-0 h-[22rem] w-[22rem] rounded-full bg-cyan-300/25 blur-[120px] animate-liquid-drift-slow" />
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-6 py-8 md:py-10 text-slate-900 w-full h-full flex items-center">
+        <div className="relative mx-auto max-w-6xl px-6 py-6 md:py-8 text-slate-900 w-full h-full flex items-center">
           <div className="grid md:grid-cols-2 gap-10 items-center w-full">
             <div className="space-y-4 landing-plain">
               <div
@@ -730,24 +598,7 @@ function LandingPage({ theme }: { theme: Theme }) {
                   {heroSlides[heroIndex]?.caption}
                 </div>
 
-                <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-3">
-                  <button
-                    type="button"
-                    onClick={() => setHeroIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length)}
-                    className="hero-slider-btn h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80"
-                    aria-label="Previous slide"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHeroIndex((i) => (i + 1) % heroSlides.length)}
-                    className="hero-slider-btn h-9 w-9 rounded-full bg-white text-slate-800 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 border border-white/80"
-                    aria-label="Next slide"
-                  >
-                    ›
-                  </button>
-                </div>
+
 
               </div>
             </div>
@@ -773,13 +624,13 @@ function LandingPage({ theme }: { theme: Theme }) {
         ref={nextSectionRef}
         className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center py-14 md:py-16">
+      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[65vh] flex items-center py-8 md:py-10">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
             <div className="absolute left-1/3 bottom-[-10rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 grid md:grid-cols-2 gap-10 items-center w-full">
+          <div className="relative mx-auto max-w-6xl px-6 py-8 md:py-10 grid md:grid-cols-2 gap-10 items-center w-full">
             <div className="space-y-3 z-10 landing-plain">
               <h3 className="text-3xl md:text-4xl font-semibold text-slate-900 dark:text-white">
                 {storySlides[storyIndex].title}
@@ -809,18 +660,18 @@ function LandingPage({ theme }: { theme: Theme }) {
             <button
               type="button"
               onClick={() => setStoryIndex((i) => (i - 1 + storySlides.length) % storySlides.length)}
-              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 hero-slider-btn"
+              className="pointer-events-auto h-12 w-12 rounded-full border border-slate-300 bg-white/90 text-slate-700 text-lg shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 hero-slider-btn"
               aria-label="Previous highlight"
             >
-              ‹
+              &lt;
             </button>
             <button
               type="button"
               onClick={() => setStoryIndex((i) => (i + 1) % storySlides.length)}
-              className="pointer-events-auto h-10 w-10 rounded-full border border-slate-300 bg-white/80 text-slate-700 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 hero-slider-btn"
+              className="pointer-events-auto h-12 w-12 rounded-full border border-slate-300 bg-white/90 text-slate-700 text-lg shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 hero-slider-btn"
               aria-label="Next highlight"
             >
-              ›
+              &gt;
             </button>
           </div>
           <div className="absolute inset-x-0 bottom-10 flex justify-center gap-2">
@@ -838,13 +689,13 @@ function LandingPage({ theme }: { theme: Theme }) {
         data-reveal-id="guide"
               className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
-        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-screen flex items-center py-14 md:py-16">
+        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[65vh] flex items-center py-8 md:py-10">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-16 top-[-10rem] h-[24rem] w-[24rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-14rem] top-0 h-[22rem] w-[22rem] rounded-full bg-blue-300/25 blur-[130px]" />
             <div className="absolute left-1/2 bottom-[-12rem] h-[24rem] w-[24rem] rounded-full bg-cyan-300/25 blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-6xl px-6 py-10 md:py-12 w-full grid md:grid-cols-2 gap-12 items-center">
+          <div className="relative mx-auto max-w-6xl px-6 py-8 md:py-10 w-full grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-5 z-10 landing-plain">
               <h3 className="text-4xl md:text-5xl font-semibold text-slate-900 dark:text-white">How to use MediData</h3>
               <p className="text-base md:text-lg text-slate-600 leading-relaxed dark:text-slate-200">
@@ -890,139 +741,7 @@ function LandingPage({ theme }: { theme: Theme }) {
         </section>
       </div>
 
-      {showPrivacy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <button
-            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
-            aria-label="Close privacy"
-            onClick={() => setShowPrivacy(false)}
-          />
-          <div className="privacy-modal relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
-            <button
-              onClick={() => setShowPrivacy(false)}
-              className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
-              aria-label="Close privacy modal"
-            >
-              ✕
-            </button>
-            <div className="relative overflow-hidden">
-              <div className="pointer-events-none absolute inset-0">
-                <div className="absolute -left-24 top-[-8rem] h-[20rem] w-[20rem] rounded-full bg-sky-300/30 dark:bg-sky-500/20 blur-[120px]" />
-                <div className="absolute right-[-12rem] bottom-[-8rem] h-[18rem] w-[18rem] rounded-full bg-emerald-200/30 dark:bg-emerald-400/15 blur-[110px]" />
-              </div>
-              <div className="relative mx-auto px-6 py-8 md:px-10 md:py-10">
-                <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-start">
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-sky-700 dark:text-sky-300">Privacy</p>
-                    <h3 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white">Built to keep your data safe</h3>
-                    <p className="text-slate-600 dark:text-slate-200">
-                      We collect only what’s needed to match you with providers and manage requests. Your data is encrypted in transit, access is limited, and you control your account at any time.
-                    </p>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-700 dark:text-slate-100">
-                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
-                      <p className="font-semibold text-slate-900 dark:text-white">Minimal collection</p>
-                      <p className="text-slate-600 dark:text-slate-200">Only info needed for matching and scheduling—no selling data.</p>
-                    </div>
-                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
-                      <p className="font-semibold text-slate-900 dark:text-white">Encryption</p>
-                      <p className="text-slate-600 dark:text-slate-200">TLS in transit, scoped access, and activity logging for transparency.</p>
-                    </div>
-                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
-                      <p className="font-semibold text-slate-900 dark:text-white">Control</p>
-                      <p className="text-slate-600 dark:text-slate-200">Update or delete your account anytime; manage notifications easily.</p>
-                    </div>
-                    <div className="modal-tile rounded-2xl border border-slate-200 bg-white/80 dark:border-slate-700 dark:bg-slate-800/80 p-3">
-                      <p className="font-semibold text-slate-900 dark:text-white">Support</p>
-                      <p className="text-slate-600 dark:text-slate-200">Questions? Reach out and we’ll help you review or export your data.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showTerms && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <button
-            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
-            aria-label="Close terms"
-            onClick={() => setShowTerms(false)}
-          />
-          <div className="terms-modal relative w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
-            <button
-              onClick={() => setShowTerms(false)}
-              className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
-              aria-label="Close terms modal"
-            >
-              ✕
-            </button>
-            <div className="relative overflow-hidden">
-              <div className="pointer-events-none absolute inset-0">
-                <div className="absolute -left-20 top-[-8rem] h-[20rem] w-[20rem] rounded-full bg-blue-300/25 dark:bg-blue-500/20 blur-[120px]" />
-                <div className="absolute right-[-12rem] bottom-[-8rem] h-[18rem] w-[18rem] rounded-full bg-emerald-200/25 dark:bg-emerald-400/15 blur-[110px]" />
-              </div>
-              <div className="relative mx-auto px-6 py-8 md:px-10 md:py-10">
-                <div className="space-y-4 max-w-4xl text-slate-800 dark:text-slate-100">
-                  <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Terms</p>
-                  <h3 className="text-2xl md:text-3xl font-semibold">Plain-english basics</h3>
-                  <ul className="space-y-2 text-sm md:text-base leading-relaxed list-disc list-inside">
-                    <li>Use MediData responsibly; don’t misuse or attempt to break the service.</li>
-                    <li>Your account is yours—keep credentials private and notify us of issues.</li>
-                    <li>We may update features and terms; continued use means you accept changes.</li>
-                    <li>Content is informational only; clinical decisions remain with you and your provider.</li>
-                    <li>We respect privacy and security; see the Privacy section for how data is handled.</li>
-                    <li>Contact support if you have questions about acceptable use or service limits.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showSupport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <button
-            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
-            aria-label="Close support"
-            onClick={() => setShowSupport(false)}
-          />
-          <div className="support-modal relative w-full max-w-4xl bg-white/90 dark:bg-slate-900/90 border border-white/60 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
-            <button
-              onClick={() => setShowSupport(false)}
-              className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 dark:border-slate-700 bg-white/80 dark:bg-slate-800 h-9 w-9 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-700"
-              aria-label="Close support modal"
-            >
-              ✕
-            </button>
-            <div className="relative overflow-hidden">
-              <div className="pointer-events-none absolute inset-0">
-                <div className="absolute -left-16 top-[-8rem] h-[18rem] w-[18rem] rounded-full bg-emerald-200/25 dark:bg-emerald-400/15 blur-[110px]" />
-                <div className="absolute right-[-10rem] bottom-[-6rem] h-[16rem] w-[16rem] rounded-full bg-sky-200/25 dark:bg-sky-500/15 blur-[110px]" />
-              </div>
-              <div className="relative mx-auto px-6 py-8 md:px-10 md:py-10">
-                <div className="space-y-4 max-w-3xl text-slate-800 dark:text-slate-100">
-                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Support</p>
-                  <h3 className="text-2xl md:text-3xl font-semibold">We’re here to help</h3>
-                  <ul className="space-y-2 text-sm md:text-base leading-relaxed list-disc list-inside">
-                    <li>Email us anytime for account, request, or provider questions.</li>
-                    <li>Report issues or feedback and we’ll respond as quickly as we can.</li>
-                    <li>Need data reviewed or exported? Ask and we’ll assist securely.</li>
-                    <li>For urgent clinical needs, contact your provider directly or call emergency services.</li>
-                  </ul>
-                  <div className="space-y-1 text-sm md:text-base">
-                    <p><span className="font-semibold">Email:</span> support@medidata.example</p>
-                    <p><span className="font-semibold">Hours:</span> Mon–Fri, 9a–6p ET</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   )
 }
@@ -1035,7 +754,7 @@ function LandingPage({ theme }: { theme: Theme }) {
  * with Supabase. On success, stores the access token in localStorage and redirects
  * to the home page. Displays error messages if authentication fails.
  * 
- * Uses AuthBackground component for consistent styling with registration page.
+ * Uses the same animated gradient background as the registration page for consistency.
  */
 function LoginPage() {
   const navigate = useNavigate()
@@ -1390,8 +1109,17 @@ function RegisterPage() {
   }
 
   return (
-    <AuthBackground>
-      <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10 register-card">
+    <section className="page-surface relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 overflow-hidden">
+      <div className="absolute inset-0">
+        <div className="absolute left-[-8rem] top-[-6rem] h-[26rem] w-[26rem] rounded-full bg-sky-300/80 blur-[90px] animate-light-wander-a" />
+        <div className="absolute right-[-10rem] top-0 h-[20rem] w-[20rem] rounded-full bg-blue-300/75 blur-[80px] animate-light-wander-b" />
+        <div className="absolute left-[15%] bottom-[-6rem] h-[18rem] w-[18rem] rounded-full bg-cyan-300/70 blur-[70px] animate-light-wander-c" />
+        <div className="absolute right-[12%] bottom-[-4rem] h-[22rem] w-[22rem] rounded-full bg-emerald-300/75 blur-[90px] animate-light-wander-d" />
+        <div className="absolute left-[55%] top-[10%] h-[16rem] w-[16rem] rounded-full bg-teal-300/70 blur-[60px] animate-light-wander-e" />
+        <div className="absolute right-[40%] bottom-[8%] h-[14rem] w-[14rem] rounded-full bg-sky-200/80 blur-[55px] animate-light-wander-f" />
+      </div>
+      <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10 register-card border border-white/70">
         {/* Step 1: Role Selection */}
         {step === 'role' && (
           <>
@@ -1676,6 +1404,7 @@ function RegisterPage() {
             </p>
           </>
         )}
+        </div>
       </div>
 
       {/* Post-registration email verification dialog */}
@@ -1711,7 +1440,7 @@ function RegisterPage() {
           </div>
         </div>
       )}
-    </AuthBackground>
+    </section>
   )
 }
 

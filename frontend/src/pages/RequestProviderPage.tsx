@@ -338,9 +338,9 @@ export default function RequestProviderPage() {
                   Selected provider
                 </label>
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900">
-                  <div className="font-semibold">{state?.providerName}</div>
-                  <div className="text-slate-600">{state?.providerSpecialty}</div>
-                  <div className="text-slate-500">{state?.providerLocation}</div>
+                  <div className="font-semibold">{providerName}</div>
+                  <div className="text-slate-600">{providerSpecialty}</div>
+                  <div className="text-slate-500">{providerLocation}</div>
                 </div>
               </div>
             ) : null}

@@ -10,6 +10,7 @@
  * - Full-height layout setup for proper page rendering
  */
 
+@config "../tailwind.config.ts";
 @import "tailwindcss";
 
 /* Global element resets and defaults */
