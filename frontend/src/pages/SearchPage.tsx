@@ -232,48 +232,70 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Search Providers</h1>
-        <p className="text-slate-600 mb-6">Find healthcare providers using the NPI Registry</p>
-
-        <ProviderSearchForm
-          enumerationType={enumerationType}
-          firstName={firstName}
-          lastName={lastName}
-          organizationName={organizationName}
-          taxonomyDescription={taxonomyDescription}
-          city={city}
-          state={state}
-          postalCode={postalCode}
-          limit={limit}
-          onEnumerationTypeChange={setEnumerationType}
-          onFirstNameChange={setFirstName}
-          onLastNameChange={setLastName}
-          onOrganizationNameChange={setOrganizationName}
-          onTaxonomyDescriptionChange={setTaxonomyDescription}
-          onCityChange={setCity}
-          onStateChange={setState}
-          onPostalCodeChange={setPostalCode}
-          onLimitChange={setLimit}
-          onSubmit={handleSearch}
-          isSearching={isSearching}
-        />
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">{error}</p>
+    <div className="page-surface relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
+        <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
+      </div>
+      <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-6 z-10">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-semibold text-slate-900 leading-tight">Search Providers</h1>
+              <p className="text-slate-600 text-sm md:text-base">Find care using the NPI Registry with filters that matter.</p>
+            </div>
           </div>
-        )}
+          <div className="text-sm text-slate-600 flex flex-wrap gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              Quick filters
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              Save favorites for faster booking
+            </span>
+          </div>
+        </div>
 
-        {/* Search Results */}
-        {results.length > 0 && (
-          <div className="space-y-4">
+        <div className="grid lg:grid-cols-[1.1fr_1.3fr] gap-6">
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 search-card">
+            <ProviderSearchForm
+              enumerationType={enumerationType}
+              firstName={firstName}
+              lastName={lastName}
+              organizationName={organizationName}
+              taxonomyDescription={taxonomyDescription}
+              city={city}
+              state={state}
+              postalCode={postalCode}
+              limit={limit}
+              onEnumerationTypeChange={setEnumerationType}
+              onFirstNameChange={setFirstName}
+              onLastNameChange={setLastName}
+              onOrganizationNameChange={setOrganizationName}
+              onTaxonomyDescriptionChange={setTaxonomyDescription}
+              onCityChange={setCity}
+              onStateChange={setState}
+              onPostalCodeChange={setPostalCode}
+              onLimitChange={setLimit}
+              onSubmit={handleSearch}
+              isSearching={isSearching}
+            />
+
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4 search-card">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">
-                Search Results ({results.length})
-              </h2>
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Results</h2>
+                <p className="text-sm text-slate-600">
+                  {results.length > 0 ? `${results.length} providers found` : 'Run a search to see providers'}
+                </p>
+              </div>
               {searchStats && (searchStats.affiliated_count !== undefined || searchStats.npi_count !== undefined) && (
                 <p className="text-sm text-slate-600">
                   {searchStats.affiliated_count !== undefined && searchStats.affiliated_count > 0 && `${searchStats.affiliated_count} affiliated`}
@@ -282,91 +304,91 @@ export default function SearchPage() {
                 </p>
               )}
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {currentResults.map((provider) => (
-                <ProviderCard
-                  key={provider.id}
-                  provider={provider}
-                  onViewDetails={handleViewDetails}
-                  isFavorited={favoriteIds.has(provider.id)}
-                  onFavoriteChange={handleFavoriteChange}
-                />
-              ))}
-            </div>
-            
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Previous
-                </button>
-                
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Show first page, last page, current page, and pages around current
-                    if (
-                      page === 1 ||
-                      page === totalPages ||
-                      (page >= currentPage - 1 && page <= currentPage + 1)
-                    ) {
-                      return (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      )
-                    } else if (
-                      page === currentPage - 2 ||
-                      page === currentPage + 2
-                    ) {
-                      return (
-                        <span key={page} className="px-2 text-slate-500">
-                          ...
-                        </span>
-                      )
-                    }
-                    return null
-                  })}
-                </div>
-                
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-            
-            {/* Page Info */}
-            {totalPages > 1 && (
-              <p className="text-center text-sm text-slate-600 mt-2">
-                Showing {startIndex + 1}-{Math.min(endIndex, results.length)} of {results.length} results
-              </p>
-            )}
-          </div>
-        )}
 
-        {results.length === 0 && !isSearching && !error && (
-          <EmptyState
-            title={getEmptyStateMessage().title}
-            description={getEmptyStateMessage().description}
-          />
-        )}
+            {results.length > 0 ? (
+              <>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {currentResults.map((provider) => (
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      onViewDetails={handleViewDetails}
+                      isFavorited={favoriteIds.has(provider.id)}
+                      onFavoriteChange={handleFavoriteChange}
+                    />
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <>
+                    <div className="flex items-center justify-center gap-2 mt-4">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        Previous
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                                  currentPage === page
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-slate-700 bg-white/80 border border-white/70 hover:bg-white'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            )
+                          } else if (page === currentPage - 2 || page === currentPage + 2) {
+                            return (
+                              <span key={page} className="px-2 text-slate-500">
+                                ...
+                              </span>
+                            )
+                          }
+                          return null
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        Next
+                      </button>
+                    </div>
+                    <p className="text-center text-sm text-slate-600">
+                      Showing {startIndex + 1}-{Math.min(endIndex, results.length)} of {results.length} results
+                    </p>
+                  </>
+                )}
+              </>
+            ) : (
+              !isSearching &&
+              !error && (
+                <EmptyState
+                  title={getEmptyStateMessage().title}
+                  description={getEmptyStateMessage().description}
+                />
+              )
+            )}
+
+            {isSearching && <div className="text-center py-6 text-slate-600">Searching...</div>}
+          </div>
+        </div>
       </div>
     </div>
   )
 }
-

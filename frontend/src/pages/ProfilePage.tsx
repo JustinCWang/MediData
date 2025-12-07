@@ -31,8 +31,29 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+
+  const avatarStorageKey = () => {
+    const userData = localStorage.getItem('user')
+    if (!userData) return 'avatar'
+    try {
+      const parsed = JSON.parse(userData)
+      const email = parsed?.email || parsed?.user_metadata?.email
+      if (email) return `avatar_${email}`
+      if (parsed?.id) return `avatar_${parsed.id}`
+    } catch {
+      return 'avatar'
+    }
+    return 'avatar'
+  }
 
   useEffect(() => {
+    const key = avatarStorageKey()
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      setAvatarPreview(stored)
+    }
+
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('access_token')
@@ -53,6 +74,12 @@ export default function ProfilePage() {
 
         const data = await response.json()
         setProfile(data)
+        if ((data as any)?.avatar) {
+          const val = (data as any).avatar as string
+          setAvatarPreview(val)
+          localStorage.setItem(key, val)
+          window.dispatchEvent(new Event('avatar-change'))
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile')
       } finally {
@@ -87,6 +114,7 @@ export default function ProfilePage() {
         insurance: string
         location?: string
         taxonomy?: string
+        avatar?: string
       } = {
         firstName: formData.get('firstName') as string,
         lastName: formData.get('lastName') as string,
@@ -95,6 +123,7 @@ export default function ProfilePage() {
         state: formData.get('state') as string,
         city: formData.get('city') as string,
         insurance: formData.get('insurance') as string,
+        avatar: avatarPreview || undefined,
       }
 
       if (profile?.role === 'provider') {
@@ -118,6 +147,15 @@ export default function ProfilePage() {
 
       const updatedProfile = await response.json()
       setProfile(updatedProfile)
+      if ((updatedProfile as any)?.avatar) {
+        const val = (updatedProfile as any).avatar as string
+        setAvatarPreview(val)
+        localStorage.setItem(avatarStorageKey(), val)
+        window.dispatchEvent(new Event('avatar-change'))
+      } else if (avatarPreview) {
+        localStorage.setItem(avatarStorageKey(), avatarPreview)
+        window.dispatchEvent(new Event('avatar-change'))
+      }
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
@@ -129,7 +167,12 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="page-surface min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
+          <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
+          <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
+        </div>
         <div className="text-slate-600">Loading profile...</div>
       </div>
     )
@@ -137,33 +180,88 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="page-surface min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
+          <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
+          <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
+        </div>
         <div className="text-red-600">Failed to load profile</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">My Profile</h1>
-        <p className="text-slate-600 mb-6">
-          {profile.role === 'patient' ? 'Patient' : 'Provider'} Profile Information
-        </p>
+    <div className="page-surface relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-emerald-200/35 blur-[110px]" />
+        <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
+      </div>
+      <div className="relative mx-auto max-w-4xl px-6 py-10 space-y-6 z-10">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2">
+          <h1 className="text-3xl font-semibold text-slate-900 leading-tight">My Profile</h1>
+          <p className="text-slate-600 text-sm md:text-base">
+            {profile.role === 'patient' ? 'Patient' : 'Provider'} profile information
+          </p>
+          <div className="text-sm text-slate-600 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              Keep contact & insurance current
+            </span>
+            {profile.role === 'provider' && (
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+                Location & taxonomy help matching
+              </span>
+            )}
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-800">Profile updated successfully!</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <form onSubmit={handleSubmit} className="profile-card bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6">
+          <div className="flex items-center gap-4">
+            <div className="relative h-16 w-16 rounded-full bg-gradient-to-br from-sky-500 via-emerald-400 to-blue-500 flex items-center justify-center text-white text-xl font-semibold overflow-hidden">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
+              ) : (
+                <span>{profile.firstName?.[0]?.toUpperCase() || 'U'}</span>
+              )}
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-900">Profile photo</p>
+              <label className="inline-flex items-center px-3 py-2 text-xs font-semibold rounded-full border border-slate-300 bg-white/70 cursor-pointer hover:bg-white text-slate-800">
+                Upload image
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      const val = reader.result as string
+                      setAvatarPreview(val)
+                      localStorage.setItem(avatarStorageKey(), val)
+                      window.dispatchEvent(new Event('avatar-change'))
+                    }
+                    reader.readAsDataURL(file)
+                  }}
+                />
+              </label>
+              <p className="text-xs text-slate-500">Preview only; stored with other profile updates if backend supports.</p>
+            </div>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
@@ -175,7 +273,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 defaultValue={profile.firstName}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -188,7 +286,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 defaultValue={profile.lastName}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -200,7 +298,7 @@ export default function ProfilePage() {
                 type="email"
                 value={profile.email || ''}
                 disabled
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
+                className="w-full rounded-md border border-white/70 bg-white/60 px-3 py-2 text-sm text-slate-500 cursor-not-allowed backdrop-blur"
               />
               <p className="mt-1 text-xs text-slate-500">Email cannot be changed</p>
             </div>
@@ -213,7 +311,7 @@ export default function ProfilePage() {
                 name="phoneNum"
                 type="tel"
                 defaultValue={profile.phoneNum}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -224,7 +322,7 @@ export default function ProfilePage() {
                 id="gender"
                 name="gender"
                 defaultValue={profile.gender}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               >
                 <option value="">Select...</option>
                 <option value="Male">Male</option>
@@ -244,7 +342,7 @@ export default function ProfilePage() {
                 defaultValue={profile.state}
                 placeholder="e.g., CA, NY"
                 maxLength={2}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -256,7 +354,7 @@ export default function ProfilePage() {
                 name="city"
                 type="text"
                 defaultValue={profile.city}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             <div>
@@ -269,7 +367,7 @@ export default function ProfilePage() {
                 type="text"
                 defaultValue={profile.insurance}
                 placeholder="e.g., Blue Cross, Aetna"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
               />
             </div>
             {profile.role === 'provider' && (
@@ -284,7 +382,7 @@ export default function ProfilePage() {
                     type="text"
                     defaultValue={profile.location}
                     placeholder="Full address or location"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
                   />
                 </div>
                 <div>
@@ -297,7 +395,7 @@ export default function ProfilePage() {
                     type="text"
                     defaultValue={profile.taxonomy}
                     placeholder="e.g., Internal Medicine, Cardiology"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
                   />
                 </div>
               </>
@@ -307,14 +405,14 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
+              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-full hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-60"
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -324,4 +422,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-
