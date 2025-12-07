@@ -75,7 +75,7 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow flex flex-col">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-start gap-2">
@@ -150,14 +150,19 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
           </button>
         </div>
       </div>
-      <p className="text-sm text-slate-600 mb-3">{provider.location}</p>
-      <div className="flex flex-wrap gap-2">
-        {provider.insurance.map((ins, idx) => (
-          <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
-            {ins}
-          </span>
-        ))}
+
+      {/* Make the info block flex-1 so it takes up remaining space */}
+      <div className="flex-1">
+        <p className="text-sm text-slate-600 mb-3">{provider.location}</p>
+        <div className="flex flex-wrap gap-2">
+          {provider.insurance.map((ins, idx) => (
+            <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+              {ins}
+            </span>
+          ))}
+        </div>
       </div>
+
       <button
         onClick={() => onViewDetails?.(provider.id)}
         className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
