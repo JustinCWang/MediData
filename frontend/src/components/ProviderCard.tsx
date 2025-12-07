@@ -75,13 +75,25 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow flex flex-col">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            {/* Type icon: person for individuals, building for orgs */}
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-slate-900 leading-snug">
+              {provider.name}
+            </h3>
+            {provider.is_affiliated && (
+              <span className="mt-1 inline-flex w-fit px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md">
+                Affiliated
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-slate-600">{provider.specialty}</p>
+        </div>
+        <div className="flex items-center gap-0">
+          {/* Type icon: person for individuals, building for orgs */}
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
             {provider.enumeration_type === 'NPI-2' ? (
-              // Organization icon
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -97,7 +109,6 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
                 />
               </svg>
             ) : (
-              // Individual/person icon (default)
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -113,18 +124,8 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
                 />
               </svg>
             )}
-
-            <h3 className="text-lg font-semibold text-slate-900">{provider.name}</h3>
-
-            {provider.is_affiliated && (
-              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-md">
-                Affiliated
-              </span>
-            )}
           </div>
-          <p className="text-sm text-slate-600">{provider.specialty}</p>
-        </div>
-        <div className="flex items-center">
+
           <button
             onClick={handleFavoriteClick}
             disabled={isTogglingFavorite}
@@ -132,27 +133,46 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
             title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
           >
             {isFavorited ? (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-red-400">
-                  <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5 text-red-400"
+              >
+                <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
               </svg>
-
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 text-slate-400">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="w-5 h-5 text-slate-400"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                />
               </svg>
-
             )}
           </button>
         </div>
       </div>
-      <p className="text-sm text-slate-600 mb-3">{provider.location}</p>
-      <div className="flex flex-wrap gap-2">
-        {provider.insurance.map((ins, idx) => (
-          <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
-            {ins}
-          </span>
-        ))}
+
+      {/* Make the info block flex-1 so it takes up remaining space */}
+      <div className="flex-1">
+        <p className="text-sm text-slate-600 mb-3">{provider.location}</p>
+        <div className="flex flex-wrap gap-2">
+          {provider.insurance.map((ins, idx) => (
+            <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+              {ins}
+            </span>
+          ))}
+        </div>
       </div>
+
       <button
         onClick={() => onViewDetails?.(provider.id)}
         className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

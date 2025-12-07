@@ -133,6 +133,24 @@ export default function App() {
     return prefersDark ? 'dark' : 'light'
   })
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('access_token')
+      setIsAuthenticated(!!token)
+    }
+
+    checkAuth()
+    window.addEventListener('auth-change', checkAuth)
+    window.addEventListener('storage', checkAuth)
+
+    return () => {
+      window.removeEventListener('auth-change', checkAuth)
+      window.removeEventListener('storage', checkAuth)
+    }
+  }, [])
+
   useEffect(() => {
     const root = document.documentElement
     root.dataset.theme = theme
@@ -165,7 +183,7 @@ export default function App() {
         </Routes>
       </main>
       <AppFooter />
-      <Chatbot theme={theme} />
+      {isAuthenticated && <Chatbot theme={theme} />}
     </div>
   )
 }
