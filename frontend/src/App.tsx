@@ -14,6 +14,8 @@
  *   - "/search" - Provider search page
  *   - "/requests" - Requests page to view all requests
  *   - "/request-provider" - Page to request a provider
+ *   - "/dashboard" - User dashboard page
+ *   - "/provider/:provider_id" - Provider details page
  */
 
 import { Link, NavLink, Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom'
@@ -119,6 +121,7 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+          <Route path="/provider/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
           <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
           <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />

@@ -20,8 +20,25 @@ const API_BASE_URL = 'http://localhost:8000'
 export default function RequestProviderPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const locationState = location.state as { provider?: Provider } | null
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const state = location.state as
+    | {
+        providerId?: string
+        providerName?: string
+        providerSpecialty?: string
+        providerLocation?: string
+      }
+    | undefined
+
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    state?.providerId ?? null
+  )
+  const [providerName, setProviderName] = useState(state?.providerName ?? '')
+  const [providerSpecialty, setProviderSpecialty] = useState(
+    state?.providerSpecialty ?? ''
+  )
+  const [providerLocation, setProviderLocation] = useState(
+    state?.providerLocation ?? ''
+  )
   const [favoriteProviders, setFavoriteProviders] = useState<Provider[]>([])
   const [isLoadingProviders, setIsLoadingProviders] = useState(true)
   const [date, setDate] = useState('')
@@ -72,30 +89,34 @@ export default function RequestProviderPage() {
 
   // Preselect provider passed from details page
   useEffect(() => {
-    const stateProvider = locationState?.provider
-    if (!stateProvider) return
+    if (!state?.providerId) return
 
-    if (!stateProvider.is_affiliated) {
-      setError('This provider is not affiliated with MediData, so appointment requests must be made directly.')
-      setSelectedProvider(null)
-      return
+    const provider = favoriteProviders.find(
+      (p) => p.id === state.providerId && p.is_affiliated
+    )
+    if (provider) {
+      setSelectedProviderId(provider.id)
+      setProviderName(provider.name)
+      setProviderSpecialty(provider.specialty)
+      setProviderLocation(provider.location)
     }
-
-    const normalized = { ...stateProvider, specialty: stateProvider.specialty || 'Not specified' }
-    setFavoriteProviders((prev) => {
-      const exists = prev.some((p) => p.id === normalized.id)
-      return exists ? prev : [...prev, normalized]
-    })
-    setSelectedProvider(normalized)
-  }, [locationState])
+  }, [state, favoriteProviders])
 
   const handleSelectProvider = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const providerId = e.target.value
     if (providerId) {
-      const provider = favoriteProviders.find(p => p.id === providerId && p.is_affiliated)
-      setSelectedProvider(provider || null)
+      const provider = favoriteProviders.find(
+        (p) => p.id === providerId && p.is_affiliated
+      )
+      setSelectedProviderId(providerId)
+      setProviderName(provider?.name || '')
+      setProviderSpecialty(provider?.specialty || '')
+      setProviderLocation(provider?.location || '')
     } else {
-      setSelectedProvider(null)
+      setSelectedProviderId(null)
+      setProviderName('')
+      setProviderSpecialty('')
+      setProviderLocation('')
     }
   }
 
@@ -103,18 +124,21 @@ export default function RequestProviderPage() {
     e.preventDefault()
     setError(null)
 
-    const hasAffiliatedFavorites = favoriteProviders.some(p => p.is_affiliated)
+    const hasAffiliatedFavorites = favoriteProviders.some((p) => p.is_affiliated)
     if (!hasAffiliatedFavorites) {
       setError('Please add affiliated providers to favorites before submitting a request')
       return
     }
 
-    if (!selectedProvider) {
+    if (!selectedProviderId) {
       setError('Please select a provider')
       return
     }
 
-    if (!selectedProvider.is_affiliated) {
+    const selectedProvider = favoriteProviders.find(
+      (p) => p.id === selectedProviderId
+    )
+    if (!selectedProvider?.is_affiliated) {
       setError('You can only submit requests to affiliated providers.')
       return
     }
@@ -141,7 +165,7 @@ export default function RequestProviderPage() {
         date?: string
         time?: string
       } = {
-        provider_id: selectedProvider.id,
+        provider_id: selectedProviderId,
         message: message.trim(),
       }
 
@@ -247,7 +271,7 @@ export default function RequestProviderPage() {
                   )}
                   <select
                     id="providerSelect"
-                    value={selectedProvider?.id || ''}
+                    value={selectedProviderId || ''}
                     onChange={handleSelectProvider}
                     className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     required
@@ -261,19 +285,24 @@ export default function RequestProviderPage() {
                         </option>
                       ))}
                   </select>
-                  {selectedProvider && (
+                  {selectedProviderId && (
                     <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-slate-900">{selectedProvider.name}</p>
-                          <p className="text-sm text-slate-600">{selectedProvider.specialty}</p>
+                          <p className="font-medium text-slate-900">{providerName}</p>
+                          <p className="text-sm text-slate-600">{providerSpecialty}</p>
                           <p className="text-xs text-slate-500 mt-1">
                             Affiliated provider – your request will be handled directly in MediData.
                           </p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setSelectedProvider(null)}
+                          onClick={() => {
+                            setSelectedProviderId(null)
+                            setProviderName('')
+                            setProviderSpecialty('')
+                            setProviderLocation('')
+                          }}
                           className="text-slate-500 hover:text-slate-700"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,6 +315,20 @@ export default function RequestProviderPage() {
                 </>
               )}
             </div>
+
+            {/* Selected Provider Info */}
+            {selectedProviderId ? (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Selected provider
+                </label>
+                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900">
+                  <div className="font-semibold">{state?.providerName}</div>
+                  <div className="text-slate-600">{state?.providerSpecialty}</div>
+                  <div className="text-slate-500">{state?.providerLocation}</div>
+                </div>
+              </div>
+            ) : null}
 
             {/* Date and Time Fields */}
             <div className="grid md:grid-cols-2 gap-4 mb-6">
@@ -342,7 +385,7 @@ export default function RequestProviderPage() {
                 disabled={
                   isSubmitting ||
                   favoriteProviders.filter(p => p.is_affiliated).length === 0 ||
-                  !selectedProvider
+                  !selectedProviderId
                 }
                 className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
               >

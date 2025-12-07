@@ -9,5 +9,7 @@
 # pycache folder
 __pycache__/
 
+#ignore virtual environment folder
+.venv/
 .venv/
 .coverage
