@@ -29,10 +29,10 @@ export default function EmptyState({ title, description, icon }: EmptyStateProps
   )
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-12 text-center">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-12 text-center dark:bg-slate-800 dark:border-slate-700">
       {icon || defaultIcon}
-      <p className="text-slate-600 mb-2">{title}</p>
-      <p className="text-sm text-slate-500">{description}</p>
+      <p className="text-slate-600 mb-2 dark:text-slate-300">{title}</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
     </div>
   )
 }

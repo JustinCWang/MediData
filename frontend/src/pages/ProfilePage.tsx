@@ -195,17 +195,17 @@ export default function ProfilePage() {
         <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
       </div>
       <div className="relative mx-auto max-w-4xl px-6 py-10 space-y-6 z-10">
-        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-slate-900 leading-tight">My Profile</h1>
-          <p className="text-slate-600 text-sm md:text-base">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2 dark:bg-slate-900/80 dark:border-slate-700">
+          <h1 className="text-3xl font-semibold text-slate-900 leading-tight dark:text-white">My Profile</h1>
+          <p className="text-slate-600 text-sm md:text-base dark:text-slate-400">
             {profile.role === 'patient' ? 'Patient' : 'Provider'} profile information
           </p>
-          <div className="text-sm text-slate-600 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+          <div className="text-sm text-slate-600 flex flex-wrap gap-2 dark:text-slate-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Keep contact & insurance current
             </span>
             {profile.role === 'provider' && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
                 Location & taxonomy help matching
               </span>
             )}
@@ -213,18 +213,18 @@ export default function ProfilePage() {
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900/30">
+            <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm text-green-800">Profile updated successfully!</p>
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md dark:bg-green-900/20 dark:border-green-900/30">
+            <p className="text-sm text-green-800 dark:text-green-300">Profile updated successfully!</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="profile-card bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="profile-card bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur p-6 space-y-6 dark:bg-slate-900/80 dark:border-slate-700">
           <div className="flex items-center gap-4">
             <div className="relative h-16 w-16 rounded-full bg-gradient-to-br from-sky-500 via-emerald-400 to-blue-500 flex items-center justify-center text-white text-xl font-semibold overflow-hidden">
               {avatarPreview ? (
@@ -234,8 +234,8 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900">Profile photo</p>
-              <label className="inline-flex items-center px-3 py-2 text-xs font-semibold rounded-full border border-slate-300 bg-white/70 cursor-pointer hover:bg-white text-slate-800">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Profile photo</p>
+              <label className="inline-flex items-center px-3 py-2 text-xs font-semibold rounded-full border border-slate-300 bg-white/70 cursor-pointer hover:bg-white text-slate-800 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">
                 Upload image
                 <input
                   type="file"
@@ -255,12 +255,12 @@ export default function ProfilePage() {
                   }}
                 />
               </label>
-              <p className="text-xs text-slate-500">Preview only; stored with other profile updates if backend supports.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Preview only; stored with other profile updates if backend supports.</p>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 First Name
               </label>
               <input
@@ -269,11 +269,11 @@ export default function ProfilePage() {
                 type="text"
                 required
                 defaultValue={profile.firstName}
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 Last Name
               </label>
               <input
@@ -282,11 +282,11 @@ export default function ProfilePage() {
                 type="text"
                 required
                 defaultValue={profile.lastName}
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 Email
               </label>
               <input
@@ -294,12 +294,12 @@ export default function ProfilePage() {
                 type="email"
                 value={profile.email || ''}
                 disabled
-                className="w-full rounded-md border border-white/70 bg-white/60 px-3 py-2 text-sm text-slate-500 cursor-not-allowed backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/60 px-3 py-2 text-sm text-slate-500 cursor-not-allowed backdrop-blur dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-500"
               />
               <p className="mt-1 text-xs text-slate-500">Email cannot be changed</p>
             </div>
             <div>
-              <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 Phone Number
               </label>
               <input
@@ -307,18 +307,18 @@ export default function ProfilePage() {
                 name="phoneNum"
                 type="tel"
                 defaultValue={profile.phoneNum}
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="gender" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="gender" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 Gender
               </label>
               <select
                 id="gender"
                 name="gender"
                 defaultValue={profile.gender}
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
               >
                 <option value="">Select...</option>
                 <option value="Male">Male</option>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
               </select>
             </div>
             <div>
-              <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 State
               </label>
               <input
@@ -338,11 +338,11 @@ export default function ProfilePage() {
                 defaultValue={profile.state}
                 placeholder="e.g., CA, NY"
                 maxLength={2}
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 City
               </label>
               <input
@@ -350,11 +350,11 @@ export default function ProfilePage() {
                 name="city"
                 type="text"
                 defaultValue={profile.city}
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
               />
             </div>
             <div>
-              <label htmlFor="insurance" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="insurance" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 Insurance
               </label>
               <input
@@ -363,13 +363,13 @@ export default function ProfilePage() {
                 type="text"
                 defaultValue={profile.insurance}
                 placeholder="e.g., Blue Cross, Aetna"
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500 dark:placeholder-slate-400"
               />
             </div>
             {profile.role === 'provider' && (
               <>
                 <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-slate-700 mb-1">
+                  <label htmlFor="location" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                     Location
                   </label>
                   <input
@@ -378,11 +378,11 @@ export default function ProfilePage() {
                     type="text"
                     defaultValue={profile.location}
                     placeholder="Full address or location"
-                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500 dark:placeholder-slate-400"
                   />
                 </div>
                 <div>
-                  <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700 mb-1">
+                  <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                     Taxonomy / Specialty
                   </label>
                   <input
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                     type="text"
                     defaultValue={profile.taxonomy}
                     placeholder="e.g., Internal Medicine, Cardiology"
-                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500 dark:placeholder-slate-400"
                   />
                 </div>
               </>
@@ -401,7 +401,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-full hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-full hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
             >
               Cancel
             </button>

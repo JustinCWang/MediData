@@ -21,11 +21,11 @@ export default function RequestProviderPage() {
   const location = useLocation()
   const state = location.state as
     | {
-        providerId?: string
-        providerName?: string
-        providerSpecialty?: string
-        providerLocation?: string
-      }
+      providerId?: string
+      providerName?: string
+      providerSpecialty?: string
+      providerLocation?: string
+    }
     | undefined
 
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
@@ -219,34 +219,34 @@ export default function RequestProviderPage() {
         <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
       </div>
       <div className="relative mx-auto max-w-4xl px-6 py-10 space-y-6 z-10">
-        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-slate-900 leading-tight">Request a Provider</h1>
-          <p className="text-slate-600 text-sm md:text-base">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2 dark:bg-slate-900/80 dark:border-slate-700">
+          <h1 className="text-3xl font-semibold text-slate-900 leading-tight dark:text-white">Request a Provider</h1>
+          <p className="text-slate-600 text-sm md:text-base dark:text-slate-400">
             Submit a structured request so the provider team can respond quickly and with context.
           </p>
-          <div className="text-sm text-slate-600 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+          <div className="text-sm text-slate-600 flex flex-wrap gap-2 dark:text-slate-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Affiliated favorites only
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Include time windows
             </span>
           </div>
         </div>
 
         {showSuccess ? (
-          <div className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-12 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-12 text-center dark:bg-slate-900/80 dark:border-slate-700">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-green-900/30">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">Request Submitted!</h2>
-            <p className="text-slate-600 mb-4">Your request has been sent successfully.</p>
-            <p className="text-sm text-slate-500">Redirecting to requests page...</p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2 dark:text-white">Request Submitted!</h2>
+            <p className="text-slate-600 mb-4 dark:text-slate-400">Your request has been sent successfully.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-500">Redirecting to requests page...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6 space-y-6 request-provider-card">
+          <form onSubmit={handleSubmit} className="bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6 space-y-6 request-provider-card dark:bg-slate-900/80 dark:border-slate-700">
             {error && (
               <div className="rounded-md bg-red-50 border border-red-200 p-3">
                 <p className="text-sm text-red-800">{error}</p>
@@ -255,7 +255,7 @@ export default function RequestProviderPage() {
 
             {/* Provider Selection Dropdown - only affiliated providers can be requested via the app */}
             <div className="space-y-2">
-              <label htmlFor="providerSelect" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="providerSelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Select Provider
               </label>
               {isLoadingProviders ? (
@@ -287,7 +287,7 @@ export default function RequestProviderPage() {
                     id="providerSelect"
                     value={selectedProviderId || ''}
                     onChange={handleSelectProvider}
-                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                    className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
                     required
                   >
                     <option value="">-- Select a provider --</option>
@@ -300,11 +300,11 @@ export default function RequestProviderPage() {
                       ))}
                   </select>
                   {selectedProviderId && (
-                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md dark:bg-blue-900/20 dark:border-blue-800">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-slate-900">{providerName}</p>
-                          <p className="text-sm text-slate-600">{providerSpecialty}</p>
+                          <p className="font-medium text-slate-900 dark:text-slate-100">{providerName}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">{providerSpecialty}</p>
                           <p className="text-xs text-slate-500 mt-1">
                             Affiliated provider – your request will be handled directly in MediData.
                           </p>
@@ -333,7 +333,7 @@ export default function RequestProviderPage() {
             {/* Selected Provider Info */}
             {selectedProviderId ? (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                   Selected provider
                 </label>
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900">
@@ -347,7 +347,7 @@ export default function RequestProviderPage() {
             {/* Date and Time Fields */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-2">
+                <label htmlFor="date" className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">
                   Preferred Date <span className="text-slate-400 font-normal">(optional)</span>
                 </label>
                 <input
@@ -356,11 +356,11 @@ export default function RequestProviderPage() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                  className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:calendar-invert"
                 />
               </div>
               <div>
-                <label htmlFor="time" className="block text-sm font-medium text-slate-700 mb-2">
+                <label htmlFor="time" className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">
                   Preferred Time <span className="text-slate-400 font-normal">(optional)</span>
                 </label>
                 <input
@@ -368,14 +368,14 @@ export default function RequestProviderPage() {
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                  className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:calendar-invert"
                 />
               </div>
             </div>
 
             {/* Message Field */}
             <div className="space-y-2">
-              <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">
                 Message
               </label>
               <textarea
@@ -384,7 +384,7 @@ export default function RequestProviderPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 rows={6}
                 placeholder="Please describe your reason for requesting this provider..."
-                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur"
+                className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-400"
                 required
               />
               <p className="mt-1 text-xs text-slate-500">
@@ -408,7 +408,7 @@ export default function RequestProviderPage() {
               <button
                 type="button"
                 onClick={() => navigate('/requests')}
-                className="px-6 py-2 bg-white/80 text-slate-700 rounded-full font-medium border border-white/70 hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+                className="px-6 py-2 bg-white/80 text-slate-700 rounded-full font-medium border border-white/70 hover:bg-white focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
               >
                 Cancel
               </button>
@@ -418,9 +418,9 @@ export default function RequestProviderPage() {
 
         {/* Non-affiliated favorite providers - info only */}
         {favoriteProviders.filter(p => !p.is_affiliated).length > 0 && (
-          <div className="mt-10 bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">Other saved providers</h2>
-            <p className="text-sm text-slate-600 mb-4">
+          <div className="mt-10 bg-white/80 rounded-2xl shadow-lg border border-white/60 backdrop-blur-lg p-6 dark:bg-slate-900/80 dark:border-slate-700">
+            <h2 className="text-xl font-semibold text-slate-900 mb-2 dark:text-white">Other saved providers</h2>
+            <p className="text-sm text-slate-600 mb-4 dark:text-slate-400">
               These providers are not yet affiliated with MediData. You can contact them directly using the information
               below, but requests cannot be managed through the app.
             </p>
@@ -430,28 +430,28 @@ export default function RequestProviderPage() {
                 .map((provider) => (
                   <div
                     key={provider.id}
-                    className="border border-white/70 rounded-md p-4 flex flex-col gap-1 bg-white/70 backdrop-blur"
+                    className="border border-white/70 rounded-md p-4 flex flex-col gap-1 bg-white/70 backdrop-blur dark:bg-slate-800 dark:border-slate-700"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-slate-900">{provider.name}</p>
-                        <p className="text-sm text-slate-600">{provider.specialty}</p>
+                        <p className="font-medium text-slate-900 dark:text-slate-100">{provider.name}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{provider.specialty}</p>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700">
+                      <span className="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                         External provider
                       </span>
                     </div>
                     {provider.location && (
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         <span className="font-medium">Location:</span> {provider.location}
                       </p>
                     )}
                     {provider.phone && (
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         <span className="font-medium">Phone:</span> {provider.phone}
                       </p>
                     )}
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-500">
                       NPI / External ID: {provider.id}. Use this identifier and location details when contacting this
                       provider directly.
                     </p>

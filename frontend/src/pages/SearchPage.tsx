@@ -251,25 +251,25 @@ export default function SearchPage() {
         <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
       </div>
       <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-6 z-10">
-        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-3">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-3 dark:bg-slate-900/80 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-3xl font-semibold text-slate-900 leading-tight">Search Providers</h1>
-              <p className="text-slate-600 text-sm md:text-base">Find care using the NPI Registry with filters that matter.</p>
+              <h1 className="text-3xl font-semibold text-slate-900 leading-tight dark:text-white">Search Providers</h1>
+              <p className="text-slate-600 text-sm md:text-base dark:text-slate-400">Find care using the NPI Registry with filters that matter.</p>
             </div>
           </div>
-          <div className="text-sm text-slate-600 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+          <div className="text-sm text-slate-600 flex flex-wrap gap-3 dark:text-slate-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Quick filters
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Save favorites for faster booking
             </span>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-[1.1fr_1.3fr] gap-6">
-          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 search-card">
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 search-card dark:bg-slate-900/80 dark:border-slate-700">
             <ProviderSearchForm
               enumerationType={enumerationType}
               firstName={firstName}
@@ -294,22 +294,22 @@ export default function SearchPage() {
             />
 
             {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900/30">
+                <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
               </div>
             )}
           </div>
 
-          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4 search-card">
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4 search-card dark:bg-slate-900/80 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Results</h2>
-                <p className="text-sm text-slate-600">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Results</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {results.length > 0 ? `${results.length} providers found` : 'Run a search to see providers'}
                 </p>
               </div>
               {searchStats && (searchStats.affiliated_count !== undefined || searchStats.npi_count !== undefined) && (
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {searchStats.affiliated_count !== undefined && searchStats.affiliated_count > 0 && `${searchStats.affiliated_count} affiliated`}
                   {searchStats.affiliated_count !== undefined && searchStats.affiliated_count > 0 && searchStats.npi_count !== undefined && searchStats.npi_count > 0 && ' • '}
                   {searchStats.npi_count !== undefined && searchStats.npi_count > 0 && `${searchStats.npi_count} from NPI Registry`}
@@ -337,7 +337,7 @@ export default function SearchPage() {
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                       >
                         Previous
                       </button>
@@ -355,7 +355,7 @@ export default function SearchPage() {
                                 onClick={() => setCurrentPage(page)}
                                 className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${currentPage === page
                                   ? 'bg-blue-600 text-white'
-                                  : 'text-slate-700 bg-white/80 border border-white/70 hover:bg-white'
+                                  : 'text-slate-700 bg-white/80 border border-white/70 hover:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
                                   }`}
                               >
                                 {page}
@@ -375,7 +375,7 @@ export default function SearchPage() {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                         disabled={currentPage === totalPages}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white/80 border border-white/70 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                       >
                         Next
                       </button>
@@ -396,7 +396,7 @@ export default function SearchPage() {
               )
             )}
 
-            {isSearching && <div className="text-center py-6 text-slate-600">Searching...</div>}
+            {isSearching && <div className="text-center py-6 text-slate-600 dark:text-slate-400">Searching...</div>}
           </div>
         </div>
       </div>

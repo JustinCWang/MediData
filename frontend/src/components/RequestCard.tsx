@@ -43,12 +43,12 @@ export default function RequestCard({
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Patient edit fields
   const [editDate, setEditDate] = useState(request.requestedDate || '')
   const [editTime, setEditTime] = useState(request.requestedTime || '')
   const [editMessage, setEditMessage] = useState(request.message || '')
-  
+
   // Provider edit fields
   const [editStatus, setEditStatus] = useState<RequestStatus>(request.status)
   const [editResponse, setEditResponse] = useState(request.response || '')
@@ -190,7 +190,7 @@ export default function RequestCard({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-slate-700">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -207,7 +207,7 @@ export default function RequestCard({
                 </svg>
               )}
 
-              <h3 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 {userRole === 'provider' ? `Patient: ${request.providerName}` : request.providerName}
               </h3>
             </div>
@@ -220,8 +220,8 @@ export default function RequestCard({
               {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
             </span>
           </div>
-          <p className="text-sm text-slate-600 mb-1">{request.specialty}</p>
-          
+          <p className="text-sm text-slate-600 mb-1 dark:text-slate-400">{request.specialty}</p>
+
           {error && (
             <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
               <p className="text-xs text-red-800">{error}</p>
@@ -271,7 +271,7 @@ export default function RequestCard({
                       value={editDate}
                       onChange={(e) => setEditDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                     />
                   </div>
                   <div>
@@ -282,7 +282,7 @@ export default function RequestCard({
                       type="time"
                       value={editTime}
                       onChange={(e) => setEditTime(e.target.value)}
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                     />
                   </div>
                   <div>
@@ -293,7 +293,7 @@ export default function RequestCard({
                       value={editMessage}
                       onChange={(e) => setEditMessage(e.target.value)}
                       rows={4}
-                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                       placeholder="Enter your message..."
                     />
                   </div>
@@ -365,7 +365,7 @@ export default function RequestCard({
           )}
         </div>
       </div>
-      
+
       {!isEditing && (
         <div className="flex gap-2 mt-4">
           {userRole === 'patient' && request.status === 'pending' && (
@@ -404,7 +404,7 @@ export default function RequestCard({
           )}
           <button
             onClick={() => onViewDetails?.(request.id)}
-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-md text-sm font-medium hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-md text-sm font-medium hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
           >
             View Details
           </button>

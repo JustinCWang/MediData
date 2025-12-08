@@ -81,8 +81,8 @@ export default function RequestsPage() {
     fetchRequests()
   }, [])
 
-  const filteredRequests = filter === 'all' 
-    ? requests 
+  const filteredRequests = filter === 'all'
+    ? requests
     : requests.filter(req => req.status === filter)
 
   const handleCancel = () => {
@@ -113,14 +113,14 @@ export default function RequestsPage() {
         <div className="absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-cyan-200/30 blur-[90px]" />
       </div>
       <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-6 z-10">
-        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-slate-900 leading-tight">My Requests</h1>
-          <p className="text-slate-600 text-sm md:text-base">View, filter, and follow up on every provider request.</p>
-          <div className="text-sm text-slate-600 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl p-6 md:p-8 flex flex-col gap-2 dark:bg-slate-900/80 dark:border-slate-700">
+          <h1 className="text-3xl font-semibold text-slate-900 leading-tight dark:text-white">My Requests</h1>
+          <p className="text-slate-600 text-sm md:text-base dark:text-slate-400">View, filter, and follow up on every provider request.</p>
+          <div className="text-sm text-slate-600 flex flex-wrap gap-2 dark:text-slate-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Quick filters
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 dark:bg-slate-800 dark:border-slate-700">
               Status-aware timeline
             </span>
           </div>
@@ -128,13 +128,13 @@ export default function RequestsPage() {
 
         <div className="grid lg:grid-cols-[1fr_1.5fr] gap-6">
           <div className="space-y-4">
-            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3">Filters</h3>
+            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 dark:bg-slate-900/80 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-900 mb-3 dark:text-white">Filters</h3>
               <RequestFilterTabs currentFilter={filter} onFilterChange={setFilter} />
             </div>
-            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3">Tips</h3>
-              <ul className="text-sm text-slate-700 space-y-2">
+            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 dark:bg-slate-900/80 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-900 mb-3 dark:text-white">Tips</h3>
+              <ul className="text-sm text-slate-700 space-y-2 dark:text-slate-400">
                 <li>• Use filters to find pending items that need your response.</li>
                 <li>• Check confirmed requests for location/time details.</li>
                 <li>• If a request is delayed, follow up via the provider’s preferred contact.</li>
@@ -142,11 +142,11 @@ export default function RequestsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4">
+          <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 space-y-4 dark:bg-slate-900/80 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">Requests</h2>
-                <p className="text-sm text-slate-600">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Requests</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {filteredRequests.length > 0 ? `${filteredRequests.length} shown` : 'No requests yet'}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function RequestsPage() {
 
             {/* Requests List */}
             {isLoading ? (
-              <div className="text-center py-12 text-slate-600">Loading requests...</div>
+              <div className="text-center py-12 text-slate-600 dark:text-slate-400">Loading requests...</div>
             ) : filteredRequests.length > 0 ? (
               <div className="space-y-4">
                 {filteredRequests.map((request) => (

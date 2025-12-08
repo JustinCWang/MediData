@@ -234,7 +234,7 @@ export default function DashboardPage() {
       </div>
       <div className="relative mx-auto max-w-6xl px-6 py-10 space-y-8 z-10">
         {/* Hero glass summary */}
-        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.4)] backdrop-blur-xl overflow-hidden">
+        <div className="rounded-3xl bg-white/70 border border-white/60 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.4)] backdrop-blur-xl overflow-hidden dark:bg-slate-900/80 dark:border-slate-700">
           <div className="grid md:grid-cols-[1.6fr_1fr]">
             <div className="p-6 md:p-8 flex flex-col gap-4">
               <div className="flex items-center gap-3">
@@ -246,13 +246,13 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600">Welcome back</p>
-                  <h1 className="text-3xl font-semibold text-slate-900 leading-tight">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back</p>
+                  <h1 className="text-3xl font-semibold text-slate-900 leading-tight dark:text-white">
                     {getUserDisplayName()}
                   </h1>
                 </div>
               </div>
-              <p className="text-slate-600 text-sm md:text-base">
+              <p className="text-slate-600 text-sm md:text-base dark:text-slate-400">
                 Manage your favorites, track requests, and book new appointments with a calm, glassy workspace.
               </p>
               <div className="flex flex-wrap gap-3">
@@ -265,13 +265,13 @@ export default function DashboardPage() {
                 </Link>
                 <Link
                   to="/request-provider"
-                  className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border border-white/70 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm"
+                  className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border border-white/70 bg-white/70 text-slate-800 hover:bg-white hover:shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
                   Request provider
                 </Link>
               </div>
             </div>
-            <div className="relative p-6 md:p-8 bg-gradient-to-br from-sky-100/70 via-white/60 to-emerald-50/70">
+            <div className="relative p-6 md:p-8 bg-gradient-to-br from-sky-100/70 via-white/60 to-emerald-50/70 dark:from-slate-800/50 dark:via-slate-900/50 dark:to-slate-800/50">
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute -top-10 -right-6 h-32 w-32 rounded-full bg-sky-200/50 blur-3xl" />
                 <div className="absolute bottom-0 left-2 h-28 w-28 rounded-full bg-emerald-200/50 blur-2xl" />
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                 <StatPill label="Role" value={userRole === 'provider' ? 'Provider' : 'Patient'} />
                 <Link
                   to="/requests"
-                  className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur p-3 flex items-center justify-between text-sm text-slate-700 hover:shadow-sm"
+                  className="rounded-2xl border border-white/60 bg-white/70 backdrop-blur p-3 flex items-center justify-between text-sm text-slate-700 hover:shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                 >
                   View all requests <span className="text-base">→</span>
                 </Link>
@@ -294,18 +294,18 @@ export default function DashboardPage() {
         {/* Main content */}
         <div className="grid lg:grid-cols-[1.2fr_1fr] gap-6">
           <div className="space-y-6">
-            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
+            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 dark:bg-slate-900/80 dark:border-slate-700">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Favorite Providers</h2>
-                  <p className="text-sm text-slate-600">Quickly reach the clinicians you trust</p>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Favorite Providers</h2>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Quickly reach the clinicians you trust</p>
                 </div>
                 <Link to="/search" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                   Search more
                 </Link>
               </div>
               {isLoadingFavorites ? (
-                <div className="text-center py-8 text-slate-600">Loading favorites...</div>
+                <div className="text-center py-8 text-slate-600 dark:text-slate-400">Loading favorites...</div>
               ) : favoriteProviders.length > 0 ? (
                 <div className="grid md:grid-cols-2 gap-4">
                   {favoriteProviders.map((provider) => (
@@ -326,18 +326,18 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6">
+            <div className="rounded-2xl bg-white/75 border border-white/60 shadow-lg backdrop-blur p-6 dark:bg-slate-900/80 dark:border-slate-700">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Recent Requests</h2>
-                  <p className="text-sm text-slate-600">Track confirmations and next steps</p>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Recent Requests</h2>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Track confirmations and next steps</p>
                 </div>
                 <Link to="/requests" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                   View all
                 </Link>
               </div>
               {isLoadingRequests ? (
-                <div className="text-center py-8 text-slate-600">Loading requests...</div>
+                <div className="text-center py-8 text-slate-600 dark:text-slate-400">Loading requests...</div>
               ) : recentRequests.length > 0 ? (
                 <div className="space-y-4">
                   {recentRequests.map((request) => (
@@ -362,27 +362,27 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-2xl bg-white/70 border border-white/60 shadow-lg backdrop-blur p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Quick actions</h3>
+            <div className="rounded-2xl bg-white/70 border border-white/60 shadow-lg backdrop-blur p-6 dark:bg-slate-900/80 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2 dark:text-white">Quick actions</h3>
               <div className="flex flex-col gap-3">
                 <Link
                   to="/search"
-                  className="flex items-center justify-between rounded-xl border border-white/70 bg-gradient-to-r from-sky-100/80 via-white/70 to-emerald-100/70 px-4 py-3 text-sm font-semibold text-slate-800 hover:shadow-md"
+                  className="flex items-center justify-between rounded-xl border border-white/70 bg-gradient-to-r from-sky-100/80 via-white/70 to-emerald-100/70 px-4 py-3 text-sm font-semibold text-slate-800 hover:shadow-md dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 dark:border-slate-700 dark:text-slate-200"
                 >
                   Find a provider <span className="text-base">↗</span>
                 </Link>
                 <Link
                   to="/request-provider"
-                  className="flex items-center justify-between rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-800 hover:shadow-md"
+                  className="flex items-center justify-between rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-800 hover:shadow-md dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
                 >
                   Submit a request <span className="text-base">+</span>
                 </Link>
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white/70 border border-white/60 shadow-lg backdrop-blur p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-3">Stay prepared</h3>
-              <ul className="text-sm text-slate-700 space-y-2">
+            <div className="rounded-2xl bg-white/70 border border-white/60 shadow-lg backdrop-blur p-6 dark:bg-slate-900/80 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-900 mb-3 dark:text-white">Stay prepared</h3>
+              <ul className="text-sm text-slate-700 space-y-2 dark:text-slate-400">
                 <li>• Keep your insurance info up to date in Profile.</li>
                 <li>• Add favorites from search to book faster next time.</li>
                 <li>• Check request status for confirmations and follow-ups.</li>
@@ -397,9 +397,9 @@ export default function DashboardPage() {
 
 function StatPill({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl border border-white/60 bg-white/80 backdrop-blur p-3 text-sm">
-      <p className="text-slate-500">{label}</p>
-      <p className="text-lg font-semibold text-slate-900">{value}</p>
+    <div className="rounded-2xl border border-white/60 bg-white/80 backdrop-blur p-3 text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
+      <p className="text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-lg font-semibold text-slate-900 dark:text-white">{value}</p>
     </div>
   )
 }

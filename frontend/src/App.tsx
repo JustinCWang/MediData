@@ -339,8 +339,8 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
               <Link
                 to="/login"
                 className={`hidden sm:inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition ${theme === 'dark'
-                    ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
-                    : 'border-slate-200 bg-white/80 text-slate-700 hover:bg-white'
+                  ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
+                  : 'border-slate-200 bg-white/80 text-slate-700 hover:bg-white'
                   }`}
               >
                 Log in
@@ -356,8 +356,8 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
           <button
             onClick={onToggleTheme}
             className={`inline-flex items-center justify-center rounded-full border p-2 transition ${theme === 'dark'
-                ? 'border-slate-700 bg-slate-900 text-amber-200 hover:border-amber-300 hover:text-amber-100 hover:shadow-sm'
-                : 'border-slate-200 bg-white/80 text-slate-800 hover:bg-white hover:shadow-sm'
+              ? 'border-slate-700 bg-slate-900 text-amber-200 hover:border-amber-300 hover:text-amber-100 hover:shadow-sm'
+              : 'border-slate-200 bg-white/80 text-slate-800 hover:bg-white hover:shadow-sm'
               }`}
             aria-label="Toggle theme"
           >
@@ -543,8 +543,8 @@ function LandingPage({ theme }: { theme: Theme }) {
               <div className="space-y-4 landing-plain">
                 <div
                   className={`landing-ribbon inline-flex items-center gap-3 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur shadow-sm ${theme === 'dark'
-                      ? 'border-slate-700/60 bg-slate-900/80 text-slate-100'
-                      : 'border-white/60 bg-white/70 text-slate-700'
+                    ? 'border-slate-700/60 bg-slate-900/80 text-slate-100'
+                    : 'border-white/60 bg-white/70 text-slate-700'
                     }`}
                 >
                   <span className="ribbon-dot h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_6px_rgba(16,185,129,0.28)]" />
@@ -557,13 +557,13 @@ function LandingPage({ theme }: { theme: Theme }) {
                     <span aria-hidden="true" className="text-[12px]">↗</span>
                   </Link>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
                   Find the right provider, fast.
                 </h1>
-                <p className="text-lg text-slate-700">
+                <p className="text-lg text-slate-700 dark:text-slate-200">
                   MediData matches you to verified clinicians based on your symptoms, preferences, location, and real outcomes—so you spend minutes, not weeks, getting care.
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   HIPAA-conscious by design, with secure messaging and transparent provider profiles.
                 </p>
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -575,7 +575,7 @@ function LandingPage({ theme }: { theme: Theme }) {
                   </Link>
                   <Link
                     to="/login"
-                    className="landing-account-link inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 hover:border-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
+                    className="landing-account-link inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 hover:border-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white dark:text-white dark:border-slate-500 dark:hover:bg-slate-800"
                   >
                     I already have an account
                   </Link>
@@ -716,13 +716,13 @@ function LandingPage({ theme }: { theme: Theme }) {
               <p className="text-base md:text-lg text-slate-600 leading-relaxed dark:text-slate-200">
                 From sign-in to booking and tracking, here’s the quick path to get care fast with verified providers.
               </p>
-              <ol className="landing-guide-list space-y-3 text-base md:text-lg text-slate-700 leading-relaxed list-decimal list-inside">
-                <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
-                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, and availability; refine as needed.</li>
-                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, and contact options.</li>
-                <li><span className="font-semibold text-slate-900">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
-                <li><span className="font-semibold text-slate-900">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
-                <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
+              <ol className="landing-guide-list space-y-3 text-base md:text-lg text-slate-700 leading-relaxed list-decimal list-inside dark:text-slate-200">
+                <li><span className="font-semibold text-slate-900 dark:text-white">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Search smart:</span> Filter by specialty, location, and availability; refine as needed.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">View details:</span> Open a provider to see profile, status, and contact options.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
+                <li><span className="font-semibold text-slate-900 dark:text-white">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
               </ol>
             </div>
             <div className="landing-guide-card relative overflow-hidden rounded-2xl border border-slate-200 bg-white/75 backdrop-blur shadow-lg min-h-[320px] md:min-h-[380px] aspect-[4/3] z-10">
@@ -921,10 +921,10 @@ function LoginPage() {
         <div className="absolute right-[40%] bottom-[8%] h-[14rem] w-[14rem] rounded-full bg-sky-200/80 blur-[55px] animate-light-wander-f" />
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
-        <div className="w-full max-w-md rounded-2xl bg-white/80 shadow-xl backdrop-blur px-8 py-10 border border-white/70">
+        <div className="w-full max-w-md rounded-2xl bg-white/80 shadow-xl backdrop-blur px-8 py-10 border border-white/70 dark:bg-slate-900/90 dark:border-slate-700">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-[#d6c7ff]">Log in to MediData</h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-[#bfa8ff]">
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Log in to MediData</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               Access your dashboard, requests, and saved providers.
             </p>
           </div>
@@ -940,7 +940,7 @@ function LoginPage() {
               </div>
             )}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Email
               </label>
               <input
@@ -951,12 +951,12 @@ function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm text-slate-900 dark:text-black focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                 placeholder="you@example.com"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Password
               </label>
               <input
@@ -965,7 +965,7 @@ function LoginPage() {
                 type="password"
                 required
                 disabled={isLoading}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm text-slate-900 dark:text-black focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                 placeholder="••••••••"
               />
             </div>
@@ -1134,30 +1134,30 @@ function RegisterPage() {
         <div className="absolute right-[40%] bottom-[8%] h-[14rem] w-[14rem] rounded-full bg-sky-200/80 blur-[55px] animate-light-wander-f" />
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
-        <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10 register-card border border-white/70">
+        <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10 register-card border border-white/70 dark:bg-slate-900/90 dark:border-slate-700">
           {/* Step 1: Role Selection */}
           {step === 'role' && (
             <>
-              <h1 className="text-2xl font-semibold text-slate-900">Get Started</h1>
-              <p className="mt-2 text-sm text-slate-600">
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Get Started</h1>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 Are you a patient looking for care, or a provider offering services?
               </p>
               <div className="mt-6 space-y-3">
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('patient')}
-                  className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors dark:border-slate-700 dark:hover:bg-blue-900/20 dark:hover:border-blue-500"
                 >
-                  <div className="font-semibold text-slate-900">I'm a Patient</div>
-                  <div className="text-sm text-slate-600 mt-1">Looking for healthcare providers</div>
+                  <div className="font-semibold text-slate-900 dark:text-slate-100">I'm a Patient</div>
+                  <div className="text-sm text-slate-600 mt-1 dark:text-slate-400">Looking for healthcare providers</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('provider')}
-                  className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors dark:border-slate-700 dark:hover:bg-blue-900/20 dark:hover:border-blue-500"
                 >
-                  <div className="font-semibold text-slate-900">I'm a Provider</div>
-                  <div className="text-sm text-slate-600 mt-1">Offering healthcare services</div>
+                  <div className="font-semibold text-slate-900 dark:text-slate-100">I'm a Provider</div>
+                  <div className="text-sm text-slate-600 mt-1 dark:text-slate-400">Offering healthcare services</div>
                 </button>
               </div>
             </>
@@ -1176,8 +1176,8 @@ function RegisterPage() {
                 </button>
                 <span className="text-sm text-slate-500">Step 1 of 2</span>
               </div>
-              <h1 className="text-2xl font-semibold text-slate-900">Create Account</h1>
-              <p className="mt-2 text-sm text-slate-600">
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Create Account</h1>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 Create your {role === 'patient' ? 'patient' : 'provider'} account
               </p>
               <form onSubmit={handleAccountSubmit} className="mt-6 space-y-4">
@@ -1187,7 +1187,7 @@ function RegisterPage() {
                   </div>
                 )}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Email
                   </label>
                   <input
@@ -1195,12 +1195,12 @@ function RegisterPage() {
                     name="email"
                     type="email"
                     required
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     placeholder="you@example.com"
                   />
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Password
                   </label>
                   <input
@@ -1209,12 +1209,12 @@ function RegisterPage() {
                     type="password"
                     required
                     minLength={6}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     placeholder="Create a strong password (min. 6 characters)"
                   />
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Confirm Password
                   </label>
                   <input
@@ -1223,7 +1223,7 @@ function RegisterPage() {
                     type="password"
                     required
                     minLength={6}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     placeholder="Repeat your password"
                   />
                 </div>
@@ -1250,8 +1250,8 @@ function RegisterPage() {
                 </button>
                 <span className="text-sm text-slate-500">Step 2 of 2</span>
               </div>
-              <h1 className="text-2xl font-semibold text-slate-900">Profile Information</h1>
-              <p className="mt-2 text-sm text-slate-600">
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Profile Information</h1>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 Tell us a bit about yourself
               </p>
               <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
@@ -1262,7 +1262,7 @@ function RegisterPage() {
                 )}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                       First name
                     </label>
                     <input
@@ -1271,11 +1271,11 @@ function RegisterPage() {
                       type="text"
                       required
                       disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     />
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                       Last name
                     </label>
                     <input
@@ -1284,12 +1284,12 @@ function RegisterPage() {
                       type="text"
                       required
                       disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Phone Number
                   </label>
                   <input
@@ -1297,19 +1297,19 @@ function RegisterPage() {
                     name="phoneNum"
                     type="tel"
                     disabled={isLoading}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     placeholder="(555) 123-4567"
                   />
                 </div>
                 <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="gender" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Gender
                   </label>
                   <select
                     id="gender"
                     name="gender"
                     disabled={isLoading}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                   >
                     <option value="">Select...</option>
                     <option value="Male">Male</option>
@@ -1329,12 +1329,12 @@ function RegisterPage() {
                       type="text"
                       maxLength={2}
                       disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                       placeholder="CA"
                     />
                   </div>
                   <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-slate-700">
+                    <label htmlFor="city" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                       City
                     </label>
                     <input
@@ -1342,13 +1342,13 @@ function RegisterPage() {
                       name="city"
                       type="text"
                       disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                       placeholder="Los Angeles"
                     />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="insurance" className="block text-sm font-medium text-slate-700">
+                  <label htmlFor="insurance" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Insurance
                   </label>
                   <input
@@ -1356,14 +1356,14 @@ function RegisterPage() {
                     name="insurance"
                     type="text"
                     disabled={isLoading}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                     placeholder="e.g., Blue Cross, Aetna"
                   />
                 </div>
                 {role === 'provider' && (
                   <>
                     <div>
-                      <label htmlFor="providerEmail" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="providerEmail" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Provider Email
                       </label>
                       <input
@@ -1371,12 +1371,12 @@ function RegisterPage() {
                         name="providerEmail"
                         type="email"
                         disabled={isLoading}
-                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                         placeholder="provider@example.com"
                       />
                     </div>
                     <div>
-                      <label htmlFor="location" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="location" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Location
                       </label>
                       <input
@@ -1384,12 +1384,12 @@ function RegisterPage() {
                         name="location"
                         type="text"
                         disabled={isLoading}
-                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                         placeholder="Full address or location"
                       />
                     </div>
                     <div>
-                      <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700">
+                      <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                         Taxonomy / Specialty
                       </label>
                       <input
@@ -1397,7 +1397,7 @@ function RegisterPage() {
                         name="taxonomy"
                         type="text"
                         disabled={isLoading}
-                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-600 dark:text-white dark:placeholder-slate-400"
                         placeholder="e.g., Internal Medicine, Cardiology"
                       />
                     </div>

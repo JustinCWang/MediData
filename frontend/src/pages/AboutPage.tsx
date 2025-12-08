@@ -4,14 +4,14 @@ export default function AboutPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-sky-50 to-slate-50 py-16 md:py-24 px-4">
+      <section className="bg-gradient-to-b from-sky-50 to-slate-50 py-16 md:py-24 px-4 dark:from-sky-900/20 dark:to-slate-900">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 dark:text-white">
             Healthcare Made <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-emerald-500">Simple</span>
           </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto dark:text-slate-200">
             At MediData, we believe everyone deserves easy access to the right healthcare provider. We're here to bridge the gap between patients and quality care.
           </p>
           <div className="h-1 w-24 bg-gradient-to-r from-sky-600 to-emerald-500 mx-auto rounded-full"></div>
@@ -19,10 +19,10 @@ export default function AboutPage() {
       </section>
 
       {/* Who We Are Section */}
-      <section className="py-16 md:py-24 px-4 bg-white">
+      <section className="py-16 md:py-24 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-slate-900 mb-8">Who We Are</h2>
-          <div className="space-y-6 text-slate-700">
+          <h2 className="text-4xl font-bold text-slate-900 mb-8 dark:text-white">Who We Are</h2>
+          <div className="space-y-6 text-slate-700 dark:text-slate-200">
             <p className="text-lg leading-relaxed">
               MediData is a modern healthcare navigation platform dedicated to making healthcare access simpler, faster, and more intuitive. We're a team of healthcare advocates, technologists, and patient-centered designers who understand the frustration of searching for the right medical care.
             </p>
@@ -37,46 +37,46 @@ export default function AboutPage() {
       </section>
 
       {/* What We Do Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white">
+      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-slate-900 mb-8">What We Do</h2>
-          <p className="text-lg text-slate-700 mb-12">
+          <h2 className="text-4xl font-bold text-slate-900 mb-8 dark:text-white">What We Do</h2>
+          <p className="text-lg text-slate-700 mb-12 dark:text-slate-200">
             MediData connects you with the healthcare providers that matter most to you. Our platform makes it easy to:
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {/* Search by Location */}
-            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-sky-600">
+            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-sky-600 dark:bg-slate-800 dark:border-sky-500">
               <div className="text-3xl mb-4">📍</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Search by Location</h3>
-              <p className="text-slate-700">
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white">Search by Location</h3>
+              <p className="text-slate-700 dark:text-slate-200">
                 Find hospitals, clinics, and specialists near you with just a few clicks. Whether you're at home or traveling, discover quality care in your neighborhood.
               </p>
             </div>
 
             {/* Explore by Specialty */}
-            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-emerald-500">
+            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-emerald-500 dark:bg-slate-800 dark:border-emerald-500">
               <div className="text-3xl mb-4">⚕️</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Explore by Specialty</h3>
-              <p className="text-slate-700">
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white">Explore by Specialty</h3>
+              <p className="text-slate-700 dark:text-slate-200">
                 From family medicine and pediatrics to orthopedic surgery, physical therapy, and beyond—find specialists trained in the care you need.
               </p>
             </div>
 
             {/* Understand Your Needs */}
-            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-purple-600">
+            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-purple-600 dark:bg-slate-800 dark:border-purple-500">
               <div className="text-3xl mb-4">💡</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Understand Your Healthcare Needs</h3>
-              <p className="text-slate-700">
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white">Understand Your Healthcare Needs</h3>
+              <p className="text-slate-700 dark:text-slate-200">
                 Tell us what you're looking for—routine checkups, urgent care, chronic disease management—and we'll help you find the right fit.
               </p>
             </div>
 
             {/* Request Appointments */}
-            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-rose-600">
+            <div className="bg-white p-8 rounded-lg shadow-md border-l-4 border-rose-600 dark:bg-slate-800 dark:border-rose-500">
               <div className="text-3xl mb-4">📅</div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">Request Appointments Directly</h3>
-              <p className="text-slate-700">
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white">Request Appointments Directly</h3>
+              <p className="text-slate-700 dark:text-slate-200">
                 Skip the phone tag. Browse provider availability and request appointments straight through MediData, making scheduling effortless.
               </p>
             </div>
@@ -85,10 +85,10 @@ export default function AboutPage() {
       </section>
 
       {/* Why We Exist Section */}
-      <section className="py-16 md:py-24 px-4 bg-white">
+      <section className="py-16 md:py-24 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-slate-900 mb-8">Why We Exist</h2>
-          <div className="space-y-6 text-slate-700">
+          <h2 className="text-4xl font-bold text-slate-900 mb-8 dark:text-white">Why We Exist</h2>
+          <div className="space-y-6 text-slate-700 dark:text-slate-200">
             <p className="text-lg leading-relaxed">
               MediData was born from a simple but powerful observation: <span className="font-semibold">accessing quality healthcare shouldn't be a puzzle.</span>
             </p>
@@ -106,14 +106,14 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Values Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white">
+      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-slate-900 mb-12">Our Mission & Values</h2>
+          <h2 className="text-4xl font-bold text-slate-900 mb-12 dark:text-white">Our Mission & Values</h2>
 
           <div className="mb-12">
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Our Mission</h3>
-            <div className="bg-sky-50 border-l-4 border-sky-600 p-8 rounded">
-              <p className="text-lg text-slate-700 italic">
+            <h3 className="text-2xl font-bold text-slate-900 mb-4 dark:text-white">Our Mission</h3>
+            <div className="bg-sky-50 border-l-4 border-sky-600 p-8 rounded dark:bg-sky-900/20 dark:border-sky-500">
+              <p className="text-lg text-slate-700 italic dark:text-sky-100">
                 To empower individuals and families to confidently navigate healthcare by simplifying the search for quality providers, making information transparent and accessible, and enabling seamless connections with the care they need.
               </p>
             </div>
@@ -122,37 +122,37 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Core Values */}
             <div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-6">Core Values</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-6 dark:text-white">Core Values</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">🤝 Accessibility</h4>
-                  <p className="text-slate-700">Healthcare information and connections should be available to everyone, regardless of background or technical comfort. We design for simplicity and inclusivity.</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2 dark:text-white">🤝 Accessibility</h4>
+                  <p className="text-slate-700 dark:text-slate-200">Healthcare information and connections should be available to everyone, regardless of background or technical comfort. We design for simplicity and inclusivity.</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">🔍 Transparency</h4>
-                  <p className="text-slate-700">We believe in honest, clear information. You'll always know what to expect, understand your options, and have access to the details that matter to you.</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2 dark:text-white">🔍 Transparency</h4>
+                  <p className="text-slate-700 dark:text-slate-200">We believe in honest, clear information. You'll always know what to expect, understand your options, and have access to the details that matter to you.</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">💙 Patient-First Care</h4>
-                  <p className="text-slate-700">Everything we do is centered on your needs. Your experience, your peace of mind, and your health outcomes drive our decisions every single day.</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2 dark:text-white">💙 Patient-First Care</h4>
+                  <p className="text-slate-700 dark:text-slate-200">Everything we do is centered on your needs. Your experience, your peace of mind, and your health outcomes drive our decisions every single day.</p>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-6">Our Commitment</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-6 dark:text-white">Our Commitment</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">👨‍👩‍👧‍👦 Family-Oriented</h4>
-                  <p className="text-slate-700">We understand healthcare is often a family matter. Whether you're seeking care for yourself, your kids, or aging parents, we support the entire family journey.</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2 dark:text-white">👨‍👩‍👧‍👦 Family-Oriented</h4>
+                  <p className="text-slate-700 dark:text-slate-200">We understand healthcare is often a family matter. Whether you're seeking care for yourself, your kids, or aging parents, we support the entire family journey.</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">📚 Informed Decisions</h4>
-                  <p className="text-slate-700">We empower you with the knowledge and tools to make healthcare decisions that align with your values and needs.</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2 dark:text-white">📚 Informed Decisions</h4>
+                  <p className="text-slate-700 dark:text-slate-200">We empower you with the knowledge and tools to make healthcare decisions that align with your values and needs.</p>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">🛡️ Trust & Security</h4>
-                  <p className="text-slate-700">Your health information is sacred. We protect your privacy with industry-leading security and comply with all healthcare regulations including HIPAA.</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2 dark:text-white">🛡️ Trust & Security</h4>
+                  <p className="text-slate-700 dark:text-slate-200">Your health information is sacred. We protect your privacy with industry-leading security and comply with all healthcare regulations including HIPAA.</p>
                 </div>
               </div>
             </div>
@@ -161,14 +161,14 @@ export default function AboutPage() {
       </section>
 
       {/* Vision Section */}
-      <section className="py-16 md:py-24 px-4 bg-white">
+      <section className="py-16 md:py-24 px-4 bg-white dark:bg-slate-900">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-slate-900 mb-8">Our Vision</h2>
-          <div className="bg-gradient-to-r from-sky-50 to-emerald-50 p-12 rounded-lg border-2 border-sky-200">
-            <p className="text-xl text-slate-700 leading-relaxed mb-6">
+          <h2 className="text-4xl font-bold text-slate-900 mb-8 dark:text-white">Our Vision</h2>
+          <div className="bg-gradient-to-r from-sky-50 to-emerald-50 p-12 rounded-lg border-2 border-sky-200 dark:from-sky-900/20 dark:to-emerald-900/20 dark:border-sky-800">
+            <p className="text-xl text-slate-700 leading-relaxed mb-6 dark:text-slate-200">
               We envision a healthcare landscape where every person in the United States can easily find the right provider, understand their options, and access care without barriers, confusion, or unnecessary delays.
             </p>
-            <p className="text-lg text-slate-700 leading-relaxed">
+            <p className="text-lg text-slate-700 leading-relaxed dark:text-slate-200">
               In this future, healthcare navigation is no longer a source of stress. Families confidently connect with providers who understand their needs, appointments happen seamlessly, and everyone has access to high-quality care that works for them. MediData is proud to lead this transformation—one patient, one family, one connection at a time.
             </p>
           </div>
@@ -176,24 +176,24 @@ export default function AboutPage() {
       </section>
 
       {/* Why Choose MediData Section */}
-      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white">
+      <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-slate-900 mb-12">Why Choose MediData?</h2>
+          <h2 className="text-4xl font-bold text-slate-900 mb-12 dark:text-white">Why Choose MediData?</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-5xl mb-4">✨</div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Simple & Intuitive</h3>
-              <p className="text-slate-700">Designed for ease of use. Find care in minutes, not hours.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 dark:text-white">Simple & Intuitive</h3>
+              <p className="text-slate-700 dark:text-slate-200">Designed for ease of use. Find care in minutes, not hours.</p>
             </div>
             <div className="text-center">
               <div className="text-5xl mb-4">🌐</div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Nationwide Network</h3>
-              <p className="text-slate-700">Access to thousands of providers and facilities across the United States.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 dark:text-white">Nationwide Network</h3>
+              <p className="text-slate-700 dark:text-slate-200">Access to thousands of providers and facilities across the United States.</p>
             </div>
             <div className="text-center">
               <div className="text-5xl mb-4">🤲</div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Truly Patient-Centric</h3>
-              <p className="text-slate-700">Built by people who care about your healthcare journey.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 dark:text-white">Truly Patient-Centric</h3>
+              <p className="text-slate-700 dark:text-slate-200">Built by people who care about your healthcare journey.</p>
             </div>
           </div>
         </div>
@@ -207,13 +207,13 @@ export default function AboutPage() {
             Join thousands of users who trust MediData for their healthcare needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
+            <button
               onClick={() => navigate('/register')}
-              className="px-8 py-3 bg-white text-sky-600 font-semibold rounded-lg hover:bg-slate-100 transition"
+              className="px-8 py-3 bg-white text-sky-600 font-semibold rounded-lg hover:bg-slate-100 transition dark:bg-slate-800 dark:text-sky-400 dark:hover:bg-slate-700"
             >
               Get Started
             </button>
-            
+
           </div>
         </div>
       </div>

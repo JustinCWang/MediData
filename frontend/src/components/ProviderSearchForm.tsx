@@ -56,17 +56,17 @@ export default function ProviderSearchForm({
   isSearching,
 }: ProviderSearchFormProps) {
   return (
-    <form onSubmit={onSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+    <form onSubmit={onSubmit} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8 dark:bg-slate-800 dark:border-slate-700">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="enumerationType" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="enumerationType" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
             Provider Type
           </label>
           <select
             id="enumerationType"
             value={enumerationType}
             onChange={(e) => onEnumerationTypeChange(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           >
             <option value="">All Types</option>
             <option value="NPI-1">Individual (NPI-1)</option>
@@ -76,7 +76,7 @@ export default function ProviderSearchForm({
         {enumerationType !== 'NPI-2' && (
           <>
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="firstName" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 First Name
               </label>
               <input
@@ -85,11 +85,11 @@ export default function ProviderSearchForm({
                 value={firstName}
                 onChange={(e) => onFirstNameChange(e.target.value)}
                 placeholder="Provider first name"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="lastName" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
                 Last Name
               </label>
               <input
@@ -98,14 +98,14 @@ export default function ProviderSearchForm({
                 value={lastName}
                 onChange={(e) => onLastNameChange(e.target.value)}
                 placeholder="Provider last name"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
               />
             </div>
           </>
         )}
         {enumerationType === 'NPI-2' && (
           <div className="md:col-span-2">
-            <label htmlFor="organizationName" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="organizationName" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
               Organization Name
             </label>
             <input
@@ -114,12 +114,12 @@ export default function ProviderSearchForm({
               value={organizationName}
               onChange={(e) => onOrganizationNameChange(e.target.value)}
               placeholder="Organization name"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
         )}
         <div>
-          <label htmlFor="taxonomyDescription" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="taxonomyDescription" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
             Specialty / Taxonomy
           </label>
           <input
@@ -128,11 +128,11 @@ export default function ProviderSearchForm({
             value={taxonomyDescription}
             onChange={(e) => onTaxonomyDescriptionChange(e.target.value)}
             placeholder="e.g., Internal Medicine, Cardiology..."
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           />
         </div>
         <div>
-          <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="city" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
             City
           </label>
           <input
@@ -141,11 +141,11 @@ export default function ProviderSearchForm({
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
             placeholder="City"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           />
         </div>
         <div>
-          <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
             State
           </label>
           <input
@@ -155,11 +155,11 @@ export default function ProviderSearchForm({
             onChange={(e) => onStateChange(e.target.value.toUpperCase())}
             placeholder="State (2-letter code)"
             maxLength={2}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           />
         </div>
         <div>
-          <label htmlFor="postalCode" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="postalCode" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
             Postal Code
           </label>
           <input
@@ -168,11 +168,11 @@ export default function ProviderSearchForm({
             value={postalCode}
             onChange={(e) => onPostalCodeChange(e.target.value)}
             placeholder="ZIP code"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           />
         </div>
         <div>
-          <label htmlFor="limit" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="limit" className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-300">
             Results Limit
           </label>
           <input
@@ -183,7 +183,7 @@ export default function ProviderSearchForm({
             value={limit}
             onChange={(e) => onLimitChange(parseInt(e.target.value) || 10)}
             placeholder="Number of results"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
           />
         </div>
       </div>
