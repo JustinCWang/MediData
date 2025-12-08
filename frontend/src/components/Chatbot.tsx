@@ -12,11 +12,14 @@
  */
 
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
 import { API_BASE_URL } from '../config'
 
 type Theme = 'light' | 'dark'
 
 export default function Chatbot({ theme }: { theme: Theme }) {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
   const [inputValue, setInputValue] = useState('')
@@ -34,7 +37,7 @@ export default function Chatbot({ theme }: { theme: Theme }) {
 
     const userMessage = inputValue.trim()
     setInputValue('')
-    
+
     // Add user message to the conversation
     const updatedMessages = [...messages, { role: 'user' as const, content: userMessage }]
     setMessages(updatedMessages)
@@ -61,7 +64,7 @@ export default function Chatbot({ theme }: { theme: Theme }) {
       }
 
       const data = await response.json()
-      
+
       // Add assistant response to messages
       setMessages(prev => [
         ...prev,
@@ -91,11 +94,10 @@ export default function Chatbot({ theme }: { theme: Theme }) {
       {/* Floating Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-center ${
-          isDark
-            ? 'bg-slate-800 text-white hover:bg-slate-700 focus:ring-slate-500 focus:ring-offset-slate-900'
-            : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2'
-        }`}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-center ${isDark
+          ? 'bg-slate-800 text-white hover:bg-slate-700 focus:ring-slate-500 focus:ring-offset-slate-900'
+          : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2'
+          }`}
         aria-label="Open chatbot"
       >
         {isOpen ? (
@@ -112,15 +114,13 @@ export default function Chatbot({ theme }: { theme: Theme }) {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className={`fixed bottom-24 right-6 z-50 w-96 h-[500px] rounded-lg shadow-2xl border flex flex-col ${
-            isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200'
-          }`}
+          className={`fixed bottom-24 right-6 z-50 w-96 h-[500px] rounded-lg shadow-2xl border flex flex-col ${isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200'
+            }`}
         >
           {/* Chat Header */}
           <div
-            className={`px-4 py-3 rounded-t-lg flex items-center justify-between ${
-              isDark ? 'bg-slate-800 text-white' : 'bg-blue-600 text-white'
-            }`}
+            className={`px-4 py-3 rounded-t-lg flex items-center justify-between ${isDark ? 'bg-slate-800 text-white' : 'bg-blue-600 text-white'
+              }`}
           >
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,6 +145,17 @@ export default function Chatbot({ theme }: { theme: Theme }) {
               <div className={`text-center mt-8 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
                 <p className="text-sm">Welcome! How can I help you today?</p>
                 <p className="text-xs mt-2">Ask me anything about providers, requests, or MediData.</p>
+                <div className={`mt-4 p-3 rounded-md border text-left ${isDark ? 'bg-amber-900/20 border-amber-800 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                  <p className="text-xs font-medium flex items-center gap-1.5 mb-1">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Disclaimer
+                  </p>
+                  <p className="text-xs opacity-90">
+                    This is an AI assistant and does not provide medical advice. For emergencies, please call 911.
+                  </p>
+                </div>
               </div>
             ) : (
               messages.map((message, index) => (
@@ -153,17 +164,39 @@ export default function Chatbot({ theme }: { theme: Theme }) {
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                      message.role === 'user'
-                        ? isDark
-                          ? 'bg-slate-700 text-white'
-                          : 'bg-blue-600 text-white'
-                        : isDark
-                          ? 'bg-slate-800 text-slate-100 border border-slate-700'
-                          : 'bg-slate-100 text-slate-900'
-                    }`}
+                    className={`max-w-[80%] rounded-lg px-4 py-2 ${message.role === 'user'
+                      ? isDark
+                        ? 'bg-slate-700 text-white'
+                        : 'bg-blue-600 text-white'
+                      : isDark
+                        ? 'bg-slate-800 text-slate-100 border border-slate-700'
+                        : 'bg-slate-100 text-slate-900'
+                      }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === 'user' ? (
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    ) : (
+                      <div className="text-sm space-y-2 [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 [&>strong]:font-bold">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                        {message.content.toLowerCase().includes('search') && (
+                          <button
+                            onClick={() => {
+                              navigate('/search')
+                              setIsOpen(false)
+                            }}
+                            className={`mt-2 text-xs px-3 py-1.5 rounded-full font-medium transition-colors flex items-center gap-1.5 ${isDark
+                              ? 'bg-blue-600 text-white hover:bg-blue-500'
+                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                              }`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            Go to Search
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -193,21 +226,19 @@ export default function Chatbot({ theme }: { theme: Theme }) {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your message..."
-                className={`flex-1 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
-                  isDark
-                    ? 'border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-slate-500 focus:ring-slate-500'
-                    : 'border border-slate-300 focus:border-blue-500 focus:ring-blue-500'
-                }`}
+                className={`flex-1 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 ${isDark
+                  ? 'border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-slate-500 focus:ring-slate-500'
+                  : 'border border-slate-300 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isLoading}
-                className={`rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 disabled:cursor-not-allowed ${
-                  isDark
-                    ? 'bg-slate-700 text-white hover:bg-slate-600 focus:ring-slate-500 disabled:bg-slate-600'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300'
-                }`}
+                className={`rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 disabled:cursor-not-allowed ${isDark
+                  ? 'bg-slate-700 text-white hover:bg-slate-600 focus:ring-slate-500 disabled:bg-slate-600'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300'
+                  }`}
               >
                 Send
               </button>

@@ -283,23 +283,22 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
 
   const navItems = isAuthenticated
     ? [
-        { to: '/dashboard', label: 'Dashboard' },
-        { to: '/search', label: 'Search' },
-        { to: '/requests', label: 'Requests' },
-        { to: '/request-provider', label: 'Request Provider' },
-        { to: '/profile', label: 'Profile' },
-      ]
+      { to: '/dashboard', label: 'Dashboard' },
+      { to: '/search', label: 'Search' },
+      { to: '/requests', label: 'Requests' },
+      { to: '/request-provider', label: 'Request Provider' },
+      { to: '/profile', label: 'Profile' },
+    ]
     : []
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `px-3 py-1.5 rounded-full font-medium transition-colors ${
-      isActive
-        ? theme === 'dark'
-          ? 'bg-slate-800 text-white border border-slate-700'
-          : 'bg-slate-900 text-white border border-slate-900'
-        : theme === 'dark'
-          ? 'text-slate-200 hover:text-white hover:bg-slate-800/70'
-          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+    `px-3 py-1.5 rounded-full font-medium transition-colors ${isActive
+      ? theme === 'dark'
+        ? 'bg-slate-800 text-white border border-slate-700'
+        : 'bg-slate-900 text-white border border-slate-900'
+      : theme === 'dark'
+        ? 'text-slate-200 hover:text-white hover:bg-slate-800/70'
+        : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
     }`
 
   return (
@@ -339,11 +338,10 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
             <>
               <Link
                 to="/login"
-                className={`hidden sm:inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-                  theme === 'dark'
+                className={`hidden sm:inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition ${theme === 'dark'
                     ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700/90'
                     : 'border-slate-200 bg-white/80 text-slate-700 hover:bg-white'
-                }`}
+                  }`}
               >
                 Log in
               </Link>
@@ -357,11 +355,10 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
           )}
           <button
             onClick={onToggleTheme}
-            className={`inline-flex items-center justify-center rounded-full border p-2 transition ${
-              theme === 'dark'
+            className={`inline-flex items-center justify-center rounded-full border p-2 transition ${theme === 'dark'
                 ? 'border-slate-700 bg-slate-900 text-amber-200 hover:border-amber-300 hover:text-amber-100 hover:shadow-sm'
                 : 'border-slate-200 bg-white/80 text-slate-800 hover:bg-white hover:shadow-sm'
-            }`}
+              }`}
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
@@ -422,7 +419,7 @@ function LandingPage({ theme }: { theme: Theme }) {
     {
       src: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=1200&q=80',
       alt: 'Patient using a laptop to book care',
-      caption: 'Book in minutes with insurance-aware matching',
+      caption: 'Book in minutes with matching based on your preferences',
     },
     {
       src: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80',
@@ -435,11 +432,11 @@ function LandingPage({ theme }: { theme: Theme }) {
   const [heroIndex, setHeroIndex] = useState(0)
   const storySlides = [
     {
-      title: 'Outcome-aware matching',
-      body: 'We rank by specialty fit, availability, insurance, and observed outcomes—not just proximity.',
+      title: 'Preference-based matching',
+      body: 'We rank by specialty fit, availability, and your preferences—not just proximity.',
       points: [
-        'Verified profiles with status, insurance, and location',
-        'Shows who can see you sooner and accepts your plan',
+        'Verified profiles with status and location',
+        'Shows who can see you sooner',
         'Transparent fit, not just distance',
       ],
       image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80', // calm lake sunrise
@@ -459,7 +456,7 @@ function LandingPage({ theme }: { theme: Theme }) {
       body: 'Describe symptoms and get a suggested specialty with prefilled search—no diagnoses, just guidance.',
       points: [
         'Safety-first prompts and clear disclaimers',
-        'Prefills specialty and location/insurance when known',
+        'Prefills specialty and location when known',
         'Fallback to manual search if AI is unavailable',
       ],
       image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80', // forest trail
@@ -534,108 +531,107 @@ function LandingPage({ theme }: { theme: Theme }) {
         className={`reveal ${visibleIds.has('hero') ? 'visible' : ''}`}
       >
         {/* Hero Section - Main headline and primary CTAs */}
-      <section className="relative overflow-hidden page-surface text-slate-900 min-h-[85vh] flex items-center">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sky-300/30 blur-[120px] animate-liquid-drift" />
-          <div className="absolute right-0 top-10 h-[26rem] w-[26rem] rounded-full bg-blue-300/25 blur-[140px] animate-liquid-glow" />
-          <div className="absolute left-1/3 bottom-0 h-[22rem] w-[22rem] rounded-full bg-cyan-300/25 blur-[120px] animate-liquid-drift-slow" />
-        </div>
+        <section className="relative overflow-hidden page-surface text-slate-900 min-h-[85vh] flex items-center">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-sky-300/30 blur-[120px] animate-liquid-drift" />
+            <div className="absolute right-0 top-10 h-[26rem] w-[26rem] rounded-full bg-blue-300/25 blur-[140px] animate-liquid-glow" />
+            <div className="absolute left-1/3 bottom-0 h-[22rem] w-[22rem] rounded-full bg-cyan-300/25 blur-[120px] animate-liquid-drift-slow" />
+          </div>
 
-        <div className="relative mx-auto max-w-6xl px-6 py-6 md:py-8 text-slate-900 w-full h-full flex items-center">
-          <div className="grid md:grid-cols-2 gap-10 items-center w-full">
-            <div className="space-y-4 landing-plain">
-              <div
-                className={`landing-ribbon inline-flex items-center gap-3 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur shadow-sm ${
-                  theme === 'dark'
-                    ? 'border-slate-700/60 bg-slate-900/80 text-slate-100'
-                    : 'border-white/60 bg-white/70 text-slate-700'
-                }`}
-              >
-                <span className="ribbon-dot h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_6px_rgba(16,185,129,0.28)]" />
-                <span className="dark:text-slate-100">Smart matching, real outcomes</span>
-                <Link
-                  to="/register"
-                  className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:shadow-md hover:-translate-y-[1px] transition dark:bg-white dark:text-slate-900"
+          <div className="relative mx-auto max-w-6xl px-6 py-6 md:py-8 text-slate-900 w-full h-full flex items-center">
+            <div className="grid md:grid-cols-2 gap-10 items-center w-full">
+              <div className="space-y-4 landing-plain">
+                <div
+                  className={`landing-ribbon inline-flex items-center gap-3 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur shadow-sm ${theme === 'dark'
+                      ? 'border-slate-700/60 bg-slate-900/80 text-slate-100'
+                      : 'border-white/60 bg-white/70 text-slate-700'
+                    }`}
                 >
-                  Create account
-                  <span aria-hidden="true" className="text-[12px]">↗</span>
-                </Link>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
-                Find the right provider, fast.
-              </h1>
-              <p className="text-lg text-slate-700">
-                MediData matches you to verified clinicians based on your symptoms, insurance, location, and real outcomes—so you spend minutes, not weeks, getting care.
-              </p>
-              <p className="text-sm text-slate-500">
-                HIPAA-conscious by design, with secure messaging and transparent provider profiles.
-              </p>
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center justify-center rounded-full border border-white/80 bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-sm hover:border-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
-                >
-                  Get started
-                </Link>
-                <Link
-                  to="/login"
-                  className="landing-account-link inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 hover:border-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
-                >
-                  I already have an account
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90 landing-plain-exempt">
-                <div className="landing-metric rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
-                  <p className="font-semibold text-slate-900">92% faster</p>
-                  <p>to schedule compared to phone calls and fragmented portals.</p>
+                  <span className="ribbon-dot h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_6px_rgba(16,185,129,0.28)]" />
+                  <span className="dark:text-slate-100">Smart matching, real outcomes</span>
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:shadow-md hover:-translate-y-[1px] transition dark:bg-white dark:text-slate-900"
+                  >
+                    Create account
+                    <span aria-hidden="true" className="text-[12px]">↗</span>
+                  </Link>
                 </div>
-                <div className="landing-metric rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
-                  <p className="font-semibold text-slate-900">Insurance-aware</p>
-                  <p>Only shows providers who can accept your plan and network.</p>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+                  Find the right provider, fast.
+                </h1>
+                <p className="text-lg text-slate-700">
+                  MediData matches you to verified clinicians based on your symptoms, preferences, location, and real outcomes—so you spend minutes, not weeks, getting care.
+                </p>
+                <p className="text-sm text-slate-500">
+                  HIPAA-conscious by design, with secure messaging and transparent provider profiles.
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center justify-center rounded-full border border-white/80 bg-slate-900 text-white px-5 py-3 text-sm font-semibold shadow-sm hover:border-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
+                  >
+                    Get started
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="landing-account-link inline-flex items-center justify-center rounded-full border border-white/80 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white/70 hover:border-white focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2 focus:ring-offset-white"
+                  >
+                    I already have an account
+                  </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm text-slate-800/90 landing-plain-exempt">
+                  <div className="landing-metric rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
+                    <p className="font-semibold text-slate-900">92% faster</p>
+                    <p>to schedule compared to phone calls and fragmented portals.</p>
+                  </div>
+                  <div className="landing-metric rounded-2xl bg-white/70 p-4 backdrop-blur border border-white/60 shadow-sm">
+                    <p className="font-semibold text-slate-900">User-focused</p>
+                    <p>Shows providers that match your specific needs and preferences.</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="md:pl-6">
-              <div className="hero-frame relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-2xl shadow-slate-300/50">
-                {heroSlides.map((slide, idx) => (
-                  <img
-                    key={slide.src}
-                    src={slide.src}
-                    alt={slide.alt}
-                    onError={(e) => {
-                      if (e.currentTarget.src !== HERO_FALLBACK) {
-                        e.currentTarget.src = HERO_FALLBACK
-                      }
-                    }}
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${idx === heroIndex ? 'opacity-100' : 'opacity-0'}`}
-                    loading="lazy"
-                  />
-                ))}
+              <div className="md:pl-6">
+                <div className="hero-frame relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-2xl shadow-slate-300/50">
+                  {heroSlides.map((slide, idx) => (
+                    <img
+                      key={slide.src}
+                      src={slide.src}
+                      alt={slide.alt}
+                      onError={(e) => {
+                        if (e.currentTarget.src !== HERO_FALLBACK) {
+                          e.currentTarget.src = HERO_FALLBACK
+                        }
+                      }}
+                      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${idx === heroIndex ? 'opacity-100' : 'opacity-0'}`}
+                      loading="lazy"
+                    />
+                  ))}
 
-                <div className="hero-caption absolute bottom-0 left-0 right-0 bg-white/90 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/70">
-                  {heroSlides[heroIndex]?.caption}
+                  <div className="hero-caption absolute bottom-0 left-0 right-0 bg-white/90 text-slate-900 text-sm px-4 py-3 pb-4 backdrop-blur-sm border-t border-white/70">
+                    {heroSlides[heroIndex]?.caption}
+                  </div>
+
+
+
                 </div>
-
-
-
               </div>
             </div>
           </div>
-        </div>
-        <div className="absolute inset-x-0 bottom-8 flex justify-center">
-          <button
-            type="button"
-            onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
-            className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900 dark:text-white dark:hover:text-white"
-          >
-            <span className="hero-scroll-btn h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow dark:border-slate-700 dark:bg-slate-900/90 dark:text-white">
-              ↓
-            </span>
-            <span className="explore-more-text text-xs font-semibold tracking-wide uppercase text-slate-800/90">Explore more</span>
-          </button>
-        </div>
-      </section>
+          <div className="absolute inset-x-0 bottom-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => nextSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
+              className="inline-flex flex-col items-center gap-1 text-slate-800/80 hover:text-slate-900 dark:text-white dark:hover:text-white"
+            >
+              <span className="hero-scroll-btn h-10 w-10 rounded-full border border-slate-300/80 bg-white/70 backdrop-blur flex items-center justify-center shadow-sm animate-bounce-slow dark:border-slate-700 dark:bg-slate-900/90 dark:text-white">
+                ↓
+              </span>
+              <span className="explore-more-text text-xs font-semibold tracking-wide uppercase text-slate-800/90">Explore more</span>
+            </button>
+          </div>
+        </section>
       </div>
 
       <div
@@ -643,7 +639,7 @@ function LandingPage({ theme }: { theme: Theme }) {
         ref={nextSectionRef}
         className={`reveal ${visibleIds.has('value') ? 'visible' : ''}`}
       >
-      <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[65vh] flex items-center py-8 md:py-10">
+        <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[65vh] flex items-center py-8 md:py-10">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-20 -top-16 h-[26rem] w-[26rem] rounded-full bg-sky-300/30 blur-[120px]" />
             <div className="absolute right-[-18rem] top-10 h-[24rem] w-[24rem] rounded-full bg-blue-300/25 blur-[140px]" />
@@ -703,10 +699,10 @@ function LandingPage({ theme }: { theme: Theme }) {
           </div>
         </section>
       </div>
-      
+
       <div
         data-reveal-id="guide"
-              className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
+        className={`reveal ${visibleIds.has('guide') ? 'visible' : ''}`}
       >
         <section className="relative overflow-hidden page-surface border-t border-b border-slate-200/60 backdrop-blur min-h-[65vh] flex items-center py-8 md:py-10">
           <div className="pointer-events-none absolute inset-0">
@@ -722,8 +718,8 @@ function LandingPage({ theme }: { theme: Theme }) {
               </p>
               <ol className="landing-guide-list space-y-3 text-base md:text-lg text-slate-700 leading-relaxed list-decimal list-inside">
                 <li><span className="font-semibold text-slate-900">Sign up / Log in:</span> Create or log into your account; verify your email if prompted.</li>
-                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, insurance, and availability; refine as needed.</li>
-                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, insurance, and contact options.</li>
+                <li><span className="font-semibold text-slate-900">Search smart:</span> Filter by specialty, location, and availability; refine as needed.</li>
+                <li><span className="font-semibold text-slate-900">View details:</span> Open a provider to see profile, status, and contact options.</li>
                 <li><span className="font-semibold text-slate-900">Request appointment:</span> Choose contact preference, time windows, and reason—submit in one step.</li>
                 <li><span className="font-semibold text-slate-900">Track status:</span> See pending, confirmed, or needs-info states; respond if more info is requested.</li>
                 <li><span className="font-semibold text-slate-900">Stay notified:</span> Watch for emails/alerts so you never miss a provider response.</li>
@@ -760,7 +756,7 @@ function LandingPage({ theme }: { theme: Theme }) {
         </section>
       </div>
 
-      
+
     </div>
   )
 }
@@ -868,7 +864,7 @@ function LoginPage() {
 
       setInfo(
         data.message ||
-          'If an account with this email exists and is unverified, a new verification email has been sent.'
+        'If an account with this email exists and is unverified, a new verification email has been sent.'
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred while resending verification.')
@@ -905,7 +901,7 @@ function LoginPage() {
 
       setInfo(
         data.message ||
-          'If an account with this email exists, a password reset email has been sent.'
+        'If an account with this email exists, a password reset email has been sent.'
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred while resetting password.')
@@ -1139,290 +1135,290 @@ function RegisterPage() {
       </div>
       <div className="relative z-10 w-full flex flex-col items-center">
         <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-xl backdrop-blur px-8 py-10 register-card border border-white/70">
-        {/* Step 1: Role Selection */}
-        {step === 'role' && (
-          <>
-            <h1 className="text-2xl font-semibold text-slate-900">Get Started</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Are you a patient looking for care, or a provider offering services?
-            </p>
-            <div className="mt-6 space-y-3">
-              <button
-                type="button"
-                onClick={() => handleRoleSelect('patient')}
-                className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-              >
-                <div className="font-semibold text-slate-900">I'm a Patient</div>
-                <div className="text-sm text-slate-600 mt-1">Looking for healthcare providers</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleSelect('provider')}
-                className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-              >
-                <div className="font-semibold text-slate-900">I'm a Provider</div>
-                <div className="text-sm text-slate-600 mt-1">Offering healthcare services</div>
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Step 2: Account Information */}
-        {step === 'account' && (
-          <>
-            <div className="flex items-center gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => setStep('role')}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ← Back
-              </button>
-              <span className="text-sm text-slate-500">Step 1 of 2</span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900">Create Account</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Create your {role === 'patient' ? 'patient' : 'provider'} account
-            </p>
-            <form onSubmit={handleAccountSubmit} className="mt-6 space-y-4">
-              {error && (
-                <div className="rounded-md bg-red-50 border border-red-200 p-3">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="you@example.com"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  minLength={6}
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Create a strong password (min. 6 characters)"
-                />
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  minLength={6}
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Repeat your password"
-                />
-              </div>
-              <button
-                type="submit"
-                className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Continue
-              </button>
-            </form>
-          </>
-        )}
-
-        {/* Step 3: Profile Information */}
-        {step === 'profile' && (
-          <>
-            <div className="flex items-center gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => setStep('account')}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ← Back
-              </button>
-              <span className="text-sm text-slate-500">Step 2 of 2</span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900">Profile Information</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Tell us a bit about yourself
-            </p>
-            <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
-              {error && (
-                <div className="rounded-md bg-red-50 border border-red-200 p-3">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
-                    First name
-                  </label>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    disabled={isLoading}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
-                    Last name
-                  </label>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    required
-                    disabled={isLoading}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700">
-                  Phone Number
-                </label>
-                <input
-                  id="phoneNum"
-                  name="phoneNum"
-                  type="tel"
-                  disabled={isLoading}
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-              <div>
-                <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
-                  Gender
-                </label>
-                <select
-                  id="gender"
-                  name="gender"
-                  disabled={isLoading}
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+          {/* Step 1: Role Selection */}
+          {step === 'role' && (
+            <>
+              <h1 className="text-2xl font-semibold text-slate-900">Get Started</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                Are you a patient looking for care, or a provider offering services?
+              </p>
+              <div className="mt-6 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('patient')}
+                  className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
                 >
-                  <option value="">Select...</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                </select>
+                  <div className="font-semibold text-slate-900">I'm a Patient</div>
+                  <div className="text-sm text-slate-600 mt-1">Looking for healthcare providers</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('provider')}
+                  className="w-full p-4 text-left rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                >
+                  <div className="font-semibold text-slate-900">I'm a Provider</div>
+                  <div className="text-sm text-slate-600 mt-1">Offering healthcare services</div>
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+            </>
+          )}
+
+          {/* Step 2: Account Information */}
+          {step === 'account' && (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setStep('role')}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  ← Back
+                </button>
+                <span className="text-sm text-slate-500">Step 1 of 2</span>
+              </div>
+              <h1 className="text-2xl font-semibold text-slate-900">Create Account</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                Create your {role === 'patient' ? 'patient' : 'provider'} account
+              </p>
+              <form onSubmit={handleAccountSubmit} className="mt-6 space-y-4">
+                {error && (
+                  <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )}
                 <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-slate-700">
-                    State
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                    Email
                   </label>
                   <input
-                    id="state"
-                    name="state"
-                    type="text"
-                    maxLength={2}
-                    disabled={isLoading}
-                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                    placeholder="CA"
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="you@example.com"
                   />
                 </div>
                 <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-slate-700">
-                    City
+                  <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                    Password
                   </label>
                   <input
-                    id="city"
-                    name="city"
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    minLength={6}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Create a strong password (min. 6 characters)"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    minLength={6}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Repeat your password"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Continue
+                </button>
+              </form>
+            </>
+          )}
+
+          {/* Step 3: Profile Information */}
+          {step === 'profile' && (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setStep('account')}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  ← Back
+                </button>
+                <span className="text-sm text-slate-500">Step 2 of 2</span>
+              </div>
+              <h1 className="text-2xl font-semibold text-slate-900">Profile Information</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                Tell us a bit about yourself
+              </p>
+              <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
+                {error && (
+                  <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
+                      First name
+                    </label>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      required
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
+                      Last name
+                    </label>
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      required
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="phoneNum" className="block text-sm font-medium text-slate-700">
+                    Phone Number
+                  </label>
+                  <input
+                    id="phoneNum"
+                    name="phoneNum"
+                    type="tel"
+                    disabled={isLoading}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="gender" className="block text-sm font-medium text-slate-700">
+                    Gender
+                  </label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    disabled={isLoading}
+                    className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="state" className="block text-sm font-medium text-slate-700">
+                      State
+                    </label>
+                    <input
+                      id="state"
+                      name="state"
+                      type="text"
+                      maxLength={2}
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      placeholder="CA"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="city" className="block text-sm font-medium text-slate-700">
+                      City
+                    </label>
+                    <input
+                      id="city"
+                      name="city"
+                      type="text"
+                      disabled={isLoading}
+                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      placeholder="Los Angeles"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="insurance" className="block text-sm font-medium text-slate-700">
+                    Insurance
+                  </label>
+                  <input
+                    id="insurance"
+                    name="insurance"
                     type="text"
                     disabled={isLoading}
                     className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                    placeholder="Los Angeles"
+                    placeholder="e.g., Blue Cross, Aetna"
                   />
                 </div>
-              </div>
-              <div>
-                <label htmlFor="insurance" className="block text-sm font-medium text-slate-700">
-                  Insurance
-                </label>
-                <input
-                  id="insurance"
-                  name="insurance"
-                  type="text"
+                {role === 'provider' && (
+                  <>
+                    <div>
+                      <label htmlFor="providerEmail" className="block text-sm font-medium text-slate-700">
+                        Provider Email
+                      </label>
+                      <input
+                        id="providerEmail"
+                        name="providerEmail"
+                        type="email"
+                        disabled={isLoading}
+                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                        placeholder="provider@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="location" className="block text-sm font-medium text-slate-700">
+                        Location
+                      </label>
+                      <input
+                        id="location"
+                        name="location"
+                        type="text"
+                        disabled={isLoading}
+                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                        placeholder="Full address or location"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700">
+                        Taxonomy / Specialty
+                      </label>
+                      <input
+                        id="taxonomy"
+                        name="taxonomy"
+                        type="text"
+                        disabled={isLoading}
+                        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                        placeholder="e.g., Internal Medicine, Cardiology"
+                      />
+                    </div>
+                  </>
+                )}
+                <button
+                  type="submit"
                   disabled={isLoading}
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                  placeholder="e.g., Blue Cross, Aetna"
-                />
-              </div>
-              {role === 'provider' && (
-                <>
-                  <div>
-                    <label htmlFor="providerEmail" className="block text-sm font-medium text-slate-700">
-                      Provider Email
-                    </label>
-                    <input
-                      id="providerEmail"
-                      name="providerEmail"
-                      type="email"
-                      disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                      placeholder="provider@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-slate-700">
-                      Location
-                    </label>
-                    <input
-                      id="location"
-                      name="location"
-                      type="text"
-                      disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                      placeholder="Full address or location"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="taxonomy" className="block text-sm font-medium text-slate-700">
-                      Taxonomy / Specialty
-                    </label>
-                    <input
-                      id="taxonomy"
-                      name="taxonomy"
-                      type="text"
-                      disabled={isLoading}
-                      className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
-                      placeholder="e.g., Internal Medicine, Cardiology"
-                    />
-                  </div>
-                </>
-              )}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Creating account...' : 'Create account'}
-              </button>
-            </form>
-            <p className="mt-4 text-center text-sm text-slate-600">
-              Already have an account?{' '}
-              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
-                Log in
-              </Link>
-            </p>
-          </>
-        )}
+                  className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Creating account...' : 'Create account'}
+                </button>
+              </form>
+              <p className="mt-4 text-center text-sm text-slate-600">
+                Already have an account?{' '}
+                <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
+                  Log in
+                </Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
 

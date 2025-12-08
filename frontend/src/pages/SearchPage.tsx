@@ -62,32 +62,45 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const resultsPerPage = 6
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
+  const [hasAutofilled, setHasAutofilled] = useState(false)
 
-  // Fetch favorites on mount
+
+  // Fetch favorites and user profile on mount
   useEffect(() => {
-    const fetchFavorites = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('access_token')
         if (!token) {
           return
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/favorites`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        })
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+        }
 
-        if (response.ok) {
-          const data = await response.json()
+        // Fetch favorites
+        const favoritesResponse = await fetch(`${API_BASE_URL}/api/favorites`, { headers })
+        if (favoritesResponse.ok) {
+          const data = await favoritesResponse.json()
           setFavoriteIds(new Set(data.favorites || []))
         }
+
+        // Fetch profile for autofill (only if we haven't already autofilled or searched)
+        if (!hasAutofilled) {
+          const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, { headers })
+          if (profileResponse.ok) {
+            const profile = await profileResponse.json()
+            if (profile.city && !city) setCity(profile.city)
+            if (profile.state && !state) setState(profile.state)
+            setHasAutofilled(true)
+          }
+        }
       } catch (err) {
-        console.error('Error fetching favorites:', err)
+        console.error('Error fetching initial data:', err)
       }
     }
 
-    fetchFavorites()
+    fetchData()
   }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -99,7 +112,7 @@ export default function SearchPage() {
     try {
       // Build query parameters
       const params = new URLSearchParams()
-      
+
       if (enumerationType) params.append('enumeration_type', enumerationType)
       if (taxonomyDescription.trim()) params.append('taxonomy_description', taxonomyDescription.trim())
       if (firstName.trim()) params.append('first_name', firstName.trim())
@@ -108,20 +121,20 @@ export default function SearchPage() {
       if (city.trim()) params.append('city', city.trim())
       if (state.trim()) params.append('state', state.trim())
       if (postalCode.trim()) params.append('postal_code', postalCode.trim())
-      
+
       // Add limit parameter
       params.append('limit', limit.toString())
 
       // Call backend API
       const response = await fetch(`${API_BASE_URL}/api/providers/search?${params.toString()}`)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: 'Failed to search providers' }))
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
       }
 
       const data: ApiSearchResponse = await response.json()
-      
+
       // Check for debug info (API returned results but transformation failed)
       if (data.debug_info) {
         console.warn('Debug info:', data.debug_info)
@@ -133,7 +146,7 @@ export default function SearchPage() {
           )
         }
       }
-      
+
       // Transform results to match Provider
       const transformedResults: Provider[] = data.results.map((result: ApiProviderResult) => ({
         id: result.id || result.npi_number || '',
@@ -153,7 +166,7 @@ export default function SearchPage() {
         npi_count: data.npi_count,
       })
       setCurrentPage(1) // Reset to first page when new search is performed
-      
+
       // If API returned results but we got none, log for debugging
       if (data.api_result_count && data.api_result_count > 0 && transformedResults.length === 0) {
         console.error('API returned results but transformation produced none:', data)
@@ -168,7 +181,7 @@ export default function SearchPage() {
 
   const handleViewDetails = (providerId: string) => {
     const provider = results.find(p => p.id === providerId)
-    navigate(`/providers/${providerId}`, {state: { provider } })
+    navigate(`/providers/${providerId}`, { state: { provider } })
   }
 
   const handleFavoriteChange = (providerId: string, isFavorited: boolean) => {
@@ -206,7 +219,7 @@ export default function SearchPage() {
   // Get smart empty state message based on filter count
   const getEmptyStateMessage = () => {
     const filterCount = countActiveFilters()
-    
+
     if (filterCount === 0) {
       return {
         title: "No providers found",
@@ -340,11 +353,10 @@ export default function SearchPage() {
                               <button
                                 key={page}
                                 onClick={() => setCurrentPage(page)}
-                                className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                                  currentPage === page
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-slate-700 bg-white/80 border border-white/70 hover:bg-white'
-                                }`}
+                                className={`px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${currentPage === page
+                                  ? 'bg-blue-600 text-white'
+                                  : 'text-slate-700 bg-white/80 border border-white/70 hover:bg-white'
+                                  }`}
                               >
                                 {page}
                               </button>
