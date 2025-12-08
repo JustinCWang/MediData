@@ -1,231 +1,227 @@
 # MediData
 A platform that connects patients with doctors, specialists, and healthcare providers who best match their unique needs, preferences, and circumstances.
 
-## Tech Stack
-- **Frontend**: React + TypeScript + Vite + TailwindCSS
-- **Backend**: FastAPI (Uvicorn)
+## 🚀 Tech Stack
 
-## Prerequisites
-- Node.js 18+ and npm
-- Python 3.10+
-- Git
+### Frontend
+- **Framework:** [React 19](https://react.dev/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
+- **Language:** TypeScript
+- **Routing:** React Router DOM
 
-## Project Structure
+### Backend
+- **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
+- **Language:** Python 3.x
+- **Database & Auth:** [Supabase](https://supabase.com/)
+- **AI Integration:** Google Gemini AI
+- **Testing:** Pytest
+
+## 🛠 Prerequisites
+
+Before you begin, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (Latest LTS recommended)
+- [Python 3.x](https://www.python.org/)
+- A [Supabase](https://supabase.com/) project
+- A [Google Cloud](https://console.cloud.google.com/) project with Gemini API enabled
+
+## 🚦 Local Development
+
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd MediData
 ```
-MediData/
-  backend/      # FastAPI app (run Uvicorn here)
-  frontend/     # React + Vite + Tailwind app
-```
 
----
+### 2. Backend Setup
+Navigate to the backend directory and set up the environment.
 
-## Backend Setup (FastAPI)
-
-From the project root:
-
-```powershell
+```bash
 cd backend
 python -m venv .venv
- .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install fastapi uvicorn[standard] python-dotenv pydantic-settings
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
 ```
 
-For Mac Users: 
-```powershell
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate or . .venv/bin/activate
-pip install fastapi " uvicorn[standard]"  python-dotenv pydantic-settings
+**Environment Variables (.env)**
+Create a `.env` file in the `backend` directory based on `.env.example`:
+
+```ini
+# Supabase Configuration
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Gemini AI
+GEMINI_API_KEY=your-gemini-api-key
+
+# App Configuration
+FRONTEND_URL=http://localhost:5173
 ```
 
-**Configure Environment Variables:**
-
-1. Copy the example environment file:
-   ```powershell
-   copy .env.example .env
-
-   #For MAC users its
-   cp .env.example .env
-   ```
-
-2. Edit `.env` and add your Supabase credentials:
-   - `SUPABASE_URL`: Your Supabase project URL
-   - `SUPABASE_ANON_KEY`: Your Supabase anonymous/public key
-   - Get these from: https://app.supabase.com/project/YOUR_PROJECT/settings/api
-
-Start the API (default port 8000):
-
-```powershell
-python -m venv .venv
- .\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --reload --port 8000
-
-#For Mac users
-
-python3 -m venv .venv
-source .venv/bin/activate or . .venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+**Run the Server**
+```bash
+uvicorn app.main:app --reload
 ```
+The API will be available at `http://localhost:8000`. API Docs at `http://localhost:8000/docs`.
 
-Expected health check (if implemented): `GET http://127.0.0.1:8000/api/health`
+### 3. Frontend Setup
+Navigate to the frontend directory.
 
-Notes:
-- Put your FastAPI app in `backend/app/main.py` (module path: `app.main:app`).
-- If you add dependencies, freeze them (optional): `pip freeze > requirements.txt`.
-- Never commit your `.env` file (it's in `.gitignore`). Use `.env.example` as a template.
-
----
-
-## Frontend Setup (React + Vite + TailwindCSS)
-
-From the project root:
-
-```powershell
+```bash
 cd frontend
 npm install
+```
+
+**Environment Variables (.env)**
+Create a `.env` file in the `frontend` directory:
+
+```ini
+# Defaults to https://medidata-backend.vercel.app if not set
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+**Run the Development Server**
+```bash
 npm run dev
 ```
+The app will be available at `http://localhost:5173`.
 
-Vite dev server runs at `http://localhost:5173`.
-
-### TailwindCSS
-This project uses Tailwind v4 with the Vite plugin. Core stylesheet is at `frontend/src/index.css` and imports Tailwind:
-
-```css
-@import "tailwindcss";
-```
-
-You can use Tailwind utility classes directly in React components (see `frontend/src/App.tsx`).
-
-### Optional: Dev Proxy to FastAPI
-To call the backend as `/api/...` during development, add a proxy in `frontend/vite.config.ts`:
-
-```ts
-import { defineConfig } from 'vite'
-import tailwindcss from '@tailwindcss/vite'
-
-export default defineConfig({
-  plugins: [tailwindcss()],
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-      },
-    },
-  },
-})
-```
-
-Now fetches like `fetch('/api/health')` will be proxied to FastAPI.
-
----
-
-## Running Everything (Local Dev)
-Open two terminals from the project root:
-
-1) Backend (FastAPI):
-```powershell
-cd backend
- .\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --reload --port 8000
-
-#for mac users
-cd backend
-source .venv/bin/activate
-uvicorn app.main:app --reload --port 8000
-```
-
-2) Frontend (Vite):
-```powershell
-cd frontend
-npm run dev
-```
-
-Visit `http://localhost:5173`.
-
----
-
-## Environment Variables
-- Backend: create `backend/.env` for secrets (e.g., DB URL, API keys); load via `python-dotenv` or `pydantic-settings`.
-- Frontend: use `frontend/.env` for Vite variables prefixed with `VITE_` (e.g., `VITE_API_URL`).
-
----
-
-## Troubleshooting
-- PowerShell execution policy blocks venv activation:
-  ```powershell
-  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-  ```
-- Port already in use: change `--port` for Uvicorn or `server.port` in Vite config.
-- CORS errors without proxy: enable FastAPI CORS for `http://localhost:5173` or use the Vite dev proxy.
-- Node version issues: ensure Node 18+ (`node -v`).
-
----
-
-## Scripts Reference
-- Backend: start API
-  ```powershell
-  uvicorn app.main:app --reload --port 8000
-  ```
-- Frontend: start web
-  ```powershell
-  npm run dev
-  ```
-
-## Testing Scripts
+## 🧪 Testing
 
 All backend tests live in `backend/tests` and use `pytest` + `coverage`.
 
-- **Run full backend test suite**
+### 1. Run full backend test suite
+```bash
+cd backend
+pytest
+```
 
-  ```powershell
-  cd backend
-  pytest
-  ```
+### 2. Run individual test modules (by feature)
+```bash
+cd backend
+# Auth (register/login)
+pytest tests/test_auth.py
 
-- **Run individual test modules (by feature)**
+# AI Chatbot
+pytest tests/test_chat.py
 
-  ```powershell
-  cd backend
-  # Auth (register/login)
-  pytest tests/test_auth.py
+# Favorites (add/remove/list)
+pytest tests/test_favorites.py
 
-  # AI Chatbot
-  pytest tests/test_chat.py
+# Misc helpers (health, get_current_user, provider search helpers)
+pytest tests/test_misc.py
 
-  # Favorites (add/remove/list)
-  pytest tests/test_favorites.py
+# Profiles (get/update)
+pytest tests/test_profile.py
 
-  # Misc helpers (health, get_current_user, provider search helpers)
-  pytest tests/test_misc.py
+# Requests (create/view/update/cancel)
+pytest tests/test_requests.py
 
-  # Profiles (get/update)
-  pytest tests/test_profile.py
+# Provider search (NPI + affiliated search)
+pytest tests/test_search.py
+```
 
-  # Requests (create/view/update/cancel)
-  pytest tests/test_requests.py
+### 3. Run tests with coverage for app/main.py
+```bash
+cd backend
+coverage erase
+coverage run -m pytest -q
+coverage report -m app/main.py
+```
 
-  # Provider search (NPI + affiliated search)
-  pytest tests/test_search.py
-  ```
+### 4. Generate HTML coverage report
+```bash
+cd backend
+coverage html app/main.py
+```
+Then open `backend/htmlcov/index.html` in your browser to inspect line-by-line coverage.
 
-- **Run tests with coverage for `app/main.py`**
+## 📦 Database Schema
 
-  ```powershell
-  cd backend
-  coverage erase
-  coverage run -m pytest -q
-  coverage report -m app/main.py
-  ```
+All tables are in the `public` schema. RLS policies are enabled for each table to ensure security.
 
-- **Generate HTML coverage report**
+```sql
+-- WARNING: This schema is for context only and is not meant to be run directly.
+-- Table order and constraints may not be valid for execution.
 
-  ```powershell
-  cd backend
-  coverage html app/main.py
-  ```
+CREATE TABLE public.FavProviders (
+  patient_id uuid NOT NULL,
+  provider_id uuid,
+  favorite_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  provider_npi integer,
+  CONSTRAINT FavProviders_pkey PRIMARY KEY (favorite_id),
+  CONSTRAINT FavProviders_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.Patients(patient_id)
+);
 
-  Then open `backend/htmlcov/index.html` in your browser to inspect line-by-line coverage.
+CREATE TABLE public.Patients (
+  patient_id uuid NOT NULL UNIQUE,
+  first_name text,
+  last_name text,
+  phone_num text,
+  gender text,
+  state text,
+  city text,
+  insurance text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT Patients_pkey PRIMARY KEY (patient_id),
+  CONSTRAINT Patients_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES auth.users(id)
+);
+
+CREATE TABLE public.Providers (
+  provider_id uuid NOT NULL UNIQUE,
+  first_name text,
+  last_name text,
+  phone_num text,
+  gender text,
+  state text,
+  city text,
+  insurance text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  location text,
+  taxonomy text,
+  email character varying,
+  CONSTRAINT Providers_pkey PRIMARY KEY (provider_id),
+  CONSTRAINT Providers_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES auth.users(id)
+);
+
+CREATE TABLE public.Requests (
+  appointment_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  patient_id uuid NOT NULL,
+  date date,
+  time time with time zone,
+  npi_num integer,
+  status text,
+  provider_id uuid,
+  message text,
+  created_at timestamp with time zone DEFAULT (now() AT TIME ZONE 'utc'::text),
+  response text,
+  CONSTRAINT Requests_pkey PRIMARY KEY (appointment_id),
+  CONSTRAINT Requests_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.Patients(patient_id),
+  CONSTRAINT Requests_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.Providers(provider_id)
+);
+```
+
+## 🚀 Deployment
+
+### Frontend
+The frontend is deployed on [Vercel](https://vercel.com).
+- Connect your GitHub repository to Vercel.
+- Set the Build Command to `npm run build`.
+- Set the Output Directory to `dist`.
+
+### Backend
+The backend can be deployed to any Python-supporting platform (Render, Fly.io, Vercel, etc.).
+- Ensure all environment variables are set in the deployment platform.
+- Configure the start command: `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
+
+## 🌐 Live Demo
+
+- **Frontend:** [medidata-frontend.vercel.app](https://medidata-frontend.vercel.app)
+- **Backend:** [medidata-backend.vercel.app](https://medidata-backend.vercel.app)
