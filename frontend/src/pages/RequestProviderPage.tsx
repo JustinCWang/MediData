@@ -260,7 +260,7 @@ export default function RequestProviderPage() {
                 </div>
               ) : (
                 <>
-                  {favoriteProviders.filter(p => p.is_affiliated).length === 0 && (
+                  {favoriteProviders.filter(p => p.is_affiliated).length === 0 && !state?.providerId && (
                     <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                       You don't have any affiliated favorite providers yet. Only affiliated providers can be requested
                       through MediData. You can still view contact information for other providers below.
