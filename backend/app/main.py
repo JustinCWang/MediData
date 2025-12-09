@@ -14,6 +14,7 @@ API documentation will be available at http://127.0.0.1:8000/docs
 
 import os
 from typing import Optional, List
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status, Query, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
@@ -66,11 +67,41 @@ supabase: Client = create_client(supabase_url, supabase_service_key)
 # Anon client for auth operations (respects user context)
 supabase_auth: Client = create_client(supabase_url, supabase_anon_key)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler.
+
+    Replaces the deprecated @app.on_event("startup") hook and performs all
+    controller initialisation and router inclusion when the app starts.
+    """
+    # Initialise controllers with the already-created Supabase and Gemini
+    # clients so tests and the running app share the same instances.
+    init_auth_controller(
+        supabase_client=supabase,
+        supabase_auth_client=supabase_auth,
+        url=supabase_url,
+        anon_key=supabase_anon_key,
+        fe_origin=frontend_origin,
+    )
+    init_query_controller(supabase_client=supabase)
+    init_chatbot_controller(api_key=gemini_api_key)
+    init_request_controller(supabase_client=supabase, get_current_user_fn=get_current_user)
+
+    # Include routers once during startup
+    app.include_router(auth_router)
+    app.include_router(query_router)
+    app.include_router(chatbot_router)
+    app.include_router(request_router)
+
+    yield
+
+
 # Create the FastAPI application instance
 app = FastAPI(
     title="MediData API",
     description="API for connecting patients with healthcare providers",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS configuration - allow requests from frontend dev server
@@ -132,24 +163,6 @@ def health():
     return {"status": "ok"}
 
 
-@app.on_event("startup")
-async def init_controllers():
-    init_auth_controller(
-        supabase_client=supabase,
-        supabase_auth_client=supabase_auth,
-        url=supabase_url,
-        anon_key=supabase_anon_key,
-        fe_origin=frontend_origin,
-    )
-    init_query_controller(supabase_client=supabase)
-    init_chatbot_controller(api_key=gemini_api_key)
-    init_request_controller(supabase_client=supabase, get_current_user_fn=get_current_user)
-
-    app.include_router(auth_router)
-    app.include_router(query_router)
-    app.include_router(chatbot_router)
-    app.include_router(request_router)
-
 
 def search_affiliated_providers(
     first_name: Optional[str] = None,
@@ -160,7 +173,8 @@ def search_affiliated_providers(
 ) -> list:
     """Backward-compat shim calling the real implementation in QueryController.
 
-    Kept for now in case anything in this module still imports it directly.
+    Kept purely for test/helpers that call app.main.search_affiliated_providers
+    directly; HTTP routing for providers search lives in QueryController.
     """
     from app.Controllers.QueryController import search_affiliated_providers as _impl
 
@@ -173,29 +187,11 @@ def search_affiliated_providers(
     )
 
 
-@app.get("/api/providers/search")
-async def search_providers(*args, **kwargs):
-    """Backward-compat shim: real handler is in QueryController."""
-    # FastAPI routes are now provided by QueryController.router; this exists
-    # only to avoid breaking any direct calls to main.search_providers.
-    from app.Controllers.QueryController import search_providers as _impl
-
-    return await _impl(*args, **kwargs)
-
-
 def transform_npi_result(npi_result: dict) -> Optional[dict]:
     """Backward-compat shim delegating to QueryController.transform_npi_result."""
     from app.Controllers.QueryController import transform_npi_result as _impl
 
     return _impl(npi_result)
-
-
-@app.get("/api/providers/{npi_number}")
-async def get_provider_by_npi(npi_number: str):
-    """Backward-compat shim delegating to QueryController.get_provider_by_npi."""
-    from app.Controllers.QueryController import get_provider_by_npi as _impl
-
-    return await _impl(npi_number)
 
 
 async def callAuthController_get_profile(current_user = Depends(get_current_user)):

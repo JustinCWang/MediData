@@ -18,6 +18,7 @@ os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "service-role-key")
 os.environ.setdefault("SUPABASE_ANON_KEY", "anon-key")
 
 import app.main as app_main  # noqa: E402
+import app.Controllers.AuthController as auth_controller
 
 
 @pytest.fixture(scope="session")
@@ -121,6 +122,8 @@ def mock_supabase(monkeypatch):
 
     monkeypatch.setattr(app_main, "supabase", dummy_supabase)
     monkeypatch.setattr(app_main, "supabase_auth", dummy_supabase)
+    auth_controller.supabase = dummy_supabase
+    auth_controller.supabase_auth = dummy_supabase
 
     return dummy_supabase
 

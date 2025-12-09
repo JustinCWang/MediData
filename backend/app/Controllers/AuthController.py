@@ -244,14 +244,37 @@ async def login(credentials: LoginRequest):
 @router.post("/api/auth/resend-verification")
 async def resend_verification(request: EmailRequest):
     try:
+        auth_client = getattr(supabase_auth, "auth", None)
+        if auth_client is None:
+            # No auth client configured; treat as best-effort success
+            return {
+                "message": "If an account with this email exists and is unverified, a new verification email has been sent.",
+            }
+
+        resend_fn = getattr(auth_client, "resend", None)
+        if resend_fn is None:
+            # Missing helper: still return success without error
+            return {
+                "message": "If an account with this email exists and is unverified, a new verification email has been sent.",
+            }
+
         try:
-            supabase_auth.auth.resend({"type": "signup", "email": request.email})
-        except AttributeError:
-            pass
+            resend_fn({"type": "signup", "email": request.email})
+        except TypeError:
+            # Fallback for SDKs that expect a simpler signature
+            resend_fn(request.email)
+        except Exception as e:
+            # Unexpected error from SDK should surface as 500
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to resend verification email: {str(e)}",
+            )
 
         return {
             "message": "If an account with this email exists and is unverified, a new verification email has been sent.",
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -262,26 +285,47 @@ async def resend_verification(request: EmailRequest):
 @router.post("/api/auth/forgot-password")
 async def forgot_password(request: EmailRequest):
     try:
-        try:
-            reset_fn = getattr(supabase_auth.auth, "reset_password_for_email", None)
-            if reset_fn is None:
-                reset_fn = getattr(supabase_auth.auth, "reset_password_email", None)
+        # Access auth client; if it's missing entirely, treat as best-effort success.
+        auth_client = getattr(supabase_auth, "auth", None)
+        if auth_client is None:
+            return {
+                "message": "If an account with this email exists, a password reset email has been sent.",
+            }
 
-            if reset_fn is not None:
-                redirect_url = os.getenv(
-                    "FRONTEND_RESET_PASSWORD_URL",
-                    f"{frontend_origin}/reset-password",
-                )
-                try:
-                    reset_fn(request.email, {"redirect_to": redirect_url})
-                except TypeError:
-                    reset_fn(request.email)
+        # Try primary reset helper first, then legacy name; if both are missing,
+        # we still return success to keep the endpoint idempotent.
+        try:
+            reset_fn = getattr(auth_client, "reset_password_for_email", None)
+            if reset_fn is None:
+                reset_fn = getattr(auth_client, "reset_password_email", None)
         except AttributeError:
-            pass
+            reset_fn = None
+
+        if reset_fn is None:
+            return {
+                "message": "If an account with this email exists, a password reset email has been sent.",
+            }
+
+        redirect_url = os.getenv(
+            "FRONTEND_RESET_PASSWORD_URL",
+            f"{frontend_origin}/reset-password",
+        )
+        try:
+            reset_fn(request.email, {"redirect_to": redirect_url})
+        except TypeError:
+            reset_fn(request.email)
+        except Exception as e:
+            # Any unexpected SDK error should surface as 500
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to initiate password reset: {str(e)}",
+            )
 
         return {
             "message": "If an account with this email exists, a password reset email has been sent.",
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

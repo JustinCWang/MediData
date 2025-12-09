@@ -128,6 +128,11 @@ def setup_supabase(monkeypatch, tables: Dict[str, InMemoryTable]) -> InMemorySup
     """
     supabase = InMemorySupabase(tables)
     monkeypatch.setattr(app_main, "supabase", supabase)
+
+    # Ensure QueryController uses the same in-memory client so that helpers
+    # like search_affiliated_providers see the test tables.
+    import app.Controllers.QueryController as query_controller
+    query_controller.supabase = supabase
     return supabase
 
 

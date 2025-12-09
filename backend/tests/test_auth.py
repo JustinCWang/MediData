@@ -63,12 +63,12 @@ def test_login_success(client):
 
 def test_register_email_already_exists_returns_409(client, monkeypatch, mock_supabase):
     """Supabase 'user already registered' error is translated into HTTP 409 with a clear message."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_up(_data):
         raise Exception("User already registered with this email")
 
-    monkeypatch.setattr(app_main.supabase_auth.auth, "sign_up", fake_sign_up)
+    monkeypatch.setattr(auth_controller.supabase_auth.auth, "sign_up", fake_sign_up)
 
     payload = {
         "email": "existing@example.com",
@@ -89,12 +89,12 @@ def test_register_email_already_exists_returns_409(client, monkeypatch, mock_sup
 
 def test_register_weak_password_returns_400(client, monkeypatch, mock_supabase):
     """Supabase weak-password errors are converted into HTTP 400 with guidance to use a stronger password."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_up(_data):
         raise Exception("Password is too weak")
 
-    monkeypatch.setattr(app_main.supabase_auth.auth, "sign_up", fake_sign_up)
+    monkeypatch.setattr(auth_controller.supabase_auth.auth, "sign_up", fake_sign_up)
 
     payload = {
         "email": "weakpass@example.com",
@@ -115,13 +115,13 @@ def test_register_weak_password_returns_400(client, monkeypatch, mock_supabase):
 
 def test_login_invalid_credentials_returns_401(client, monkeypatch, mock_supabase):
     """Supabase invalid-credentials errors become HTTP 401 with a generic login error message."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_in_with_password(_data):
         raise Exception("Invalid login credentials")
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
+        auth_controller.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
     )
 
     payload = {
@@ -140,13 +140,13 @@ def test_login_invalid_credentials_returns_401(client, monkeypatch, mock_supabas
 
 def test_login_user_not_found_returns_404(client, monkeypatch, mock_supabase):
     """Supabase 'no user found' errors are mapped to HTTP 404 with a 'register first' hint."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_in_with_password(_data):
         raise Exception("No user found with this email")
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
+        auth_controller.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
     )
 
     payload = {
@@ -184,14 +184,14 @@ def test_register_provider_success(client):
 
 def test_register_missing_user_returns_400(client, monkeypatch, mock_supabase):
     """If Supabase sign_up returns no user object, we treat it as a generic 400 registration failure."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     class Response:
         def __init__(self):
             self.user = None
             self.session = None
 
-    monkeypatch.setattr(app_main.supabase_auth.auth, "sign_up", lambda *_: Response())
+    monkeypatch.setattr(auth_controller.supabase_auth.auth, "sign_up", lambda *_: Response())
 
     payload = {
         "email": "bad@example.com",
@@ -209,12 +209,12 @@ def test_register_missing_user_returns_400(client, monkeypatch, mock_supabase):
 
 def test_register_unexpected_error_returns_500(client, monkeypatch, mock_supabase):
     """Unexpected errors from Supabase sign_up are surfaced as HTTP 500 with a 'Registration failed' message."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_up(_data):
         raise Exception("Something went terribly wrong")
 
-    monkeypatch.setattr(app_main.supabase_auth.auth, "sign_up", fake_sign_up)
+    monkeypatch.setattr(auth_controller.supabase_auth.auth, "sign_up", fake_sign_up)
 
     payload = {
         "email": "boom@example.com",
@@ -232,7 +232,7 @@ def test_register_unexpected_error_returns_500(client, monkeypatch, mock_supabas
 
 def test_login_missing_session_returns_401(client, monkeypatch, mock_supabase):
     """If Supabase returns a user but no session, we still treat it as invalid credentials (401)."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     class Response:
         def __init__(self):
@@ -244,7 +244,7 @@ def test_login_missing_session_returns_401(client, monkeypatch, mock_supabase):
             self.session = None
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "sign_in_with_password", lambda *_: Response()
+        auth_controller.supabase_auth.auth, "sign_in_with_password", lambda *_: Response()
     )
 
     response = client.post(
@@ -258,13 +258,13 @@ def test_login_missing_session_returns_401(client, monkeypatch, mock_supabase):
 
 def test_login_unexpected_error_returns_500(client, monkeypatch, mock_supabase):
     """Unexpected errors during Supabase sign_in are mapped to HTTP 500 with a 'Login failed' message."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_in_with_password(_data):
         raise Exception("Service unavailable")
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
+        auth_controller.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
     )
 
     response = client.post(
@@ -278,13 +278,13 @@ def test_login_unexpected_error_returns_500(client, monkeypatch, mock_supabase):
 
 def test_login_unverified_email_returns_403(client, monkeypatch, mock_supabase):
     """If Supabase indicates the email is not confirmed, we return 403 with a verification prompt."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_sign_in_with_password(_data):
         raise Exception("Email not confirmed")
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
+        auth_controller.supabase_auth.auth, "sign_in_with_password", fake_sign_in_with_password
     )
 
     response = client.post(
@@ -298,14 +298,14 @@ def test_login_unverified_email_returns_403(client, monkeypatch, mock_supabase):
 
 def test_resend_verification_success(client, monkeypatch, mock_supabase):
     """Resend verification endpoint returns a generic success message even when the underlying SDK is mocked."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     called = {}
 
     def fake_resend(payload):
         called["email"] = payload["email"]
 
-    monkeypatch.setattr(app_main.supabase_auth.auth, "resend", fake_resend, raising=False)
+    monkeypatch.setattr(auth_controller.supabase_auth.auth, "resend", fake_resend, raising=False)
 
     response = client.post(
         "/api/auth/resend-verification",
@@ -319,10 +319,10 @@ def test_resend_verification_success(client, monkeypatch, mock_supabase):
 
 def test_resend_verification_handles_sdk_missing_method(client, monkeypatch, mock_supabase):
     """If supabase_auth.auth.resend is missing, the endpoint still returns success without crashing."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     # Ensure there's no resend attribute; raising=False so it quietly does nothing
-    monkeypatch.delattr(app_main.supabase_auth.auth, "resend", raising=False)
+    monkeypatch.delattr(auth_controller.supabase_auth.auth, "resend", raising=False)
 
     response = client.post(
         "/api/auth/resend-verification",
@@ -334,12 +334,12 @@ def test_resend_verification_handles_sdk_missing_method(client, monkeypatch, moc
 
 def test_resend_verification_unexpected_error_returns_500(client, monkeypatch, mock_supabase):
     """Unexpected exceptions in resend_verification are converted to HTTP 500."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_resend(_payload):
         raise Exception("SMTP failure")
 
-    monkeypatch.setattr(app_main.supabase_auth.auth, "resend", fake_resend, raising=False)
+    monkeypatch.setattr(auth_controller.supabase_auth.auth, "resend", fake_resend, raising=False)
 
     response = client.post(
         "/api/auth/resend-verification",
@@ -352,7 +352,7 @@ def test_resend_verification_unexpected_error_returns_500(client, monkeypatch, m
 
 def test_forgot_password_success(client, monkeypatch, mock_supabase):
     """Forgot-password endpoint calls Supabase password reset helper if available and returns 200."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     called = {}
 
@@ -361,7 +361,7 @@ def test_forgot_password_success(client, monkeypatch, mock_supabase):
         called["options"] = options or {}
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "reset_password_for_email", fake_reset, raising=False
+        auth_controller.supabase_auth.auth, "reset_password_for_email", fake_reset, raising=False
     )
 
     response = client.post(
@@ -378,13 +378,13 @@ def test_forgot_password_success(client, monkeypatch, mock_supabase):
 
 def test_forgot_password_handles_missing_methods(client, monkeypatch, mock_supabase):
     """If no suitable reset password helper exists, the endpoint still returns a generic success message."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     monkeypatch.delattr(
-        app_main.supabase_auth.auth, "reset_password_for_email", raising=False
+        auth_controller.supabase_auth.auth, "reset_password_for_email", raising=False
     )
     monkeypatch.delattr(
-        app_main.supabase_auth.auth, "reset_password_email", raising=False
+        auth_controller.supabase_auth.auth, "reset_password_email", raising=False
     )
 
     response = client.post(
@@ -397,13 +397,13 @@ def test_forgot_password_handles_missing_methods(client, monkeypatch, mock_supab
 
 def test_forgot_password_unexpected_error_returns_500(client, monkeypatch, mock_supabase):
     """Unexpected exceptions from Supabase during password reset are surfaced as HTTP 500."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     def fake_reset(_email):
         raise Exception("Mail service down")
 
     monkeypatch.setattr(
-        app_main.supabase_auth.auth, "reset_password_for_email", fake_reset, raising=False
+        auth_controller.supabase_auth.auth, "reset_password_for_email", fake_reset, raising=False
     )
 
     response = client.post(
@@ -417,7 +417,7 @@ def test_forgot_password_unexpected_error_returns_500(client, monkeypatch, mock_
 
 def test_reset_password_success(client, monkeypatch, mock_supabase):
     """reset-password endpoint calls Supabase auth REST API and returns a success message on 200."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
     import httpx
 
     captured = {}
@@ -447,8 +447,8 @@ def test_reset_password_success(client, monkeypatch, mock_supabase):
             captured["json"] = json
             return DummyResponse(200, {"id": "user-id"})
 
-    monkeypatch.setattr(app_main, "httpx", httpx)
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyClient)
+    monkeypatch.setattr(auth_controller, "httpx", httpx)
+    monkeypatch.setattr("app.Controllers.AuthController.httpx.AsyncClient", DummyClient)
 
     response = client.post(
         "/api/auth/reset-password",
@@ -464,7 +464,7 @@ def test_reset_password_success(client, monkeypatch, mock_supabase):
 
 def test_reset_password_expired_token_returns_400(client, monkeypatch, mock_supabase):
     """If Supabase reports an expired/invalid token (400/401), we return HTTP 400 with a helpful message."""
-    import app.main as app_main
+    import app.Controllers.AuthController as auth_controller
 
     class DummyResponse:
         def __init__(self, status_code: int, payload=None, text: str = ""):
@@ -488,7 +488,7 @@ def test_reset_password_expired_token_returns_400(client, monkeypatch, mock_supa
         async def put(self, url, headers=None, json=None):
             return DummyResponse(400, {"msg": "Token has expired"})
 
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyClient)
+    monkeypatch.setattr("app.Controllers.AuthController.httpx.AsyncClient", DummyClient)
 
     response = client.post(
         "/api/auth/reset-password",
@@ -524,7 +524,7 @@ def test_reset_password_unexpected_error_returns_500(client, monkeypatch, mock_s
         async def put(self, url, headers=None, json=None):
             return DummyResponse(500, {"msg": "Database unavailable"})
 
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyClient)
+    monkeypatch.setattr("app.Controllers.AuthController.httpx.AsyncClient", DummyClient)
 
     response = client.post(
         "/api/auth/reset-password",

@@ -24,8 +24,7 @@ def test_search_providers_with_first_name_uses_limit_and_returns_structure(clien
     We stub out the NPI API call and affiliated provider search so the
     endpoint logic can be exercised without real network/database access.
     """
-    import app.main as app_main
-    from types import SimpleNamespace
+    import app.Controllers.QueryController as query_controller
 
     # Stub affiliated provider search to return one provider
     def fake_search_affiliated_providers(**kwargs):
@@ -45,7 +44,7 @@ def test_search_providers_with_first_name_uses_limit_and_returns_structure(clien
         ]
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
 
     class DummyResponse:
@@ -98,7 +97,7 @@ def test_search_providers_with_first_name_uses_limit_and_returns_structure(clien
                 }
             )
 
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", DummyAsyncClient)
 
     response = client.get("/api/providers/search", params={"first_name": "Alex", "limit": 5})
 
@@ -119,7 +118,7 @@ def test_search_providers_with_filters_but_no_results_returns_empty(client, monk
     When filters are provided but both NPI and affiliated sources return no
     matches, we should still get an empty result set.
     """
-    import app.main as app_main
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         return []
@@ -149,9 +148,9 @@ def test_search_providers_with_filters_but_no_results_returns_empty(client, monk
             return DummyResponse({"result_count": 0, "results": []})
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", DummyAsyncClient)
 
     response = client.get(
         "/api/providers/search",
@@ -171,7 +170,7 @@ def test_search_providers_network_error_falls_back_to_affiliated_only(client, mo
     providers, the endpoint should still return the affiliated results and
     include an error message.
     """
-    import app.main as app_main
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         return [
@@ -204,9 +203,9 @@ def test_search_providers_network_error_falls_back_to_affiliated_only(client, mo
             raise httpx.RequestError("Network error", request=request)
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", FailingAsyncClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", FailingAsyncClient)
 
     response = client.get(
         "/api/providers/search",
@@ -231,7 +230,7 @@ def test_search_providers_large_result_set_respects_limit(client, monkeypatch):
     When the combined NPI + affiliated results exceed the requested limit,
     the endpoint should truncate the list to the limit value.
     """
-    import app.main as app_main
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         # 3 affiliated providers
@@ -306,9 +305,9 @@ def test_search_providers_large_result_set_respects_limit(client, monkeypatch):
             )
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", DummyAsyncClient)
 
     # Combined results would be 8, but limit them to 3
     response = client.get(
@@ -325,7 +324,7 @@ def test_search_providers_large_result_set_respects_limit(client, monkeypatch):
 @pytest.mark.usefixtures("mock_supabase")
 def test_search_providers_http_status_error_returns_affiliated_results(client, monkeypatch):
     """HTTPStatusError from NPI API still returns affiliated results plus an error message when available."""
-    import app.main as app_main
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         return [{"id": "prov-1", "is_affiliated": True}]
@@ -347,9 +346,9 @@ def test_search_providers_http_status_error_returns_affiliated_results(client, m
             raise httpx.HTTPStatusError("bad", request=request, response=response)
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", StatusErrorClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", StatusErrorClient)
 
     response = client.get("/api/providers/search", params={"first_name": "Test"})
 
@@ -363,7 +362,7 @@ def test_search_providers_http_status_error_returns_affiliated_results(client, m
 @pytest.mark.usefixtures("mock_supabase")
 def test_search_providers_http_status_error_without_affiliated_returns_502(client, monkeypatch):
     """If NPI API fails and there are no affiliated providers, we propagate a 502 Bad Gateway error."""
-    import app.main as app_main
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         return []
@@ -384,9 +383,9 @@ def test_search_providers_http_status_error_without_affiliated_returns_502(clien
             raise httpx.HTTPStatusError("bad", request=request, response=response)
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", StatusErrorClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", StatusErrorClient)
 
     response = client.get("/api/providers/search", params={"first_name": "Test"})
 
@@ -397,6 +396,8 @@ def test_search_providers_http_status_error_without_affiliated_returns_502(clien
 def test_search_providers_request_error_without_affiliated_returns_503(client, monkeypatch):
     """Network-level RequestError with no affiliated providers yields a 503 Service Unavailable."""
     import app.main as app_main
+
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         return []
@@ -416,9 +417,9 @@ def test_search_providers_request_error_without_affiliated_returns_503(client, m
             raise httpx.RequestError("boom", request=request)
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", FailingClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", FailingClient)
 
     response = client.get("/api/providers/search", params={"first_name": "Test"})
 
@@ -428,7 +429,7 @@ def test_search_providers_request_error_without_affiliated_returns_503(client, m
 @pytest.mark.usefixtures("mock_supabase")
 def test_search_providers_accepts_all_filters(client, monkeypatch):
     """Smoke test that all documented query parameters are accepted and forwarded without raising errors."""
-    import app.main as app_main
+    import app.Controllers.QueryController as query_controller
 
     def fake_search_affiliated_providers(**kwargs):
         return []
@@ -457,9 +458,9 @@ def test_search_providers_accepts_all_filters(client, monkeypatch):
             return DummyResponse({"result_count": 0, "results": []})
 
     monkeypatch.setattr(
-        app_main, "search_affiliated_providers", fake_search_affiliated_providers
+        query_controller, "search_affiliated_providers", fake_search_affiliated_providers
     )
-    monkeypatch.setattr("app.main.httpx.AsyncClient", DummyAsyncClient)
+    monkeypatch.setattr("app.Controllers.QueryController.httpx.AsyncClient", DummyAsyncClient)
 
     query = {
         "number": "1234567890",
