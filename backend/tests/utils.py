@@ -1,3 +1,8 @@
+"""
+utils.py - Test utilities
+
+Provides in-memory Supabase table stubs and helper setup used by API tests.
+"""
 from __future__ import annotations
 
 from copy import deepcopy

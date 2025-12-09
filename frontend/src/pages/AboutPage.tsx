@@ -1,3 +1,8 @@
+/**
+ * AboutPage.tsx - Company overview page
+ *
+ * Shares MediData's mission, vision, and team story to give users context about the platform.
+ */
 import { useNavigate } from 'react-router-dom'
 
 export default function AboutPage() {

@@ -1,3 +1,8 @@
+"""
+test_profile.py - Profile API tests
+
+Covers retrieval and update flows for patient/provider profile data.
+"""
 from http import HTTPStatus
 
 from tests.utils import InMemoryTable, setup_supabase

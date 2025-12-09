@@ -30,6 +30,8 @@ interface ProviderCardProps {
 export default function ProviderCard({ provider, onViewDetails, isFavorited: initialIsFavorited = false, onFavoriteChange }: ProviderCardProps) {
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited)
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false)
+  const isOrganization = (provider.enumeration_type || '').toUpperCase() === 'NPI-2'
+  const showOrgIcon = isOrganization && !provider.is_affiliated
 
   // Sync with prop changes
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function ProviderCard({ provider, onViewDetails, isFavorited: ini
         <div className="flex items-center gap-0">
           {/* Type icon: person for individuals, building for orgs */}
           <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-            {provider.enumeration_type === 'NPI-2' ? (
+            {showOrgIcon ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

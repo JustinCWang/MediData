@@ -1,3 +1,8 @@
+"""
+RequestController.py - Provider request routes
+
+Manages CRUD operations for patient-provider requests, including listing, creation, updates, and deletions.
+"""
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel
 from typing import Optional

@@ -1,3 +1,8 @@
+"""
+ChatbotController.py - AI chatbot routes
+
+Hosts endpoints for the chatbot interaction, relaying prompts/responses via the configured LLM provider.
+"""
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List

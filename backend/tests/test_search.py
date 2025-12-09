@@ -1,3 +1,8 @@
+"""
+test_search.py - Search API tests
+
+Validates provider search endpoints and query handling.
+"""
 from http import HTTPStatus
 
 import pytest

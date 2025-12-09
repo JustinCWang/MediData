@@ -281,7 +281,7 @@ export default function ProviderDetailsPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   {/* Type icon: person for individuals, building for orgs */}
-                  {provider.enumeration_type === 'NPI-2' ? (
+                  {provider.enumeration_type?.toUpperCase() === 'NPI-2' && !provider.is_affiliated ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"

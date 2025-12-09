@@ -1,3 +1,8 @@
+"""
+test_auth.py - Authentication API tests
+
+Validates registration, login, logout, and protected-route behaviors.
+"""
 from http import HTTPStatus
 
 import pytest

@@ -1,3 +1,8 @@
+/**
+ * Terms.tsx - Terms of Use page
+ *
+ * Presents MediData's terms and conditions for user reference.
+ */
 export default function Terms() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12 px-4 dark:from-slate-900 dark:to-slate-800">

@@ -1,3 +1,8 @@
+"""
+conftest.py - Pytest fixtures for backend tests
+
+Provides shared FastAPI test client setup, authentication helpers, and test data configuration.
+"""
 import os
 import sys
 from pathlib import Path

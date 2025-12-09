@@ -1,3 +1,8 @@
+"""
+test_misc.py - Miscellaneous API tests
+
+Checks health endpoints and other supporting routes.
+"""
 from http import HTTPStatus
 from types import SimpleNamespace
 

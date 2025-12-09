@@ -1,3 +1,8 @@
+"""
+test_favorites.py - Favorites API tests
+
+Verifies add/remove/list behaviors for favorited providers.
+"""
 from http import HTTPStatus
 from types import SimpleNamespace
 

@@ -1,3 +1,8 @@
+"""
+test_requests.py - Requests API tests
+
+Covers creation, listing, update, and deletion flows for provider requests.
+"""
 from http import HTTPStatus
 
 import pytest

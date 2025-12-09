@@ -65,43 +65,51 @@ export default function SearchPage() {
   const [hasAutofilled, setHasAutofilled] = useState(false)
 
 
-  // Fetch favorites and user profile on mount
+  // Fetch favorites on mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchFavorites = async () => {
       try {
         const token = localStorage.getItem('access_token')
-        if (!token) {
-          return
-        }
+        if (!token) return
 
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-        }
+        const headers = { 'Authorization': `Bearer ${token}` }
 
-        // Fetch favorites
         const favoritesResponse = await fetch(`${API_BASE_URL}/api/favorites`, { headers })
         if (favoritesResponse.ok) {
           const data = await favoritesResponse.json()
           setFavoriteIds(new Set(data.favorites || []))
         }
-
-        // Fetch profile for autofill (only if we haven't already autofilled or searched)
-        if (!hasAutofilled) {
-          const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, { headers })
-          if (profileResponse.ok) {
-            const profile = await profileResponse.json()
-            if (profile.city && !city) setCity(profile.city)
-            if (profile.state && !state) setState(profile.state)
-            setHasAutofilled(true)
-          }
-        }
       } catch (err) {
-        console.error('Error fetching initial data:', err)
+        console.error('Error fetching favorites:', err)
       }
     }
 
-    fetchData()
+    fetchFavorites()
   }, [])
+
+  // Fetch profile for autofill; runs until autofill completes
+  useEffect(() => {
+    const fetchProfileForAutofill = async () => {
+      if (hasAutofilled) return
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) return
+
+        const headers = { 'Authorization': `Bearer ${token}` }
+        const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, { headers })
+        if (profileResponse.ok) {
+          const profile = await profileResponse.json()
+          if (profile.city && !city) setCity(profile.city)
+          if (profile.state && !state) setState(profile.state)
+          setHasAutofilled(true)
+        }
+      } catch (err) {
+        console.error('Error fetching profile for autofill:', err)
+      }
+    }
+
+    fetchProfileForAutofill()
+  }, [hasAutofilled, city, state])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -155,7 +163,8 @@ export default function SearchPage() {
         location: result.location || 'Location not available',
         insurance: result.insurance || [],
         is_affiliated: result.is_affiliated || false,
-        enumeration_type: result.enumeration_type, // pass through
+        // Affiliates come from internal data and should be treated as individuals by default
+        enumeration_type: result.enumeration_type || (result.is_affiliated ? 'NPI-1' : undefined),
       }))
 
       console.log('providers', transformedResults.slice(0, 3))

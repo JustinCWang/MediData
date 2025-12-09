@@ -1,3 +1,8 @@
+"""
+QueryController.py - Provider search routes
+
+Provides endpoints to query provider data, proxying requests and handling search parameters.
+"""
 from fastapi import APIRouter, HTTPException, Query, status
 from typing import Optional
 import httpx

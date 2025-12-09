@@ -1,3 +1,8 @@
+"""
+AuthController.py - Authentication routes
+
+Defines FastAPI endpoints for registration, login, logout, email verification, and related auth helpers.
+"""
 from fastapi import APIRouter, HTTPException, status, Header
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List

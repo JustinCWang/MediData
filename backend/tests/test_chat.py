@@ -1,3 +1,8 @@
+"""
+test_chat.py - Chatbot API tests
+
+Exercises chatbot prompt/response endpoints for status and payload handling.
+"""
 from http import HTTPStatus
 from types import SimpleNamespace
 

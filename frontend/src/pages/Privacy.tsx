@@ -1,3 +1,8 @@
+/**
+ * Privacy.tsx - Privacy policy page
+ *
+ * Displays MediData's privacy practices for users to review.
+ */
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12 px-4 dark:from-slate-900 dark:to-slate-800">

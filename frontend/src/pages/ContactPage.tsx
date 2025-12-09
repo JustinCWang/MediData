@@ -1,3 +1,8 @@
+/**
+ * ContactPage.tsx - Contact form page
+ *
+ * Provides a simple form for users to send support inquiries and routes back home after submission.
+ */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
