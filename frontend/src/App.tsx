@@ -1108,7 +1108,19 @@ function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Registration failed. Please try again.')
+        const detail = typeof data.detail === 'string'
+          ? data.detail
+          : (data.message as string | undefined);
+
+        if (response.status === 409) {
+          // Force a clear, user-focused duplicate-account message
+          throw new Error(
+            detail ||
+            'An account with this email already exists. Please log in instead.'
+          );
+        }
+
+        throw new Error(detail || 'Registration failed. Please try again.');
       }
 
       // Clear temporary storage

@@ -172,21 +172,54 @@ async def register(credentials: RegisterRequest):
     except HTTPException:
         raise
     except Exception as e:
-        error_message = str(e)
-        lower = error_message.lower()
-        if "already registered" in lower or "already exists" in lower:
+        # Normalize various Supabase/Postgres error shapes
+        raw = e
+        detail = ""
+        code = ""
+
+        # Some Supabase errors come as dicts on e or e.args[0]
+        if isinstance(raw, dict):
+            detail = str(raw.get("message") or raw.get("error") or "")
+            code = str(raw.get("code") or "")
+        elif getattr(e, "args", None):
+            first = e.args[0]
+            if isinstance(first, dict):
+                detail = str(first.get("message") or first.get("error") or "")
+                code = str(first.get("code") or "")
+            else:
+                detail = str(first)
+        else:
+            detail = str(e)
+
+        lower = detail.lower()
+
+        # Handle duplicate / FK constraint cases (what you're seeing)
+        if (
+            "already registered" in lower
+            or "already exists" in lower
+            or "patients_patient_id_fkey" in lower
+            or "providers_provider_id_fkey" in lower
+            or code == "23503"
+        ):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="An account with this email already exists. Please log in instead.",
             )
+
+        # Weak password surface as 400 with guidance
         if "password" in lower:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password does not meet requirements. Please use a stronger password.",
+                detail=(
+                    "Password does not meet security requirements. "
+                    "Please use at least 6 characters with a mix of letters, numbers, or symbols."
+                ),
             )
+
+        # Fallback: generic, non-technical message
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {error_message}",
+            detail="Registration failed. Please try again or contact support.",
         )
 
 
