@@ -86,19 +86,16 @@ export default function RequestProviderPage() {
     fetchFavoriteProviders()
   }, [])
 
-  // Preselect provider passed from details page
+  // Preselect provider passed from details page (even if not favorited)
   useEffect(() => {
     if (!state?.providerId) return
 
-    const provider = favoriteProviders.find(
-      (p) => p.id === state.providerId && p.is_affiliated
-    )
-    if (provider) {
-      setSelectedProviderId(provider.id)
-      setProviderName(provider.name)
-      setProviderSpecialty(provider.specialty)
-      setProviderLocation(provider.location)
-    }
+    // Prefer favorite provider details when available
+    const provider = favoriteProviders.find((p) => p.id === state.providerId)
+    setSelectedProviderId(state.providerId)
+    setProviderName(provider?.name || state.providerName || '')
+    setProviderSpecialty(provider?.specialty || state.providerSpecialty || '')
+    setProviderLocation(provider?.location || state.providerLocation || '')
   }, [state, favoriteProviders])
 
   const handleSelectProvider = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -123,22 +120,8 @@ export default function RequestProviderPage() {
     e.preventDefault()
     setError(null)
 
-    const hasAffiliatedFavorites = favoriteProviders.some((p) => p.is_affiliated)
-    if (!hasAffiliatedFavorites) {
-      setError('Please add affiliated providers to favorites before submitting a request')
-      return
-    }
-
     if (!selectedProviderId) {
       setError('Please select a provider')
-      return
-    }
-
-    const selectedProvider = favoriteProviders.find(
-      (p) => p.id === selectedProviderId
-    )
-    if (!selectedProvider?.is_affiliated) {
-      setError('You can only submit requests to affiliated providers.')
       return
     }
 
@@ -288,7 +271,6 @@ export default function RequestProviderPage() {
                     value={selectedProviderId || ''}
                     onChange={handleSelectProvider}
                     className="w-full rounded-md border border-white/70 bg-white/70 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 backdrop-blur dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:ring-blue-500"
-                    required
                   >
                     <option value="">-- Select a provider --</option>
                     {favoriteProviders
@@ -396,11 +378,7 @@ export default function RequestProviderPage() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                disabled={
-                  isSubmitting ||
-                  favoriteProviders.filter(p => p.is_affiliated).length === 0 ||
-                  !selectedProviderId
-                }
+                disabled={isSubmitting || !selectedProviderId}
                 className="flex-1 px-6 py-2 rounded-full bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500 text-white font-semibold hover:shadow-md hover:-translate-y-[1px] transition focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Request'}
