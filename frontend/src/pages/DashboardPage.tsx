@@ -161,11 +161,6 @@ export default function DashboardPage() {
     console.log('Cancel request:', requestId)
   }
 
-  const handleViewDetails = (requestId: string) => {
-    // Not Implemented: Navigate to request details page
-    console.log('View details for request:', requestId)
-  }
-
   const handleProviderViewDetails = (providerId: string) => {
     const provider = favoriteProviders.find(p => p.id === providerId)
     navigate(`/providers/${providerId}`, { state: { provider } })
@@ -336,15 +331,14 @@ export default function DashboardPage() {
               ) : recentRequests.length > 0 ? (
                 <div className="space-y-4">
                   {recentRequests.map((request) => (
-                    <RequestCard
-                      key={request.id}
-                      request={request}
-                      onCancel={handleCancel}
-                      onViewDetails={handleViewDetails}
-                      onUpdate={handleRequestUpdate}
-                      userRole={userRole}
-                    />
-                  ))}
+                  <RequestCard
+                    key={request.id}
+                    request={request}
+                    onCancel={handleCancel}
+                    onUpdate={handleRequestUpdate}
+                    userRole={userRole}
+                  />
+                ))}
                 </div>
               ) : (
                 <EmptyState

@@ -38,6 +38,7 @@ import PrivacyPage from './pages/Privacy'
 import React from 'react'
 
 type Theme = 'light' | 'dark'
+type UserRole = 'patient' | 'provider'
 
 function SunIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -61,13 +62,32 @@ function MoonIcon(props: React.SVGProps<SVGSVGElement>) {
  * 
  * Redirects to login page if user is not authenticated.
  */
-function ProtectedRoute({ children }: { children: React.ReactElement }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+function ProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactElement
+  allowedRoles?: UserRole[]
+}) {
+  const [authState, setAuthState] = useState<{ isAuthenticated: boolean; role: UserRole | null } | null>(null)
 
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('access_token')
-      setIsAuthenticated(!!token)
+      const userData = localStorage.getItem('user')
+      let role: UserRole | null = null
+      if (userData) {
+        try {
+          const parsed = JSON.parse(userData)
+          role = parsed?.user_metadata?.role === 'provider' ? 'provider' : 'patient'
+        } catch {
+          role = null
+        }
+      }
+      setAuthState({
+        isAuthenticated: !!token,
+        role: role ?? 'patient',
+      })
     }
 
     checkAuth()
@@ -80,12 +100,21 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
     }
   }, [])
 
-  if (isAuthenticated === null) {
+  if (authState === null) {
     // Still checking auth status
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />
+  if (!authState.isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (allowedRoles && authState.role && !allowedRoles.includes(authState.role)) {
+    const redirectTo = authState.role === 'provider' ? '/requests' : '/dashboard'
+    return <Navigate to={redirectTo} replace />
+  }
+
+  return children
 }
 
 /**
@@ -94,12 +123,25 @@ function ProtectedRoute({ children }: { children: React.ReactElement }) {
  * Redirects to dashboard if user is already authenticated.
  */
 function GuestRoute({ children }: { children: React.ReactElement }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [authState, setAuthState] = useState<{ isAuthenticated: boolean; role: UserRole | null } | null>(null)
 
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('access_token')
-      setIsAuthenticated(!!token)
+      const userData = localStorage.getItem('user')
+      let role: UserRole | null = null
+      if (userData) {
+        try {
+          const parsed = JSON.parse(userData)
+          role = parsed?.user_metadata?.role === 'provider' ? 'provider' : 'patient'
+        } catch {
+          role = null
+        }
+      }
+      setAuthState({
+        isAuthenticated: !!token,
+        role: role ?? 'patient',
+      })
     }
 
     checkAuth()
@@ -112,12 +154,16 @@ function GuestRoute({ children }: { children: React.ReactElement }) {
     }
   }, [])
 
-  if (isAuthenticated === null) {
+  if (authState === null) {
     // Still checking auth status
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   }
 
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children
+  if (authState.isAuthenticated) {
+    return <Navigate to={authState.role === 'provider' ? '/requests' : '/dashboard'} replace />
+  }
+
+  return children
 }
 
 /**
@@ -136,10 +182,23 @@ export default function App() {
   })
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+  const [userRole, setUserRole] = useState<UserRole>('patient')
 
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('access_token')
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        try {
+          const parsed = JSON.parse(userData)
+          const role = parsed?.user_metadata?.role === 'provider' ? 'provider' : 'patient'
+          setUserRole(role)
+        } catch {
+          setUserRole('patient')
+        }
+      } else {
+        setUserRole('patient')
+      }
       setIsAuthenticated(!!token)
     }
 
@@ -175,17 +234,17 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['patient']}><DashboardPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
-          <Route path="/provider/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
+          <Route path="/search" element={<ProtectedRoute allowedRoles={['patient']}><SearchPage /></ProtectedRoute>} />
+          <Route path="/provider/:id" element={<ProtectedRoute allowedRoles={['patient']}><ProviderDetailsPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
-          <Route path="/request-provider" element={<ProtectedRoute><RequestProviderPage /></ProtectedRoute>} />
-          <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetailsPage /></ProtectedRoute>} />
+          <Route path="/request-provider" element={<ProtectedRoute allowedRoles={['patient']}><RequestProviderPage /></ProtectedRoute>} />
+          <Route path="/providers/:id" element={<ProtectedRoute allowedRoles={['patient']}><ProviderDetailsPage /></ProtectedRoute>} />
         </Routes>
       </main>
       <AppFooter />
-      {isAuthenticated && <Chatbot theme={theme} />}
+      {isAuthenticated && userRole !== 'provider' && <Chatbot theme={theme} />}
     </div>
   )
 }
@@ -214,6 +273,7 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [avatar, setAvatar] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<UserRole>('patient')
 
   const avatarKeyForUser = (u: User | null) => {
     if (!u) return null
@@ -222,18 +282,26 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
     return u.id ? `avatar_${u.id}` : null
   }
 
-  // Check authentication status on mount and when localStorage changes
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('access_token')
-      const userData = localStorage.getItem('user')
-      const parsed = userData ? JSON.parse(userData) : null
-      setIsAuthenticated(!!token)
-      setUser(parsed)
-      const key = avatarKeyForUser(parsed)
-      const storedAvatar = key ? localStorage.getItem(key) : null
-      setAvatar(storedAvatar || parsed?.avatar || parsed?.user_metadata?.avatar || null)
-    }
+    // Check authentication status on mount and when localStorage changes
+    useEffect(() => {
+      const checkAuth = () => {
+        const token = localStorage.getItem('access_token')
+        const userData = localStorage.getItem('user')
+        let parsed = null
+        if (userData) {
+          try {
+            parsed = JSON.parse(userData)
+          } catch {
+            parsed = null
+          }
+        }
+        setIsAuthenticated(!!token)
+        setUser(parsed)
+        setUserRole(parsed?.user_metadata?.role === 'provider' ? 'provider' : 'patient')
+        const key = avatarKeyForUser(parsed)
+        const storedAvatar = key ? localStorage.getItem(key) : null
+        setAvatar(storedAvatar || parsed?.avatar || parsed?.user_metadata?.avatar || null)
+      }
 
     checkAuth()
 
@@ -284,13 +352,18 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
       : 'bg-white/80 border-slate-200 text-slate-700'
 
   const navItems = isAuthenticated
-    ? [
-      { to: '/dashboard', label: 'Dashboard' },
-      { to: '/search', label: 'Search' },
-      { to: '/requests', label: 'Requests' },
-      { to: '/request-provider', label: 'Request Provider' },
-      { to: '/profile', label: 'Profile' },
-    ]
+    ? userRole === 'provider'
+      ? [
+        { to: '/requests', label: 'Requests' },
+        { to: '/profile', label: 'Profile' },
+      ]
+      : [
+        { to: '/dashboard', label: 'Dashboard' },
+        { to: '/search', label: 'Search' },
+        { to: '/requests', label: 'Requests' },
+        { to: '/request-provider', label: 'Request Provider' },
+        { to: '/profile', label: 'Profile' },
+      ]
     : []
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -306,7 +379,7 @@ function AppHeader({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () =
   return (
     <header className={`sticky top-0 z-30 border-b backdrop-blur-xl transition-all duration-300 ${headerThemeClasses}`}>
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <Link to={isAuthenticated ? '/dashboard' : '/'} className="inline-flex items-center gap-2">
+        <Link to={!isAuthenticated ? '/' : userRole === 'provider' ? '/requests' : '/dashboard'} className="inline-flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-500">
             MediData
           </span>

@@ -63,8 +63,9 @@ export default function LoginPage() {
         window.dispatchEvent(new Event('auth-change'))
       }
 
-      // Redirect to dashboard on success
-      navigate('/dashboard')
+      // Redirect based on role on success
+      const userRole = data?.user?.user_metadata?.role === 'provider' ? 'provider' : 'patient'
+      navigate(userRole === 'provider' ? '/requests' : '/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
     } finally {

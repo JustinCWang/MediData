@@ -90,11 +90,6 @@ export default function RequestsPage() {
     fetchRequests()
   }
 
-  const handleViewDetails = (requestId: string) => {
-    // TODO: Navigate to request details page
-    console.log('View details for request:', requestId)
-  }
-
   const handleUpdate = () => {
     // Refresh requests after update
     fetchRequests()
@@ -164,7 +159,6 @@ export default function RequestsPage() {
                     key={request.id}
                     request={request}
                     onCancel={handleCancel}
-                    onViewDetails={handleViewDetails}
                     onUpdate={handleUpdate}
                     userRole={userRole}
                   />
