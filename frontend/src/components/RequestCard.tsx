@@ -27,7 +27,6 @@ export interface Request {
 interface RequestCardProps {
   request: Request
   onCancel?: (requestId: string) => void
-  onSchedule?: (requestId: string) => void
   onViewDetails?: (requestId: string) => void
   onUpdate?: () => void
   userRole?: 'patient' | 'provider'
@@ -35,7 +34,6 @@ interface RequestCardProps {
 
 export default function RequestCard({
   request,
-  onSchedule,
   onViewDetails,
   onUpdate,
   userRole = 'patient',
@@ -392,14 +390,6 @@ export default function RequestCard({
               className="px-4 py-2 bg-blue-50 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               {userRole === 'patient' ? 'Edit Request' : 'Respond'}
-            </button>
-          )}
-          {request.status === 'approved' && userRole === 'patient' && (
-            <button
-              onClick={() => onSchedule?.(request.id)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Schedule Appointment
             </button>
           )}
           <button

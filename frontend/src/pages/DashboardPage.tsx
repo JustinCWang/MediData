@@ -157,17 +157,12 @@ export default function DashboardPage() {
   }
 
   const handleCancel = (requestId: string) => {
-    // TODO: Implement cancel request API call
+    // Not Implemented: Cancel request API call
     console.log('Cancel request:', requestId)
   }
 
-  const handleSchedule = (requestId: string) => {
-    // TODO: Navigate to scheduling page
-    console.log('Schedule appointment for request:', requestId)
-  }
-
   const handleViewDetails = (requestId: string) => {
-    // TODO: Navigate to request details page
+    // Not Implemented: Navigate to request details page
     console.log('View details for request:', requestId)
   }
 
@@ -345,7 +340,6 @@ export default function DashboardPage() {
                       key={request.id}
                       request={request}
                       onCancel={handleCancel}
-                      onSchedule={handleSchedule}
                       onViewDetails={handleViewDetails}
                       onUpdate={handleRequestUpdate}
                       userRole={userRole}

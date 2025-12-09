@@ -90,11 +90,6 @@ export default function RequestsPage() {
     fetchRequests()
   }
 
-  const handleSchedule = (requestId: string) => {
-    // TODO: Navigate to scheduling page
-    console.log('Schedule appointment for request:', requestId)
-  }
-
   const handleViewDetails = (requestId: string) => {
     // TODO: Navigate to request details page
     console.log('View details for request:', requestId)
@@ -169,7 +164,6 @@ export default function RequestsPage() {
                     key={request.id}
                     request={request}
                     onCancel={handleCancel}
-                    onSchedule={handleSchedule}
                     onViewDetails={handleViewDetails}
                     onUpdate={handleUpdate}
                     userRole={userRole}
