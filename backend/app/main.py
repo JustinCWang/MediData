@@ -22,6 +22,20 @@ from supabase import create_client, Client
 import httpx
 import google.generativeai as genai
 
+from app.Controllers.AuthController import router as auth_router, init_auth_controller, get_current_user
+from app.Controllers.QueryController import router as query_router, init_query_controller
+from app.Controllers.ChatbotController import (
+    router as chatbot_router,
+    init_chatbot_controller,
+    ChatRequest,
+)
+from app.Controllers.RequestController import (
+    router as request_router,
+    init_request_controller,
+    CreateRequest,
+    UpdateRequest,
+)
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -45,7 +59,7 @@ gemini_api_key = os.getenv("GEMINI_API_KEY")
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 else:
-    print("Warning: GEMINI_API_KEY not found in .env file. Chatbot functionality will be disabled.")
+    print("Warning: GEMINI_API_KEY not found in .env file. Chatbot functionality may be disabled.")
 
 # Service role client for admin operations (bypasses RLS)
 supabase: Client = create_client(supabase_url, supabase_service_key)
@@ -77,29 +91,6 @@ app.add_middleware(
 )
 
 
-# Pydantic models for request/response validation
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class RegisterRequest(BaseModel):
-    email: EmailStr
-    password: str
-    firstName: str
-    lastName: str
-    role: str  # 'patient' or 'provider'
-    phoneNum: Optional[str] = None
-    gender: Optional[str] = None
-    state: Optional[str] = None
-    city: Optional[str] = None
-    insurance: Optional[str] = None
-    # Provider-specific fields
-    location: Optional[str] = None
-    taxonomy: Optional[str] = None
-    providerEmail: Optional[EmailStr] = None
-
-
 class ProfileUpdateRequest(BaseModel):
     firstName: Optional[str] = None
     lastName: Optional[str] = None
@@ -112,47 +103,6 @@ class ProfileUpdateRequest(BaseModel):
     location: Optional[str] = None
     taxonomy: Optional[str] = None
 
-
-class CreateRequestRequest(BaseModel):
-    provider_id: str
-    message: str
-    date: Optional[str] = None  # ISO date string (YYYY-MM-DD)
-    time: Optional[str] = None  # Time string (HH:MM:SS)
-    npi_num: Optional[int] = None
-
-
-class UpdateRequestRequest(BaseModel):
-    # Patient can update
-    date: Optional[str] = None  # ISO date string (YYYY-MM-DD)
-    time: Optional[str] = None  # Time string (HH:MM:SS)
-    message: Optional[str] = None
-    # Provider can update
-    status: Optional[str] = None  # pending, approved, rejected
-    response: Optional[str] = None
-
-
-class ChatMessage(BaseModel):
-    role: str  # 'user' or 'assistant'
-    content: str
-
-
-class ChatRequest(BaseModel):
-    messages: List[ChatMessage]
-
-
-class AuthResponse(BaseModel):
-    user: dict
-    access_token: str
-    message: str
-
-
-class EmailRequest(BaseModel):
-    email: EmailStr
-
-
-class ResetPasswordRequest(BaseModel):
-    access_token: str
-    new_password: str
 
 class ProviderSearchRequest(BaseModel):
     number: Optional[str] = None
@@ -182,348 +132,23 @@ def health():
     return {"status": "ok"}
 
 
-def get_current_user(authorization: Optional[str] = Header(None)):
-    """
-    Extract and verify user from Authorization header
-    """
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid authorization header"
-        )
-    
-    token = authorization.split("Bearer ")[1]
-    
-    try:
-        # Verify token and get user (use anon key for auth operations)
-        user_response = supabase_auth.auth.get_user(token)
-        if not user_response.user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
-            )
-        return user_response.user
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {str(e)}"
-        )
+@app.on_event("startup")
+async def init_controllers():
+    init_auth_controller(
+        supabase_client=supabase,
+        supabase_auth_client=supabase_auth,
+        url=supabase_url,
+        anon_key=supabase_anon_key,
+        fe_origin=frontend_origin,
+    )
+    init_query_controller(supabase_client=supabase)
+    init_chatbot_controller(api_key=gemini_api_key)
+    init_request_controller(supabase_client=supabase, get_current_user_fn=get_current_user)
 
-
-@app.post("/api/auth/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-async def register(credentials: RegisterRequest):
-    """
-    User registration endpoint
-    
-    Creates a new user account in Supabase with email and password authentication.
-    Creates corresponding entry in Patients or Providers table based on role.
-    
-    Args:
-        credentials: RegisterRequest containing email, password, role, and profile information
-    
-    Returns:
-        AuthResponse: User data and access token
-    
-    Raises:
-        HTTPException: If registration fails (email already exists, weak password, etc.)
-    """
-    try:
-        # Validate role
-        if credentials.role not in ['patient', 'provider']:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Role must be either 'patient' or 'provider'"
-            )
-        
-        # Register user with Supabase Auth (use anon key for auth operations)
-        response = supabase_auth.auth.sign_up({
-            "email": credentials.email,
-            "password": credentials.password,
-            "options": {
-                "data": {
-                    "first_name": credentials.firstName,
-                    "last_name": credentials.lastName,
-                    "full_name": f"{credentials.firstName} {credentials.lastName}",
-                    "role": credentials.role
-                }
-            }
-        })
-        
-        if response.user is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Registration failed. Please check your information and try again."
-            )
-        
-        user_id = response.user.id
-        
-        # Create entry in Patients or Providers table
-        if credentials.role == 'patient':
-            patient_data = {
-                "patient_id": user_id,
-                "first_name": credentials.firstName,
-                "last_name": credentials.lastName,
-                "phone_num": credentials.phoneNum,
-                "gender": credentials.gender,
-                "state": credentials.state,
-                "city": credentials.city,
-                "insurance": credentials.insurance,
-            }
-            # Remove None values
-            patient_data = {k: v for k, v in patient_data.items() if v is not None}
-            
-            result = supabase.table("Patients").insert(patient_data).execute()
-            if not result.data:
-                # If insert fails, we should ideally rollback the auth user creation
-                # For now, we'll just log the error
-                print(f"Warning: Failed to create patient record for user {user_id}")
-        
-        elif credentials.role == 'provider':
-            provider_data = {
-                "provider_id": user_id,
-                "first_name": credentials.firstName,
-                "last_name": credentials.lastName,
-                "phone_num": credentials.phoneNum,
-                "gender": credentials.gender,
-                "state": credentials.state,
-                "city": credentials.city,
-                "insurance": credentials.insurance,
-                "location": credentials.location,
-                "taxonomy": credentials.taxonomy,
-                "email": credentials.providerEmail or credentials.email,
-            }
-            # Remove None values
-            provider_data = {k: v for k, v in provider_data.items() if v is not None}
-            
-            result = supabase.table("Providers").insert(provider_data).execute()
-            if not result.data:
-                print(f"Warning: Failed to create provider record for user {user_id}")
-        
-        # Return user data and session token
-        return {
-            "user": {
-                "id": response.user.id,
-                "email": response.user.email,
-                "user_metadata": response.user.user_metadata
-            },
-            "access_token": response.session.access_token if response.session else "",
-            "message": "Account created successfully"
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        error_message = str(e)
-        
-        # Handle common Supabase errors
-        if "already registered" in error_message.lower() or "already exists" in error_message.lower():
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="An account with this email already exists. Please log in instead."
-            )
-        elif "password" in error_message.lower():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password does not meet requirements. Please use a stronger password."
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Registration failed: {error_message}"
-            )
-
-
-@app.post("/api/auth/login", response_model=AuthResponse)
-async def login(credentials: LoginRequest):
-    """
-    User login endpoint
-    
-    Authenticates a user with email and password using Supabase Auth.
-    
-    Args:
-        credentials: LoginRequest containing email and password
-    
-    Returns:
-        AuthResponse: User data and access token
-    
-    Raises:
-        HTTPException: If login fails (invalid credentials, user not found, etc.)
-    """
-    try:
-        # Authenticate user with Supabase (use anon key for auth operations)
-        response = supabase_auth.auth.sign_in_with_password({
-            "email": credentials.email,
-            "password": credentials.password
-        })
-        
-        if response.user is None or response.session is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
-            )
-        
-        # Return user data and session token
-        return {
-            "user": {
-                "id": response.user.id,
-                "email": response.user.email,
-                "user_metadata": response.user.user_metadata or {}
-            },
-            "access_token": response.session.access_token,
-            "message": "Login successful"
-        }
-    
-    except Exception as e:
-        error_message = str(e)
-        
-        # Handle authentication errors
-        lower_error = error_message.lower()
-        if "email not confirmed" in lower_error or "confirm your email" in lower_error or "email not verified" in lower_error:
-            # User exists but has not verified their email yet
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Email not verified. Please check your inbox or request a new verification email."
-            )
-        if "invalid" in lower_error or "credentials" in lower_error:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password. Please check your credentials and try again."
-            )
-        elif "not found" in lower_error or "no user" in lower_error:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No account found with this email. Please register first."
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Login failed: {error_message}"
-            )
-
-
-@app.post("/api/auth/resend-verification")
-async def resend_verification(request: EmailRequest):
-    """
-    Resend email verification link for a user account.
-    
-    Delegates to Supabase Auth if supported; otherwise, responds optimistically.
-    """
-    try:
-        # Best-effort call into Supabase Auth (API shape may vary by version)
-        try:
-            # Newer supabase-py may expose a `resend` helper similar to JS client
-            supabase_auth.auth.resend({"type": "signup", "email": request.email})
-        except AttributeError:
-            # If the method doesn't exist, we still return success without failing hard
-            pass
-
-        return {
-            "message": "If an account with this email exists and is unverified, a new verification email has been sent."
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to resend verification email: {str(e)}",
-        )
-
-
-@app.post("/api/auth/forgot-password")
-async def forgot_password(request: EmailRequest):
-    """
-    Initiate a password reset flow for the given email address.
-    
-    Sends a time-limited reset link using Supabase Auth if available.
-    """
-    try:
-        # Try common Supabase Auth password reset helpers, ignoring missing methods
-        try:
-            reset_fn = getattr(supabase_auth.auth, "reset_password_for_email", None)
-            if reset_fn is None:
-                reset_fn = getattr(supabase_auth.auth, "reset_password_email", None)
-
-            if reset_fn is not None:
-                # Prefer redirecting password reset links specifically to the frontend
-                # reset-password route, while keeping the global Site URL for email confirmations.
-                redirect_url = os.getenv(
-                    "FRONTEND_RESET_PASSWORD_URL",
-                    f"{frontend_origin}/reset-password",
-                )
-                try:
-                    # Most GoTrue clients accept (email, options)
-                    reset_fn(request.email, {"redirect_to": redirect_url})
-                except TypeError:
-                    # Fallback for older signatures that only take the email
-                    reset_fn(request.email)
-        except AttributeError:
-            # Older/newer client versions might expose different helpers; ignore if absent
-            pass
-
-        return {
-            "message": "If an account with this email exists, a password reset email has been sent."
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to initiate password reset: {str(e)}",
-        )
-
-
-@app.post("/api/auth/reset-password")
-async def reset_password(request: ResetPasswordRequest):
-    """
-    Complete the password reset flow using a Supabase recovery access token.
-    
-    The token is provided by Supabase in the URL fragment when the user clicks
-    the reset link in their email. The frontend extracts that token and sends
-    it here along with the desired new password.
-    """
-    try:
-        # Call Supabase GoTrue REST API directly to update the user password.
-        # This mirrors what the JS client does when completing a recovery flow.
-        auth_url = f"{supabase_url}/auth/v1/user"
-        headers = {
-            "Authorization": f"Bearer {request.access_token}",
-            "apikey": supabase_anon_key,
-            "Content-Type": "application/json",
-        }
-
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.put(
-                auth_url,
-                headers=headers,
-                json={"password": request.new_password},
-            )
-
-        if response.status_code == 200:
-            return {
-                "message": "Password updated successfully. You can now log in with your new password."
-            }
-
-        # Try to extract an error message from Supabase
-        try:
-            error_data = response.json()
-            error_msg = error_data.get("msg") or error_data.get("error_description") or str(error_data)
-        except Exception:
-            error_msg = response.text
-
-        lower_msg = (error_msg or "").lower()
-        if response.status_code in (400, 401) and ("expired" in lower_msg or "invalid" in lower_msg):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The password reset link is invalid or has expired. Please request a new one.",
-            )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reset password: {error_msg}",
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reset password: {str(e)}",
-        )
+    app.include_router(auth_router)
+    app.include_router(query_router)
+    app.include_router(chatbot_router)
+    app.include_router(request_router)
 
 
 def search_affiliated_providers(
@@ -531,394 +156,59 @@ def search_affiliated_providers(
     last_name: Optional[str] = None,
     taxonomy_description: Optional[str] = None,
     city: Optional[str] = None,
-    state: Optional[str] = None
+    state: Optional[str] = None,
 ) -> list:
+    """Backward-compat shim calling the real implementation in QueryController.
+
+    Kept for now in case anything in this module still imports it directly.
     """
-    Search for providers in the Providers table (affiliated providers)
-    
-    Returns:
-        list: List of provider dictionaries matching Provider interface
-    """
-    try:
-        query = supabase.table("Providers").select("*")
-        
-        # Apply filters
-        if first_name:
-            query = query.ilike("first_name", f"%{first_name}%")
-        if last_name:
-            query = query.ilike("last_name", f"%{last_name}%")
-        if taxonomy_description:
-            query = query.ilike("taxonomy", f"%{taxonomy_description}%")
-        if city:
-            query = query.ilike("city", f"%{city}%")
-        if state:
-            query = query.ilike("state", f"%{state}%")
-        
-        result = query.execute()
-        
-        # Transform Providers table results to match Provider interface
-        affiliated_results = []
-        if result.data:
-            for provider in result.data:
-                # Build name
-                first = provider.get("first_name", "")
-                last = provider.get("last_name", "")
-                name = f"{first} {last}".strip() if first or last else "Unknown Provider"
-                
-                # Build location
-                provider_city = provider.get("city", "")
-                provider_state = provider.get("state", "")
-                location_parts = [provider_city, provider_state]
-                location = ", ".join([part for part in location_parts if part]).strip()
-                
-                enum_type = "NPI-1" if provider.get("provider_type") == "individual" else "NPI-2"
-                
-                affiliated_results.append({
-                    "id": provider.get("provider_id", ""),
-                    "name": name,
-                    "specialty": provider.get("taxonomy", "") or "Not specified",
-                    "location": location or "Location not available",
-                    "rating": 0,  # Providers table doesn't have ratings
-                    "insurance": [provider.get("insurance", "")] if provider.get("insurance") else [],
-                    "npi_number": "",  # Providers table doesn't store NPI
-                    "enumeration_type": enum_type,
-                    "is_affiliated": True,  # Mark as affiliated provider
-                    "email": provider.get("email", ""),
-                })
-        
-        return affiliated_results
-    except Exception as e:
-        # Log error but don't fail the entire search
-        import logging
-        logging.error(f"Error searching affiliated providers: {str(e)}")
-        return []
+    from app.Controllers.QueryController import search_affiliated_providers as _impl
+
+    return _impl(
+        first_name=first_name,
+        last_name=last_name,
+        taxonomy_description=taxonomy_description,
+        city=city,
+        state=state,
+    )
 
 
 @app.get("/api/providers/search")
-async def search_providers(
-    number: Optional[str] = Query(None, description="10-digit NPI number"),
-    enumeration_type: Optional[str] = Query(None, description="NPI-1 (Individual) or NPI-2 (Organization)"),
-    taxonomy_description: Optional[str] = Query(None, description="Provider specialty/taxonomy"),
-    first_name: Optional[str] = Query(None, description="Provider first name"),
-    last_name: Optional[str] = Query(None, description="Provider last name"),
-    organization_name: Optional[str] = Query(None, description="Organization name"),
-    city: Optional[str] = Query(None, description="City"),
-    state: Optional[str] = Query(None, description="State (2-letter code)"),
-    postal_code: Optional[str] = Query(None, description="Postal/ZIP code"),
-    country_code: Optional[str] = Query(None, description="Country code (default: US)"),
-    limit: Optional[int] = Query(10, ge=1, le=200, description="Number of results to return")
-):
-    """
-    Search for healthcare providers from both NPI Registry API and affiliated Providers table
-    
-    Queries both the CMS NPI Registry API and the local Providers table, then combines results.
-    All parameters are optional - at least one should be provided for meaningful results.
-    
-    Returns:
-        dict: Contains results array with provider information from both sources
-    """
-    # Build query parameters for NPI API, excluding None values
-    params = {}
-    if number:
-        params["number"] = number
-    if enumeration_type:
-        params["enumeration_type"] = enumeration_type
-    if taxonomy_description:
-        params["taxonomy_description"] = taxonomy_description
-    if first_name:
-        params["first_name"] = first_name
-    if last_name:
-        params["last_name"] = last_name
-    if organization_name:
-        params["organization_name"] = organization_name
-    if city:
-        params["city"] = city
-    if state:
-        params["state"] = state
-    if postal_code:
-        params["postal_code"] = postal_code
-    if country_code:
-        params["country_code"] = country_code
-    if limit:
-        params["limit"] = limit
-    
-    # If no search parameters provided, return empty results
-    if not params or (len(params) == 1 and "limit" in params):
-        return {
-            "result_count": 0,
-            "results": []
-        }
-    
-    all_results = []
-    npi_results = []
-    affiliated_results = []
-    
-    try:
-        # Search affiliated providers from Providers table
-        affiliated_results = search_affiliated_providers(
-            first_name=first_name,
-            last_name=last_name,
-            taxonomy_description=taxonomy_description,
-            city=city,
-            state=state
-        )
-        
-        # Query the NPI Registry API
-        # Note: NPI API requires version parameter (2.1 is the current version)
-        npi_params = params.copy()
-        npi_params["version"] = "2.1"
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(
-                "https://npiregistry.cms.hhs.gov/api/",
-                params=npi_params
-            )
-            response.raise_for_status()
-            data = response.json()
-            
-            # Transform NPI API response to match our Provider interface
-            api_result_count = data.get("result_count", 0)
-            
-            if "results" in data and isinstance(data["results"], list):
-                for result in data["results"]:
-                    provider = transform_npi_result(result)
-                    if provider:
-                        provider["is_affiliated"] = False  # Mark as external provider
-                        npi_results.append(provider)
-        
-        # Combine results - affiliated providers first, then NPI results
-        all_results = affiliated_results + npi_results
-        
-        # Apply limit to combined results
-        if limit and len(all_results) > limit:
-            all_results = all_results[:limit]
-        
-        return {
-            "result_count": len(all_results),
-            "results": all_results,
-            "affiliated_count": len(affiliated_results),
-            "npi_count": len(npi_results),
-            "api_result_count": api_result_count,  # Original NPI API count
-        }
-    
-    except httpx.HTTPStatusError as e:
-        # If NPI API fails, still return affiliated providers if available
-        if affiliated_results:
-            return {
-                "result_count": len(affiliated_results),
-                "results": affiliated_results[:limit] if limit else affiliated_results,
-                "affiliated_count": len(affiliated_results),
-                "npi_count": 0,
-                "api_result_count": 0,
-                "error": f"NPI Registry API error: {e.response.status_code}"
-            }
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"NPI Registry API error: {e.response.status_code}"
-        )
-    except httpx.RequestError as e:
-        # If NPI API fails, still return affiliated providers if available
-        if affiliated_results:
-            return {
-                "result_count": len(affiliated_results),
-                "results": affiliated_results[:limit] if limit else affiliated_results,
-                "affiliated_count": len(affiliated_results),
-                "npi_count": 0,
-                "api_result_count": 0,
-                "error": f"Failed to connect to NPI Registry API: {str(e)}"
-            }
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Failed to connect to NPI Registry API: {str(e)}"
-        )
-    except Exception as e:
-        import traceback
-        error_detail = f"Error searching providers: {str(e)}\n{traceback.format_exc()}"
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_detail
-        )
+async def search_providers(*args, **kwargs):
+    """Backward-compat shim: real handler is in QueryController."""
+    # FastAPI routes are now provided by QueryController.router; this exists
+    # only to avoid breaking any direct calls to main.search_providers.
+    from app.Controllers.QueryController import search_providers as _impl
+
+    return await _impl(*args, **kwargs)
 
 
 def transform_npi_result(npi_result: dict) -> Optional[dict]:
-    """
-    Transform NPI Registry API result to match Provider interface
-    
-    Args:
-        npi_result: Raw result from NPI Registry API
-        
-    Returns:
-        dict: Transformed provider data matching Provider interface
-    """
-    try:
-        npi_number = str(npi_result.get("number", ""))
-        if not npi_number:
-            return None
+    """Backward-compat shim delegating to QueryController.transform_npi_result."""
+    from app.Controllers.QueryController import transform_npi_result as _impl
 
-        basic_info = npi_result.get("basic", {})
-        if not basic_info:
-            return None
-
-        # Derive enumeration_type explicitly from NPI data
-        enumeration_type = basic_info.get("enumeration_type")
-        if not enumeration_type:
-            # Fallback: individuals have first/last name, orgs have organization_name
-            if "organization_name" in basic_info:
-                enumeration_type = "NPI-2"
-            else:
-                enumeration_type = "NPI-1"
-        
-        # Extract name (can be individual or organization)
-        # The "basic" object contains provider information
-        name = ""
-        
-        if enumeration_type == "NPI-1" or "first_name" in basic_info or "last_name" in basic_info:
-            # Individual provider
-            first_name = basic_info.get("first_name", "")
-            last_name = basic_info.get("last_name", "")
-            middle_name = basic_info.get("middle_name", "")
-            credential = basic_info.get("credential", "")
-            
-            # Build name with credential if available
-            name_parts = [first_name, middle_name, last_name]
-            name = " ".join([part for part in name_parts if part]).strip()
-            if credential:
-                name = f"{name}, {credential}"
-        elif enumeration_type == "NPI-2" or "organization_name" in basic_info:
-            # Organization
-            name = basic_info.get("organization_name", "")
-        
-        if not name:
-            return None
-        
-        # Extract specialty (taxonomy)
-        # Taxonomies are in an array, use the primary one (usually first)
-        taxonomies = npi_result.get("taxonomies", [])
-        specialty = ""
-        if taxonomies and len(taxonomies) > 0:
-            # Find primary taxonomy (primary: true) or use first one
-            primary_taxonomy = next((t for t in taxonomies if t.get("primary", False)), None)
-            if primary_taxonomy:
-                specialty = primary_taxonomy.get("desc", "")
-            else:
-                specialty = taxonomies[0].get("desc", "")
-        
-        # Extract location and phone from addresses array
-        addresses = npi_result.get("addresses", [])
-        location = ""
-        phone = ""
-        if addresses and len(addresses) > 0:
-            # Find primary address or use first
-            primary_address = next((a for a in addresses if a.get("address_purpose", "") == "LOCATION"), addresses[0])
-            city = primary_address.get("city", "")
-            state = primary_address.get("state", "")
-            postal_code = primary_address.get("postal_code", "")
-            location_parts = [city, state, postal_code]
-            location = ", ".join([part for part in location_parts if part]).strip()
-            phone = primary_address.get("telephone_number", "") or ""
-
-        # Attempt to extract an email from endpoints (if present)
-        email = ""
-        endpoints = npi_result.get("endpoints", [])
-        if isinstance(endpoints, list) and endpoints:
-            email_endpoint = next(
-                (
-                    e
-                    for e in endpoints
-                    if "email" in str(e.get("endpoint_type", "")).lower()
-                    or "email" in str(e.get("endpoint_description", "")).lower()
-                ),
-                None,
-            )
-            if email_endpoint:
-                email = email_endpoint.get("endpoint", "") or ""
-        
-        # NPI API doesn't provide rating or insurance, so we'll use defaults
-        # In a real app, you'd fetch this from another source
-        
-        return {
-            "id": npi_number,
-            "name": name,
-            "specialty": specialty or "Not specified",
-            "location": location or "Location not available",
-            "phone": phone,
-            "email": email,
-            "rating": 0,  # NPI API doesn't provide ratings
-            "insurance": [],  # NPI API doesn't provide insurance info
-            "npi_number": npi_number,
-            "enumeration_type": enumeration_type,
-        }
-    except Exception as e:
-        # Log error but don't crash - return None to skip this result
-        import logging
-        logging.error(f"Error transforming NPI result: {str(e)}")
-        return None
+    return _impl(npi_result)
 
 
 @app.get("/api/providers/{npi_number}")
 async def get_provider_by_npi(npi_number: str):
-    """Get a single provider by NPI number.
+    """Backward-compat shim delegating to QueryController.get_provider_by_npi."""
+    from app.Controllers.QueryController import get_provider_by_npi as _impl
 
-    This uses the same NPI Registry API as the search endpoint
-    but forces an exact lookup on the NPI number and returns a
-    single transformed provider object.
-    """
-    params = {"number": npi_number, "version": "2.1"}
-
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(
-                "https://npiregistry.cms.hhs.gov/api/",
-                params=params,
-            )
-            response.raise_for_status()
-            data = response.json()
-
-        results = data.get("results") or []
-        if not results:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Provider not found",
-            )
-
-        provider = transform_npi_result(results[0])
-        if not provider:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Provider not found",
-            )
-
-        provider["is_affiliated"] = False
-        return provider
-
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"NPI Registry API error: {e.response.status_code}",
-        )
-    except httpx.RequestError as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Failed to connect to NPI Registry API: {str(e)}",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching provider: {str(e)}",
-        )
+    return await _impl(npi_number)
 
 
-@app.get("/api/profile")
-async def get_profile(current_user = Depends(get_current_user)):
-    """
-    Get user profile information
-    
-    Returns profile data from Patients or Providers table based on user role.
+async def callAuthController_get_profile(current_user = Depends(get_current_user)):
+    """Get the current user's profile via the existing logic in main.
+
+    Kept in main for now (not moved to QueryController) since it depends
+    on auth and role-specific tables; this ensures existing frontend calls
+    to /api/profile continue to work unchanged.
     """
     try:
         user_id = current_user.id
         user_role = current_user.user_metadata.get("role", "patient")
-        
+
         if user_role == "provider":
             result = supabase.table("Providers").select("*").eq("provider_id", user_id).execute()
             if result.data and len(result.data) > 0:
@@ -972,8 +262,13 @@ async def get_profile(current_user = Depends(get_current_user)):
         )
 
 
-@app.put("/api/profile")
-async def update_profile(profile_data: ProfileUpdateRequest, current_user = Depends(get_current_user)):
+@app.get("/api/profile")
+async def callAuthController_profile(current_user = Depends(get_current_user)):
+    """Wrapper that calls the auth/profile handler logic."""
+    return await callAuthController_get_profile(current_user=current_user)
+
+
+async def callAuthController_update_profile(profile_data: ProfileUpdateRequest, current_user = Depends(get_current_user)):
     """
     Update user profile information
     
@@ -1052,8 +347,13 @@ async def update_profile(profile_data: ProfileUpdateRequest, current_user = Depe
         )
 
 
-@app.post("/api/favorites/{provider_id}")
-async def add_favorite(provider_id: str, current_user = Depends(get_current_user)):
+@app.put("/api/profile")
+async def callAuthController_update_profile_route(profile_data: ProfileUpdateRequest, current_user = Depends(get_current_user)):
+    """Wrapper that calls the auth/profile update logic."""
+    return await callAuthController_update_profile(profile_data=profile_data, current_user=current_user)
+
+
+async def callRequestController_add_favorite(provider_id: str, current_user = Depends(get_current_user)):
     """
     Add a provider to favorites
     
@@ -1140,8 +440,13 @@ async def add_favorite(provider_id: str, current_user = Depends(get_current_user
         )
 
 
-@app.delete("/api/favorites/{provider_id}")
-async def remove_favorite(provider_id: str, current_user = Depends(get_current_user)):
+@app.post("/api/favorites/{provider_id}")
+async def callRequestController_add_favorite_route(provider_id: str, current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/favorites add logic."""
+    return await callRequestController_add_favorite(provider_id=provider_id, current_user=current_user)
+
+
+async def callRequestController_remove_favorite(provider_id: str, current_user = Depends(get_current_user)):
     """
     Remove a provider from favorites
     
@@ -1168,8 +473,13 @@ async def remove_favorite(provider_id: str, current_user = Depends(get_current_u
         )
 
 
-@app.get("/api/favorites")
-async def get_favorites(current_user = Depends(get_current_user)):
+@app.delete("/api/favorites/{provider_id}")
+async def callRequestController_remove_favorite_route(provider_id: str, current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/favorites remove logic."""
+    return await callRequestController_remove_favorite(provider_id=provider_id, current_user=current_user)
+
+
+async def callRequestController_get_favorites(current_user = Depends(get_current_user)):
     """
     Get all favorited providers for the current patient
     
@@ -1211,8 +521,13 @@ async def get_favorites(current_user = Depends(get_current_user)):
         )
 
 
-@app.get("/api/favorites/providers")
-async def get_favorite_providers(current_user = Depends(get_current_user)):
+@app.get("/api/favorites")
+async def callRequestController_get_favorites_route(current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/favorites list logic."""
+    return await callRequestController_get_favorites(current_user=current_user)
+
+
+async def callRequestController_get_favorite_providers(current_user = Depends(get_current_user)):
     """
     Get full provider details for all favorited providers
     
@@ -1316,8 +631,13 @@ async def get_favorite_providers(current_user = Depends(get_current_user)):
         )
 
 
-@app.post("/api/requests")
-async def create_request(request_data: CreateRequestRequest, current_user = Depends(get_current_user)):
+@app.get("/api/favorites/providers")
+async def callRequestController_get_favorite_providers_route(current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/favorites detailed list logic."""
+    return await callRequestController_get_favorite_providers(current_user=current_user)
+
+
+async def callRequestController_create_request(request_data: CreateRequest, current_user = Depends(get_current_user)):
     """
     Create a new appointment request
     
@@ -1382,8 +702,13 @@ async def create_request(request_data: CreateRequestRequest, current_user = Depe
         )
 
 
-@app.get("/api/requests")
-async def get_requests(current_user = Depends(get_current_user)):
+@app.post("/api/requests")
+async def callRequestController_create_request_route(request_data: CreateRequest, current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/create logic."""
+    return await callRequestController_create_request(request_data=request_data, current_user=current_user)
+
+
+async def callRequestController_get_requests(current_user = Depends(get_current_user)):
     """
     Get all requests for the current user
     
@@ -1480,8 +805,13 @@ async def get_requests(current_user = Depends(get_current_user)):
         )
 
 
-@app.put("/api/requests/{request_id}")
-async def update_request(request_id: str, request_data: UpdateRequestRequest, current_user = Depends(get_current_user)):
+@app.get("/api/requests")
+async def callRequestController_get_requests_route(current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/list logic."""
+    return await callRequestController_get_requests(current_user=current_user)
+
+
+async def callRequestController_update_request(request_id: str, request_data: UpdateRequest, current_user = Depends(get_current_user)):
     """
     Update a request
     
@@ -1584,8 +914,13 @@ async def update_request(request_id: str, request_data: UpdateRequestRequest, cu
         )
 
 
-@app.delete("/api/requests/{request_id}")
-async def cancel_request(request_id: str, current_user = Depends(get_current_user)):
+@app.put("/api/requests/{request_id}")
+async def callRequestController_update_request_route(request_id: str, request_data: UpdateRequest, current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/update logic."""
+    return await callRequestController_update_request(request_id=request_id, request_data=request_data, current_user=current_user)
+
+
+async def callRequestController_cancel_request(request_id: str, current_user = Depends(get_current_user)):
     """
     Cancel a request (patients only)
     
@@ -1627,8 +962,13 @@ async def cancel_request(request_id: str, current_user = Depends(get_current_use
         )
 
 
-@app.post("/api/chat")
-async def chat(chat_request: ChatRequest):
+@app.delete("/api/requests/{request_id}")
+async def callRequestController_cancel_request_route(request_id: str, current_user = Depends(get_current_user)):
+    """Wrapper that calls the request/cancel logic."""
+    return await callRequestController_cancel_request(request_id=request_id, current_user=current_user)
+
+
+async def callChatbotController_chat(chat_request: ChatRequest):
     """
     Chat endpoint using Google Gemini API
     
@@ -1713,3 +1053,9 @@ suggest that the user check the relevant page or contact support."""
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating chat response: {error_message}"
         )
+
+
+@app.post("/api/chat")
+async def callChatbotController_chat_route(chat_request: ChatRequest):
+    """Wrapper that calls the chatbot controller logic."""
+    return await callChatbotController_chat(chat_request=chat_request)
