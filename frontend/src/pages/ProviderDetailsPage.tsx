@@ -209,10 +209,10 @@ export default function ProviderDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-          <p className="mt-2 text-slate-600">Loading provider details...</p>
+          <p className="mt-2 text-slate-600 dark:text-slate-300">Loading provider details...</p>
         </div>
       </div>
     )
@@ -220,7 +220,7 @@ export default function ProviderDetailsPage() {
 
   if (error || !provider) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         <div className="mx-auto max-w-4xl px-6 py-8">
           <button
             onClick={handleBack}
@@ -238,7 +238,7 @@ export default function ProviderDetailsPage() {
             </svg>
             Back to Search
           </button>
-          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
             <p className="text-red-600 mb-4">{error || 'Provider not found'}</p>
             <button
               onClick={handleBack}
@@ -253,7 +253,7 @@ export default function ProviderDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="mx-auto max-w-4xl px-6 py-8">
         {/* Back button */}
         <button
@@ -274,7 +274,7 @@ export default function ProviderDetailsPage() {
         </button>
 
         {/* Provider Details Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
             <div className="flex items-start justify-between">
@@ -369,7 +369,7 @@ export default function ProviderDetailsPage() {
 
             {/* Location */}
             <div>
-              <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Location</h2>
+              <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Location</h2>
               <div className="flex items-start gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -390,14 +390,14 @@ export default function ProviderDetailsPage() {
                     d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
                   />
                 </svg>
-                <p className="text-slate-900">{provider.location}</p>
+                <p className="text-slate-900 dark:text-slate-100">{provider.location}</p>
               </div>
             </div>
 
             {/* Contact Information */}
             {(provider.phone || provider.email) && (
               <div>
-                <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Contact Information</h2>
+                <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Contact Information</h2>
                 <div className="space-y-2">
                   {provider.phone && (
                     <div className="flex items-center gap-2">
@@ -415,7 +415,7 @@ export default function ProviderDetailsPage() {
                           d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
                         />
                       </svg>
-                      <p className="text-slate-900">{provider.phone}</p>
+                      <p className="text-slate-900 dark:text-slate-100">{provider.phone}</p>
                     </div>
                   )}
                   {provider.email && (
@@ -434,7 +434,7 @@ export default function ProviderDetailsPage() {
                           d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
                         />
                       </svg>
-                      <a href={`mailto:${provider.email}`} className="text-slate-900 underline">
+                      <a href={`mailto:${provider.email}`} className="text-slate-900 dark:text-slate-100 underline">
                         {provider.email}
                       </a>
                     </div>
@@ -446,12 +446,12 @@ export default function ProviderDetailsPage() {
             {/* Accepted Insurance */}
             {provider.insurance && provider.insurance.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Accepted Insurance</h2>
+                <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Accepted Insurance</h2>
                 <div className="flex flex-wrap gap-2">
                   {provider.insurance.map((ins, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-md border border-blue-200"
+                      className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-md border border-blue-200 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-800"
                     >
                       {ins}
                     </span>
@@ -462,16 +462,16 @@ export default function ProviderDetailsPage() {
 
             {/* Journey / what to expect */}
             <div>
-              <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">What to expect</h2>
+              <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">What to expect</h2>
               <div className="space-y-3">
                 {journeySteps.map((step, idx) => (
                   <div key={idx} className="flex gap-3">
-                    <div className="mt-1 h-6 w-6 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold flex items-center justify-center">
+                    <div className="mt-1 h-6 w-6 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 text-xs font-semibold flex items-center justify-center">
                       {idx + 1}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{step.title}</p>
-                      <p className="text-sm text-slate-700">{step.desc}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{step.title}</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">{step.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -480,8 +480,8 @@ export default function ProviderDetailsPage() {
 
             {/* Short blurb about visit prep */}
             <div>
-              <h2 className="text-sm font-semibold text-slate-500 uppercase mb-2">Visit prep</h2>
-              <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
+              <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Visit prep</h2>
+              <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1 list-disc list-inside">
                 <li>Share your symptoms and goals to speed up intake.</li>
                 <li>Confirm your preferred contact method and time windows.</li>
                 <li>Have insurance details ready if applicable.</li>
@@ -490,10 +490,10 @@ export default function ProviderDetailsPage() {
           </div>
 
           {/* Actions */}
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-3">
+          <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-3">
             <button
               onClick={handleBack}
-              className="flex-1 min-w-[140px] px-4 py-2.5 border border-slate-300 text-slate-700 rounded-md text-sm font-medium hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex-1 min-w-[140px] px-4 py-2.5 border border-slate-300 text-slate-700 rounded-md text-sm font-medium hover:bg-white dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Back to Search
             </button>
@@ -507,7 +507,7 @@ export default function ProviderDetailsPage() {
         </div>
 
         {/* Secondary navigation back to search */}
-        <div className="mt-4 text-sm text-slate-600">
+        <div className="mt-4 text-sm text-slate-600 dark:text-slate-400">
           Or{' '}
           <Link to="/search" className="text-blue-600 hover:text-blue-700 underline">
             browse more providers
