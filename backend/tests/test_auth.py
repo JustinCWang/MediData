@@ -109,7 +109,7 @@ def test_register_weak_password_returns_400(client, monkeypatch, mock_supabase):
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert (
         response.json()["detail"]
-        == "Password does not meet requirements. Please use a stronger password."
+		== "Password does not meet security requirements. Please use at least 6 characters with a mix of letters, numbers, or symbols."
     )
 
 
