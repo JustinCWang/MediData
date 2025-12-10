@@ -91,6 +91,19 @@ npm run dev
 ```
 The app will be available at `http://localhost:5173`.
 
+## Using the App
+
+- Create an account: start on Register, pick your role (patient or provider), and complete both account and profile steps. You must use a **valid email address** so verification and reset links reach you.
+- Verify and log in: check that same email for the verification link, then log in from the Login page.
+- Core navigation:
+  - Landing: product overview and entry points (before login).
+  - Dashboard: overview and recent items.
+  - Search: browse and filter providers; open a provider to see details.
+  - Requests: your care requests, statuses, and actions (patients edit/cancel; providers respond).
+  - Request Provider: send a new request to a provider you’re viewing.
+  - Providers: view provider details from search results or saved items.
+  - Profile: review and update your saved info.
+
 ## 🧪 Testing
 
 All backend tests live in `backend/tests` and use `pytest` + `coverage`.

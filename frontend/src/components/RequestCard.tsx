@@ -240,7 +240,7 @@ export default function RequestCard({
               {request.message && (
                 <div className="mt-3">
                   <p className="text-xs font-medium text-slate-600 mb-1">Message:</p>
-                  <p className="text-sm text-slate-700 bg-slate-50 rounded-md p-3">
+                  <p className="text-sm text-slate-700 bg-slate-50 rounded-md p-3 dark:text-slate-100 dark:bg-slate-700/70">
                     {request.message}
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export default function RequestCard({
               {request.response && (
                 <div className="mt-3">
                   <p className="text-xs font-medium text-slate-600 mb-1">Provider Response:</p>
-                  <p className="text-sm text-slate-700 bg-blue-50 rounded-md p-3">
+                  <p className="text-sm text-slate-700 bg-blue-50 rounded-md p-3 dark:text-slate-100 dark:bg-slate-700/70">
                     {request.response}
                   </p>
                 </div>
@@ -325,7 +325,7 @@ export default function RequestCard({
                   {request.message && (
                     <div>
                       <p className="text-xs font-medium text-slate-600 mb-1">Patient Message:</p>
-                      <p className="text-sm text-slate-700 bg-slate-50 rounded-md p-3">
+                      <p className="text-sm text-slate-700 bg-slate-50 rounded-md p-3 dark:text-slate-100 dark:bg-slate-700/70">
                         {request.message}
                       </p>
                     </div>
